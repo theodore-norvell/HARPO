@@ -1,0 +1,27 @@
+//!compile. execute with input "". expect output equals "4". endl.
+
+// This case tests:
+//		- That parallel execution is handled properly
+
+(class A()
+	obj i : Int32 := 0
+	obj j : Int32 := 0
+	obj k : Int32 := 0
+	public proc output(in outArg : Int32)
+	(thread
+		(co
+			i := 2
+		||
+			j := 2
+		co)
+		k := i + j
+		output(k)
+	thread)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+class A)
+
+obj a : A := new A()

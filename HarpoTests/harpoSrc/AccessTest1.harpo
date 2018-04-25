@@ -1,0 +1,22 @@
+//!compile. expect error match ""
+
+// This case tests:
+//		- Attempts to access private variable from outside
+//		- Should result in a Harpo compiler error
+
+(class A()
+	private obj i : Int32 := 5
+class A)
+
+(class B()
+	obj a : A := new A()
+	public proc output(in outArg : Int32)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+	(thread
+		output(a.i)
+	thread)
+class B)

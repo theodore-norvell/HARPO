@@ -1,0 +1,15 @@
+//!compile.
+
+// This case tests:
+//		- Parallel for loop
+//		- *Update test later to include execution
+
+(class A()
+	obj lock : Lock := new Lock()
+	(thread
+		obj sum := 0
+		(co i : 10 do obj x : Int32 := i ; (with lock do sum := sum + x))
+	thread)
+class A)
+
+obj a : A := new A()

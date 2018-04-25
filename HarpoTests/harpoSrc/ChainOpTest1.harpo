@@ -1,0 +1,36 @@
+//!compile. execute with input "". expect output equals "true". endl.
+
+(class A()
+	obj res : Bool := false
+	obj b : Bool := false
+	
+	obj x : Int32 := 10
+	obj y : Int32 := 20
+	obj z : Int32 := 5
+	
+	obj var : Int32 := 0
+	
+	public proc output(in outArg : Bool)
+	
+	(thread
+		res := z _< 5 < x < y
+		b := y > x >_ z
+		res := res /\ b
+		b := x = 10
+		res := res /\ b
+		b := y ~= 10
+		res := res /\ b
+		b := res \/ b
+		res := res => b
+		res := res <=> b
+		output(res)
+	thread)
+	
+	(thread
+		(accept
+			output(in outArg : Bool)
+		accept)
+	thread)
+class A)
+
+obj a : A := new A()

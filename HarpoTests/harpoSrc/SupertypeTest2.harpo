@@ -1,0 +1,27 @@
+//!compile. execute with input "". expect output equals "5". endl.
+
+// This case tests:
+//		- 1 class, 2 interface, single variable
+//		- Variable gets output by class
+
+(interface A
+	public obj a1 : Int32 := 5
+interface A)
+
+(interface B extends A
+	public obj test : Int32 := a1
+interface B)
+
+(class C() implements B
+	public proc output(in outArg : Int32)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+	(thread
+		output(a1)
+	thread)
+class C)
+
+obj c : C := new C()

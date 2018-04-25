@@ -1,0 +1,22 @@
+//!compile. execute with input "". expect output equals "5". endl.
+(class A()
+	obj l : Lock := new Lock()
+	obj guard : Int32 := 1
+	obj x : Int32 := 1
+	public proc output(in outArg : Int32)
+	
+	(thread
+		(with l when guard = 1 do
+			x := 5
+			output(x)
+		with)
+	thread)
+	
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+class A)
+
+obj a : A := new A()

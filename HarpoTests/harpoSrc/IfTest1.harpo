@@ -1,0 +1,29 @@
+//!compile. execute with input "". expect output matches "2". endl.
+
+// This case tests:
+//		- A simple if statement
+
+(class A()
+	obj a1 : Int32 := 0
+	public proc iftest()
+	public proc output(in outArg : Int32)
+	(thread
+		(accept
+			iftest()
+				(if a1 = 0 then
+					a1 := 2
+				if)
+				output(a1)
+		accept)
+	thread)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+	(thread
+		iftest()
+	thread)
+class A)
+
+obj a : A := new A()

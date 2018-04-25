@@ -1,0 +1,78 @@
+//!compile. execute with input "". expect output equals "false\nfalse\ntrue\ntrue\ntrue\ntrue". endl.
+(class System()
+	private obj started : Bool := false
+	private obj running : Bool := false
+
+	public proc isStarted(out result : Bool)
+	public proc isRunning(out result : Bool)
+	public proc checkStateIsGood(out result : Bool)
+	public proc start()
+	public proc run()
+	public proc stop()
+	
+	(thread
+		(while true do 
+			(accept
+				isStarted(out result : Bool)
+					result := started
+				|
+				isRunning(out result : Bool)
+					result := started /\ running
+				|
+				checkStateIsGood(out result : Bool)
+					result := running => started	
+			accept)
+		while)
+	thread)
+	
+	(thread
+		(while true do
+			(accept
+				start() when ~started
+					started := true
+				|
+				run() when started /\ ~running
+					running := true
+				|
+				stop() when started
+					started := false
+					running := false
+			accept)
+		while)
+	thread)
+class)
+
+(class Admin()
+	obj sys : System := new System()
+	obj state : Bool := false
+	
+	public proc output(in outArg : Int32)
+	
+	(thread
+		sys.isStarted(state)
+		output(state)
+		sys.isRunning(state)
+		output(state)
+		sys.checkStateIsGood(state)
+		output(state)
+		sys.start()
+		sys.isStarted(state)
+		output(state)
+		sys.run()
+		sys.isRunning(state)
+		output(state)
+		sys.checkStateIsGood(state)
+		output(state)
+		sys.stop()
+	thread)
+	
+	(thread
+		(while true do
+			(accept
+				output(in outArg : Int32)
+			accept)
+		while)
+	thread)	
+class)
+
+obj adm : Admin := new Admin()

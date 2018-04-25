@@ -1,0 +1,33 @@
+//!compile. execute with input "". expect output matches "6". endl.
+
+// This case tests:
+// 		- Basic test to make sure ST execution works reasonably well
+
+(class A()
+	public proc inc(in arg1 : Int32, out arg2 : Int32)
+	public proc output(in outArg : Int32)
+	public obj a1 : Int32 := 5
+	public obj out1 : Int32 := 0
+	obj a2 : Int32 := 10
+	(thread
+		(accept
+			inc(in arg1 : Int32, out arg2 : Int32) when a1 < a2
+				(if a1 < a2 then
+					arg2 := arg1 + 1
+				else
+					arg2 := 20
+				if)
+				output(out1)
+		accept)
+	thread)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+	(thread
+		inc(a1, out1)
+	thread)
+class A)
+
+obj a : A := new A()

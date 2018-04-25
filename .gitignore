@@ -1,2 +1,10 @@
 *.class
 *.log
+HarpoCore/.settings
+HarpoCore/bin
+*.cache
+HarpoExecutive/.settings
+HarpolParser/.settings
+HarpolParser/bin
+HarpoTests/.settings
+HarpoTests/tests/bin

@@ -1,0 +1,19 @@
+//!compile. execute with input "". expect output equals "3". endl.
+
+// This case tests:
+//		- Local variables are handled properly
+
+(class A()
+	public proc output(in outArg : Int32)
+	(thread
+		(accept
+			output(in outArg : Int32)
+		accept)
+	thread)
+	(thread
+		obj a1 : Int32 := 3
+		output(a1)
+	thread)
+class A)
+
+obj a : A := new A()

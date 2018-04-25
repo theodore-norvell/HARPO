@@ -1,0 +1,12 @@
+//!compile.
+
+// This case tests:
+//		- What happens with 2 variables with same name/different scope?
+(class A()
+	obj y : Int32 := 0
+	obj x : Int32 := 12
+	(thread
+		obj x : Real32 := 3.14
+		(for x : 10 do y := x for)
+	thread)
+class A)
