@@ -223,7 +223,7 @@ class LiteralTests extends TestsBase with BeforeAndAfterEach {
             
         checker.runChecker( dl )
         
-        val obj = dl.declarations(0).asInstanceOf[frontEnd.AST.ObjDeclNd]
+        val obj = dl.decls.head.asInstanceOf[frontEnd.AST.ObjDeclNd]
         val tcResult = obj.init.asInstanceOf[frontEnd.AST.ValueInitExpNd].exp.asInstanceOf[frontEnd.AST.ExpNd].tipe
         it should "accept a literal " + typeName + " giving " + expectedType in {
             tcResult match {

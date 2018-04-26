@@ -38,7 +38,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if ( decl.isInstanceOf[ObjDeclNd] ) {
                 val obj = decl.asInstanceOf[ObjDeclNd]
                 if ( obj.init.isInstanceOf[WidenInitExpNd]) {
@@ -171,7 +171,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             println( "Decl: " + decl )
             //TODO: Create a proper test for this
             // I was just trying to get a look at the structure of the AST
@@ -189,7 +189,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if (decl.isInstanceOf[ObjDeclNd]) {
                 val obj = decl.asInstanceOf[ObjDeclNd]
                 if ( obj.init.isInstanceOf[IfInitExpNd] ) {
@@ -244,7 +244,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if ( decl.isInstanceOf[frontEnd.AST.ClassDeclNd] ) {
                 val node = decl.asInstanceOf[frontEnd.AST.ClassDeclNd]
                 
@@ -260,7 +260,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
                 }
                 
                 i = 0
-                for ( member <- node.members.declarations ) {
+                for ( member <- node.directMembers ) {
                     if ( member.isInstanceOf[frontEnd.AST.ObjDeclNd] ) {
                         val obj = member.asInstanceOf[frontEnd.AST.ObjDeclNd]
                         obj.ty.tipe match {
@@ -294,12 +294,12 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if ( decl.isInstanceOf[ClassDeclNd] ) {
                 val node = decl.asInstanceOf[ClassDeclNd]
                 
                 var i = 0
-                for ( member <- node.members.declarations ) {
+                for ( member <- node.directMembers ) {
                     if ( member.isInstanceOf[ObjDeclNd] ) {
                         val obj = member.asInstanceOf[ObjDeclNd]
                         obj.ty.tipe match {
@@ -321,7 +321,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
       
-        val objDecl = dl.declarations(0).asInstanceOf[ObjDeclNd]
+        val objDecl = dl.decls.head.asInstanceOf[ObjDeclNd]
         val objDeclType = objDecl.ty.tipe.get.asInstanceOf[CheckerTypes.LocationType].base
         val initExpType = objDecl.init.tipe
         
@@ -334,7 +334,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        val objDecl = dl.declarations(0).asInstanceOf[ObjDeclNd]
+        val objDecl = dl.decls.head.asInstanceOf[ObjDeclNd]
         val objDeclType = objDecl.ty.tipe.get.asInstanceOf[CheckerTypes.LocationType].base
         
         assertResult( 0 )( er.getFatalCount() + er.getWarningCount() )
@@ -361,7 +361,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        val objDecl = dl.declarations(0).asInstanceOf[ObjDeclNd]
+        val objDecl = dl.decls.asInstanceOf[ObjDeclNd]
         val objDeclType = objDecl.ty.tipe.get
         
         assert( objDeclType.isInstanceOf[CheckerTypes.LocationType] )
@@ -375,7 +375,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        val objDecl = dl.declarations(0).asInstanceOf[ObjDeclNd]
+        val objDecl = dl.decls.asInstanceOf[ObjDeclNd]
         val objDeclType = objDecl.ty.tipe.get
           
         assertResult( 0 )( er.getFatalCount() + er.getWarningCount() )
@@ -402,7 +402,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        val objDecl = dl.declarations(0).asInstanceOf[ObjDeclNd]
+        val objDecl = dl.decls.asInstanceOf[ObjDeclNd]
         
         assertResult( 0 )( er.getFatalCount() + er.getWarningCount() )
     }
@@ -437,7 +437,7 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if ( decl.isInstanceOf[MethodDeclNd] ) {
                 val method = decl.asInstanceOf[MethodDeclNd]
                 var i = 0
@@ -481,10 +481,10 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         
         assert( er.getFatalCount() + er.getWarningCount() == 0 )
         
-        for ( decl <- dl.declarations ) {
+        for ( decl <- dl.decls ) {
             if ( decl.isInstanceOf[ClassDeclNd] ) {
                 val classDecl = decl.asInstanceOf[ClassDeclNd]
-                for ( member <- classDecl.members.declarations ) {
+                for ( member <- classDecl.directMembers ) {
                     if ( member.isInstanceOf[ThreadDeclNd] ) {
                         val thread = member.asInstanceOf[ThreadDeclNd]
                         val block_0 = thread.block.asInstanceOf[LocalDeclCmdNd]
@@ -791,10 +791,10 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        for (decl <- dl.declarations) {
+        for (decl <- dl.decls) {
             if (decl.isInstanceOf[ClassDeclNd]) {
                 val cls = decl.asInstanceOf[ClassDeclNd]
-                for (mem <- cls.members.declarations) {
+                for (mem <- cls.directMembers) {
                     if (mem.isInstanceOf[ThreadDeclNd]) {
                         val thread = mem.asInstanceOf[ThreadDeclNd]
                         if (thread.block.isInstanceOf[CallCmdNd]) {
@@ -839,10 +839,10 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         val dl = result._1
         val er = result._2
         
-        for (decl <- dl.declarations) {
+        for (decl <- dl.decls) {
             if (decl.isInstanceOf[ClassDeclNd]) {
                 val cls = decl.asInstanceOf[ClassDeclNd]
-                for (mem <- cls.members.declarations) {
+                for (mem <- cls.directMembers ) {
                     if (mem.isInstanceOf[ThreadDeclNd]) {
                         val thread = mem.asInstanceOf[ThreadDeclNd]
                         if (thread.block.isInstanceOf[CallCmdNd]) {
