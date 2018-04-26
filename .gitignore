@@ -10,3 +10,4 @@ HarpoTests/.settings
 HarpoTests/tests/bin
 /.metadata/
 *.cache-main
+/.recommenders/
