@@ -47,7 +47,7 @@ class ClassCodeGen {
           nameTbl = nameTbl ++ table(sup.toString())
         }
         
-        for (mem <- clsNd.asInstanceOf[ClassLike].members.declarations) {
+        for (mem <- clsNd.asInstanceOf[ClassLike].directMembers) {
           mem match {
             case MethodDeclNd(acc : Access, params : List[ParamDeclNd]) =>
               procCode += MethCodeGen(mem, clsNd.name) + "\n"

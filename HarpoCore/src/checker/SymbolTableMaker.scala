@@ -41,7 +41,14 @@ extends Contracts {
 
         def buildSTFromDeclList( decls : DeclList, containingFQN : FQN ) {
             //Console.out.println( s"Building from ${decls.declarations.size} declarations.")
-            for ( decl <- decls.declarations ) {
+            for ( decl <- decls.decls ) {
+                //Console.out.println( s"  >decl is ${decl.name}.")
+                buildSTFromDecl( decl, containingFQN ) }
+        }
+
+        def buildSTFromDeclSet( decls : Set[DeclNd], containingFQN : FQN ) {
+            //Console.out.println( s"Building from ${decls.declarations.size} declarations.")
+            for ( decl <- decls ) {
                 //Console.out.println( s"  >decl is ${decl.name}.")
                 buildSTFromDecl( decl, containingFQN ) }
         }
@@ -85,11 +92,11 @@ extends Contracts {
             for( p <- d.constructorParams )
                 buildSTFromDecl( p, containingFQN )
                 
-            buildSTFromDeclList( d.members, containingFQN.append( d.name ) )
+            buildSTFromDeclSet( d.directMembers, containingFQN.append( d.name ) )
             
             val members : mutable.HashMap[String,DeclNd]
             =   new mutable.HashMap[String,DeclNd]
-            for( memberDecl <- d.members.declarations ) {
+            for( memberDecl <- d.directMembers ) {
                 members += ((memberDecl.name, memberDecl)) }
             directMembersMap += ((d.fqn, members.toMap[String,DeclNd]))
             
@@ -160,7 +167,7 @@ extends Contracts {
             }
             
             def computeDirectAncestors() {
-                for( d <- decls.declarations ) {
+                for( d <- decls.decls ) {
                     d match {
                         case d : ClassLike =>
                             val set = new mutable.HashSet[ FQN ];
@@ -252,7 +259,7 @@ extends Contracts {
         }
         
         def computeAllMembersMap( decls : DeclList ) {
-            for( decl <- decls.declarations ) {
+            for( decl <- decls.decls ) {
                 decl match {
                     case decl : ClassLike =>
                         val allMembers_decl = new mutable.HashMap[ String, DeclNd ] ;

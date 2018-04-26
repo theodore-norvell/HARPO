@@ -94,7 +94,11 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
         }
         
         def createTypesFromDeclList( decls : DeclList ) {
-            for ( decl <- decls.declarations ) createTypesFromDecl( decl )
+            for ( decl <- decls.decls ) createTypesFromDecl( decl )
+        }
+        
+        def createTypesFromDeclSet( decls : Set[DeclNd] ) {
+            for ( decl <- decls ) createTypesFromDecl( decl )
         }
 
         def createTypesFromDecl( decl : DeclNd  ) {
@@ -108,10 +112,10 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
             
             decl match {
                 case d : ClassLike =>
-                    for( gp <- d.genericParameters ) createTypesFromDecl( gp ) 
+                    //for( gp <- d.genericParameters ) createTypesFromDecl( gp ) 
                     for( typeNd <- d.superTypes ) createTypeFromTypeNd( typeNd ) 
                     for( p <- d.constructorParams ) createTypesFromDecl( p ) 
-                    createTypesFromDeclList( d.members )
+                    createTypesFromDeclSet( d.directMembers )
                     
                 case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     ty match { case NoTypeNd() => {}

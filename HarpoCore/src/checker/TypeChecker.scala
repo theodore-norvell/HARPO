@@ -129,18 +129,22 @@ extends Contracts {
     }
     
     def typeCheck( decls : DeclList ) {
-        for( decl <- decls.declarations ) typeCheck( decl ) 
+        for( decl <- decls.decls ) typeCheck( decl ) 
+    }
+    
+    def typeCheck( decls : Set[DeclNd] ) {
+        for( decl <- decls ) typeCheck( decl ) 
     }
     
     def typeCheck( decl : DeclNd ) {
         decl match {
             
             case decl@ClassDeclNd() => 
-                typeCheck( decl.members )
+                typeCheck( decl.directMembers )
             
                 
             case decl@IntfDeclNd() => 
-                typeCheck( decl.members )
+                typeCheck( decl.directMembers )
                 
                 
             case decl@ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 

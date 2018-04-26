@@ -38,10 +38,10 @@ private def genHeaderCode() : String = {
 }
     
 private def genConcurentCode() : String = {
-  for (dlNd : DeclNd <- dl.declarations ) {
+  for (dlNd : DeclNd <- dl.decls ) {
     dlNd match {
       case dlNd : ClassDeclNd =>
-        for (dllNd : DeclNd <- dlNd.members.declarations : ArrayBuffer[DeclNd]) {
+        for (dllNd : DeclNd <- dlNd.directMembers ) {
           dllNd match {
             case ThreadDeclNd(block : CommandNd) =>
               val threadName = dllNd.name.replace("#", "")
@@ -79,7 +79,7 @@ private def genDeclCode() = {
   var nameTbl = HashMap[String, HashMap[String, String]]()
   var cCode = ""
         
-  for (dlNd<-dl.declarations){
+  for (dlNd<-dl.decls){
     dlNd match{
       case ObjDeclNd( isConst, acc, ty, init) =>{
         if (dlNd.name != "true" && dlNd.name != "false"){

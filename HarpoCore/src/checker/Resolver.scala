@@ -16,7 +16,12 @@ extends Contracts {
     def resolve( decls : DeclList ) {
 
         def resolveDeclList( decls : DeclList, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
-            for ( decl <- decls.declarations )
+            for ( decl <- decls.decls )
+              resolveDecl( decl, containingFQN, containingDecl )
+        }
+
+        def resolveDeclSet( decls : Set[DeclNd], containingFQN : FQN, containingDecl : Option[DeclNd] ) {
+            for ( decl <- decls )
               resolveDecl( decl, containingFQN, containingDecl )
         }
 
@@ -74,7 +79,7 @@ extends Contracts {
                 resolveType( gp.ty, containingFQN, containingDecl ) 
             for( p <- d.constructorParams ) 
                 resolveType( p.ty, containingFQN, containingDecl ) 
-            resolveDeclList( d.members, containingFQN.append( d.name ), Some(d) ) 
+            resolveDeclSet( d.directMembers, containingFQN.append( d.name ), Some(d) ) 
         }
         
         def resolveType( ty : TypeNd, containingFQN : FQN, containingDecl : Option[DeclNd] ){ 

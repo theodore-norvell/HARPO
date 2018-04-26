@@ -35,10 +35,10 @@ class IntfCodeGen {
           nameTbl = nameTbl ++ table(sup.toString())
         }
         
-        for (mem <- intfNd.asInstanceOf[ClassLike].members.declarations) {
+        for (mem <- intfNd.asInstanceOf[ClassLike].directMembers) {
           mem match {
             case MethodDeclNd(acc : Access, params : List[ParamDeclNd]) =>
-              procCode += MethCodeGen(mem, intfNd.name) + "\n"
+              procCode = procCode + MethCodeGen(mem, intfNd.name) + "\n"
               constructorCode += "InitProcStruct(&(" + NM.mkClassParaName(intfNd.name) + "->" + NM.mkName(mem.name) + ".ps));\n"
               intfCode += NM.mkMethodName(mem.name, intfNd.name) + "* " + NM.mkName(mem.name) + ";\n"
               nameTbl(mem.name) = NM.mkMethodName(mem.name, intfNd.name)

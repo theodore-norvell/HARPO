@@ -68,6 +68,11 @@ class AST {
 
         def findMemberDirect( name: String ): Option[ DeclNd ] = members.findDeclaration( name )
         
+        def findMemberIndirect( name: String ): Option[ DeclNd ] = {
+          // TODO  Should there be more to this?
+          members.findDeclaration( name )
+        }
+        
         def directMembers : Set[DeclNd] = members.decls
 
     }

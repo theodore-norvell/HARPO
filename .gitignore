@@ -8,3 +8,5 @@ HarpolParser/.settings
 HarpolParser/bin
 HarpoTests/.settings
 HarpoTests/tests/bin
+/.metadata/
+*.cache-main
