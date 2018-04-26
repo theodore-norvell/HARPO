@@ -25,36 +25,37 @@ class HarpoToCCompiler {
         files += ((fileName, fileText))
     }
 
-	def runCompiler( ) {
+	  def runCompiler( ) {
         errorRecorder = new StandardErrorRecorder()
         cOutput = ""
         
         val masterDeclList  = new frontEnd.AST.DeclList() 
         
         for( (fileName, fileText) <- files ) {
-        	val reader  = new StringReader(fileText) 
-        	val p : HarpoParser = new HarpoParser( reader )
-          p.setFileName(fileName);
-        	val builder = new frontEnd.Builder(errorRecorder) ;
-        	p.setBuilder( builder )
-
-        	// Run the parser.
-
-        	val dl : frontEnd.AST.DeclList =
-        	    try { p.Start().asInstanceOf[frontEnd.AST.DeclList] }
-        	    catch{
-                    case ex : ParseException => {    
-        		        val coord = if( ex.currentToken != null ) AST.Coord( fileName, ex.currentToken.beginLine, ex.currentToken.beginColumn) 
-        		            		else AST.Coord( fileName) ;
-        		        errorRecorder.reportFatal(ex.getMessage(), coord)
-        		        null }
-        	        case ex : TokenMgrError => {    
-        	    	    val coord = AST.Coord( fileName )//TODO add line and col number
-        			    errorRecorder.reportFatal(ex.getMessage(), coord)
-        			    null } }
-            if( dl != null ) {
-                for( decl <- dl.decls ) {
-                    masterDeclList.addDeclaration(decl) } }
+            	val reader  = new StringReader(fileText) 
+            	val p : HarpoParser = new HarpoParser( reader )
+            p.setFileName(fileName);
+            	val builder = new frontEnd.Builder(errorRecorder) ;
+            	p.setBuilder( builder )
+    
+            	// Run the parser.
+    
+            	val dl : frontEnd.AST.DeclList =
+            	    try {
+            	        p.Start().asInstanceOf[frontEnd.AST.DeclList] }
+            	    catch{
+                        case ex : ParseException => {    
+            		        val coord = if( ex.currentToken != null ) AST.Coord( fileName, ex.currentToken.beginLine, ex.currentToken.beginColumn) 
+            		            		else AST.Coord( fileName) ;
+            		        errorRecorder.reportFatal(ex.getMessage(), coord)
+            		        null }
+            	        case ex : TokenMgrError => {    
+            	    	    val coord = AST.Coord( fileName )//TODO add line and col number
+            			    errorRecorder.reportFatal(ex.getMessage(), coord)
+            			    null } }
+                if( dl != null ) {
+                    for( decl <- dl.decls ) {
+                        masterDeclList.addDeclaration(decl) } }
         }
             
         // Run the checker 
@@ -68,6 +69,6 @@ class HarpoToCCompiler {
         // To do. Add the C code generator
         if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
             val cCodeGen=new CBackEnd(masterDeclList)
-            cOutput=cCodeGen.getCCode()}
+            cOutput=cCodeGen.getCCode() }
 	}
 }
