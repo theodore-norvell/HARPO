@@ -1,0 +1,14 @@
+(class Math
+	public proc divide(in a,b: real32,out c:real32)
+	pre b !=0
+	post c'=a/b
+
+	(thread (*t0*)
+		(while true
+			(accept divide(in a,b:real32,out c:real32)
+				c:=a/b;
+			accept)
+		while)
+	thread)
+class)
+// Pull request in github

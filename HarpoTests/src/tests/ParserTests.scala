@@ -63,6 +63,19 @@ class ParserTests extends TestsBase {
     tryWithParser(str)  
   }
   
+  it should "allow an assert command" in {
+    val str = "(class Fred(assert c=4;) class Fred)" //should fail
+    tryWithParser(str)  
+  }
+  
+  it should "allow an assert command inside thread" in {
+    val str = "(class Fred()	public proc add()	(thread (*t0*)(while true do (accept add() c:=2+2;assert c=4;accept)	while) thread) class)" 
+    tryWithParser(str)  
+  }
+  
+  
+  
+  
   it should "warn when the class name at the end does not match" in {
     val str = "(class Fred() \nclass Bob)" 
     val ter = tryWithParser(str, 0, 1)  

@@ -149,6 +149,10 @@ class AST {
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "LocalDeclNd[" :: name :: "]", isConst.toString, ty, init, cmd )
     }
+    
+    
+    
+    
 
     case class GenericParamDeclNd( ty: TypeNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
@@ -266,6 +270,24 @@ class AST {
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "WithCmdNd", lock, guard, command )
     }
+// Making updates of annotation Commands
+    case class AssertCmdNd(var assertion: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "AssertCmdNd", assertion )
+    }
+    
+    case class AssumeCmdNd(var assumption: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "AssumeCmdNd", assumption )
+    }
+    
+    
+    
+    
+//    case class WhileCmdNd( var guard: ExpNd, body: CommandNd )( coord: AST.Coord )
+//        extends CommandNd( coord ) {
+//        override def pp = Pretty.func( "WhileCmdNd", guard, body )
+//    }
 
     /************/
     /** Types **/
@@ -430,7 +452,7 @@ class AST {
     }
 
     /*********************/
-    /** Accessability   **/
+    /** Accessibility   **/
     /*********************/
 
     abstract sealed class Access;

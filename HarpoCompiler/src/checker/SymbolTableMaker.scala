@@ -135,6 +135,10 @@ extends Contracts {
                     buildSTfromCommand( elseCmd, containingFQN )
                 case WhileCmdNd( guard, body ) =>
                     buildSTfromCommand( body, containingFQN )
+                    
+                //---- Adding assert case, i think it is skip in case of C
+                case AssertCmdNd(assertion)=> ()
+                    
                 case ForCmdNd( forDecl, repetitions, body ) => {
                     buildSTFromDecl( forDecl, containingFQN )
                     buildSTfromCommand( body, forDecl.fvd.fqn ) }

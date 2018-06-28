@@ -50,7 +50,7 @@ class HarpoToCCompiler {
             		        errorRecorder.reportFatal(ex.getMessage(), coord)
             		        null }
             	        case ex : TokenMgrError => {    
-            	    	    val coord = AST.Coord( fileName )//TODO add line and col number
+            	    	    val coord = AST.Coord( fileName )//TODO add line and column number
             			    errorRecorder.reportFatal(ex.getMessage(), coord)
             			    null } }
                 if( dl != null ) {
@@ -72,3 +72,7 @@ class HarpoToCCompiler {
             cOutput=cCodeGen.getCCode() }
 	}
 }
+
+
+
+

@@ -4,33 +4,33 @@
  * Theodore Norvell (c) 2013
  */options{  JDK_VERSION = "1.7";
   DEBUG_TOKEN_MANAGER = false ;
-  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)package parser;
-
-
-import frontEnd.Builder ;
-import frontEnd.AST.* ;
-import frontEnd.Builder.* ;
-
-public class HarpoParser{
-	Builder builder ;
-	String fileName = "<unknown>" ;
+  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
+	package parser;
+	import frontEnd.Builder ;
+	import frontEnd.AST.* ;
+	import frontEnd.Builder.* ;
 	
-	public void setBuilder( Builder b) { builder = b ; }
-
-	public void setFileName( String fn ) { fileName = fn ; }	 
-	
-	Coord getCoord(int i) {
-		return getCoord( getToken(i) ) ; }
+	public class HarpoParser	{
+		Builder builder ;
+		String fileName = "<unknown>" ;
 		
-	Coord getCoord( Token t) {
-		return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }}PARSER_END(HarpoParser)
+		public void setBuilder( Builder b) { builder = b ; }
+	
+		public void setFileName( String fn ) { fileName = fn ; }		 
+		
+		Coord getCoord(int i) {
+			return getCoord( getToken(i) ) ; }
+			
+		Coord getCoord( Token t) {
+			return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }	}PARSER_END(HarpoParser)
+
 
 TOKEN_MGR_DECLS:{  int commentNestingDepth  ; }
 
 SPECIAL_TOKEN : {
     < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? >
 } 
-// Coping with multiline comments.
+// Coping with multiple lines comments.
 <DEFAULT> MORE : {
   "(*" { commentNestingDepth = 1 ; } : IN_MULTI_LINE_COMMENT
 }
@@ -55,7 +55,7 @@ TOKEN :{    "("
 |	":"
 |	< IMPLIES : "=>" | "\u21d2" >
 |	< FOLLOWS_FROM :"<=" | "\u21d0" >
-|	< BICOND: "<=>" | "\u21d4" > 
+|	< BICOND : "<=>" | "\u21d4" > 
 |	< OR: "or" | "\\/" | "\u2228" >
 |	< AND: "and" | "/\\" | "\u2227" >
 |	< NOT : "not" | "~" | "\u00AC" >
@@ -103,7 +103,21 @@ TOKEN :{
 |   "type"
 |	"when"
 |	"while"
-|	"with"
+|	"with" 
+// Annotations
+//Commands
+|   "assert"
+|	"assume"
+//Ghost variable declaration
+|	"ghost"
+// Pre/Post Condition Command
+|	"pre"
+|	"post"
+//Permission handeling
+|	"takes"
+|	"gives"
+| 	"borrows"
+|	"claim"
 }
 
 // TODO extend the set of letters.
@@ -471,6 +485,13 @@ CommandNd Command() : {
 		"with" x=ObjectId() y=OptGuard() "do" p=Block() ["with"] ")"
 		{return builder.makeWith( x, y, p, getCoord(tk)) ;}
 	)
+	
+// Trying to add assert command
+// inferred the syntax from 'while'
+
+|
+		"assert" x=Exp()
+    	{return builder.makeAssert(x, getCoord(tk)) ;}
 }
 
 ExpList NonemptyVarList() : {

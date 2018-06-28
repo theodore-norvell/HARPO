@@ -146,6 +146,12 @@ extends Contracts {
                 case WhileCmdNd( guard, body ) =>
                     resolveExp( guard, containingFQN, containingDecl )
                     resolveCommand( body, containingFQN, containingDecl )
+                
+                // --- case for AssertCmdNd
+                case AssertCmdNd (assertion) =>
+                    resolveExp(assertion,containingFQN, containingDecl)
+                    
+                    
                 case ForCmdNd( decl, repetitions, body ) =>
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )

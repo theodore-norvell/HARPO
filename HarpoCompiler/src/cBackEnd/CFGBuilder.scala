@@ -1,6 +1,7 @@
 package cBackEnd
 import frontEnd.AST._
 import CFG._
+import contracts._
 
 class CFGBuilder {
   var factory = new CFGFactory
@@ -49,7 +50,21 @@ class CFGBuilder {
       var result = build(body, whileNd)
       result.setNext(whileNd)
       return whileNd
-
+      
+    
+      
+      
+      
+      
+      
+    // ---- Assert command control flow graph, 
+    // in case of Boogie we don't need CFG,
+    // getting type mismatch error, but I can't give any random return instead of null '()'
+    case AssertCmdNd(assertion) => Contracts.toDo()
+    case AssumeCmdNd(assumption) => Contracts.toDo()
+    
+    
+    
     case CoCmdNd(fstCmd, sndCmd) =>
       var coNd = factory.makeCoCfgNd()
       var mergeNd = factory.makeMergeCfgNd()
@@ -116,6 +131,8 @@ class CFGBuilder {
       return endNd
 
     //   case _ => return lastNd // unfinished
+      //Adding assert case in CFG of C back end
+    case AssertCmdNd(assertion: ExpNd) => Contracts.toDo()
 
     }
   }
