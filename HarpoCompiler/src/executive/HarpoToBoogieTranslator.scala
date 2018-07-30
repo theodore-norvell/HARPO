@@ -1,21 +1,22 @@
 package executive
-
+import scala.collection.mutable.ArrayBuffer;
 import frontEnd._
 import parser._ 
 import checker.Checker ;
 import scala.collection.mutable.ArrayBuffer 
-
 import java.io.StringReader 
-import cBackEnd.CBackEnd
+import boogieBackEnd.BoogieBackEnd
 
-class HarpoToCCompiler {
+
+class HarpoToBoogieTranslator {
+    
     private var errorRecorder = new StandardErrorRecorder()
     
-    private var cOutput = ""
+    private var boogieOutput = "No Output"
         
     def getErrorReport() : ErrorReport = errorRecorder 
     
-    def getCOutput() : String = cOutput
+    def getBoogieOutput() : String = boogieOutput
     
     private var files = new ArrayBuffer[(String,String)] 
     
@@ -24,11 +25,11 @@ class HarpoToCCompiler {
     def addFile( fileName : String, fileText : String ) {
         files += ((fileName, fileText))
     }
-
-	  def runCompiler( ) {
+    
+    def runTranslator( ) {
         errorRecorder = new StandardErrorRecorder()
-        cOutput = ""
-        
+        println("Translator is running")
+        boogieOutput = ""
         val masterDeclList  = new frontEnd.AST.DeclList() 
         
         for( (fileName, fileText) <- files ) {
@@ -37,7 +38,6 @@ class HarpoToCCompiler {
               p.setFileName(fileName);
             	val builder = new frontEnd.Builder(errorRecorder) ;
             	p.setBuilder( builder )
-    
             	// Run the parser.
     
             	val dl : frontEnd.AST.DeclList =
@@ -53,27 +53,23 @@ class HarpoToCCompiler {
             	    	    val coord = AST.Coord( fileName )//TODO add line and column number
             			    errorRecorder.reportFatal(ex.getMessage(), coord)
             			    null } }
-           	   println(fileName,fileText,dl)
+            	  println(fileName,fileText,dl)
                 if( dl != null ) {
                     for( decl <- dl.decls ) {
-                        masterDeclList.addDeclaration(decl) } }
+                        masterDeclList.addDeclaration(decl) 
+                        } }
         }
-            
-        // Run the checker 
-            
+        println("Master Declaration List : ",masterDeclList.toString())
         if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
+             println("I reached here");
             val checker = new Checker( errorRecorder )
             try { checker.runChecker( masterDeclList ) }
             // The only exception that the checker should throw is a CompilerBailOutException.
             catch{ case e : CompilerBailOutException => () } }
-        
-        // To do. Add the C code generator
-        if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
-            val cCodeGen=new CBackEnd(masterDeclList)
-            cOutput=cCodeGen.getCCode() }
-	}
+    
+      // The boogie code generator
+        if(masterDeclList != null && errorRecorder.getFatalCount() == 0) {
+            val boogieCodeGen=new BoogieBackEnd(masterDeclList)
+            boogieOutput=boogieCodeGen.getBoogieCode() }
+    }
 }
-
-
-
-

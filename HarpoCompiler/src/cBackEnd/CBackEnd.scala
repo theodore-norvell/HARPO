@@ -14,7 +14,8 @@ import scala.io.Source
 /**
  * @author nhacnguyen
  */
-class CBackEnd(val dl : frontEnd.AST.DeclList) {
+class CBackEnd(val dl : frontEnd.AST.DeclList) 
+{
 private val cfgBuilder = new CFGBuilder()
 private val cfgFactory = new CFGFactory()
 private val cfgDivider = new CFGDivider
@@ -24,6 +25,7 @@ private val codeGenerator = new CodeGenerator()
 def getCCode() : String = {
   val code = genHeaderCode + genDeclCode + genConcurentCode
   NameManager.clear()
+  println("Came to C BackEnd");
   return code
 }
     

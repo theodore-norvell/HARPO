@@ -1,12 +1,21 @@
 package executive
 
 object Compile extends App {
-  println("start")
+  println("Compiler start")
   var compile = new HarpoToCCompiler()
-  compile.addFile("0_MathClass_3.0", " (class Math public proc divide(in a,b: real32,out c:real32) (thread (*t0*) (while true (accept divide(in a,b:real32,out c:real32) c:=a/b; accept) while) thread) class)")
-//  compile.addFile("0_pre-and-postcondition_3.0", " (class Math public proc divide(in a,b: real32,out c:real32) pre b !=0 post c'=a/b (thread (*t0*) (while true (accept divide(in a,b:real32,out c:real32) c:=a/b; accept) while) thread) class)")
+  compile.addFile("mathClass","(class Math obj c:int32 :=0; thread (*t0*) claim c@1.0 assert 4=4; thread) class)")
   compile.runCompiler()
   var output:String = compile.getCOutput()
   println(output)
-  println("end")
+  println("Compiler end")
+  
+  
+  println("Verifier start")
+  var verify = new HarpoToBoogieTranslator()
+  verify.addFile("mathClass.harpo","(class Math obj c:int32 :=0; thread (*t0*) claim c@1.0 assert 4=4; thread) class)")
+  verify.runTranslator()
+  var boogieScript:String = verify.getBoogieOutput()
+  println(boogieScript)
+  println("Verifier end")
+  
 }
