@@ -70,6 +70,7 @@ class HarpoToBoogieTranslator {
       // The boogie code generator
         if(masterDeclList != null && errorRecorder.getFatalCount() == 0) {
             val boogieCodeGen=new BoogieBackEnd(masterDeclList)
-            boogieOutput=boogieCodeGen.getBoogieCode() }
+           // boogieOutput=boogieCodeGen.getBoogieCode() 
+            }
     }
 }

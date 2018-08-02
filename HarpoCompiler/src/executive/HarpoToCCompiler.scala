@@ -26,6 +26,7 @@ class HarpoToCCompiler {
     }
 
 	  def runCompiler( ) {
+	      println("Run Compiler");
         errorRecorder = new StandardErrorRecorder()
         cOutput = ""
         
@@ -38,7 +39,7 @@ class HarpoToCCompiler {
             	val builder = new frontEnd.Builder(errorRecorder) ;
             	p.setBuilder( builder )
     
-            	// Run the parser.
+            	// Run the parser.x
     
             	val dl : frontEnd.AST.DeclList =
             	    try {
@@ -70,7 +71,8 @@ class HarpoToCCompiler {
         // To do. Add the C code generator
         if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
             val cCodeGen=new CBackEnd(masterDeclList)
-            cOutput=cCodeGen.getCCode() }
+            cOutput=cCodeGen.getCCode() 
+            println("This is C output: ",cOutput);}
 	}
 }
 

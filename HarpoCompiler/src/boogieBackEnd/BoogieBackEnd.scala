@@ -11,12 +11,14 @@ import java.net.URL
 import scala.io.Source
 
 
-class BoogieBackEnd(val dl : frontEnd.AST.DeclList) {
+class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 private def getBoogieCode() : String = {
-  val boogieCode = genBoogiePrelude() + genDeclCode()
+  println(masterDeclList.toString());
+  val boogieCode = genBoogiePrelude() + genDeclCode( masterDeclList )
   println("getBoogieCode Running")
-  println(code);
-  return boogieCode.toString()
+  println(boogieCode);
+  return boogieCode.toString();
+  
 }   
 private def genBoogiePrelude() : String = {
   val filename = "BoogiePrelude.txt"
@@ -25,8 +27,7 @@ private def genBoogiePrelude() : String = {
   return boogiePrelude
 }
 
-private def genDeclCode : String = {
-  
+private def genDeclCode( dl : DeclList) : String = {
   var globalObjCode = ""
   var initializeCode = ""
   var nameTbl = HashMap[String, HashMap[String, String]]()
@@ -36,24 +37,23 @@ private def genDeclCode : String = {
     dNd match{
        case ClassDeclNd() =>
        {
-        val code = "type className; \n function dtype(Ref) returns (className); \n const unique " + dNd.Name + " :className\n";
-        boogieCode += code
+//        val code = "type className; \n function dtype(Ref) returns (className); \n const unique " + dNd.Name + " :className\n";
+//        boogieCode += code
        }
        case ObjDeclNd( isConst, acc, ty, init) =>
        {
-        val code = "\n const unique " + dNd.Name + " :Field "+ ty;
+        val code = "\n const unique " + dNd.fqn + " :Field "+ ty; //inject name of Node
         boogieCode += code
         //Assign initialization expression
-       }  
-       
-      case AssertCmdNd() =>
-       {
-        
-       }
-      case ThreadDeclNd() =>
-        {
-          ()
-        }
+       }    
+//      case AssertCmdNd() =>
+//       {
+//        
+//       }
+//      case ThreadDeclNd( block ) =>
+//        {
+//          ()
+//        }
       
       case _ => {}
     }
