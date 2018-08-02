@@ -8,7 +8,7 @@ import scala.text.Document
 
 import checker.CheckerTypes._
 
-class AST {
+class AST{
     case class Coord( file: String, line: Int = 0, col: Int = 0 ) {
         override def toString = "File: "+file+" line: "+line+" column: "+col
     }

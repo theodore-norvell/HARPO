@@ -1,12 +1,13 @@
 package executive
 import scala.collection.mutable.ArrayBuffer;
+import java.io.PrintWriter;
+import java.io.File;
 import frontEnd._
 import parser._ 
 import checker.Checker ;
 import scala.collection.mutable.ArrayBuffer 
 import java.io.StringReader 
 import boogieBackEnd.BoogieBackEnd
-
 
 class HarpoToBoogieTranslator {
     
@@ -59,7 +60,7 @@ class HarpoToBoogieTranslator {
                         masterDeclList.addDeclaration(decl) 
                         } }
         }
-        println("Master Declaration List : ",masterDeclList.toString())
+        println("Master Declaration List : ")
         if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
              println("I reached here");
             val checker = new Checker( errorRecorder )
