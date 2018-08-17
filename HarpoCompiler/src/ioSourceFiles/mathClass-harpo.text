@@ -1,0 +1,6 @@
+(class Math() 
+	obj c: Int32:=0; 
+	(thread(*t0*) 
+		assert c>9 
+	thread) 
+class)

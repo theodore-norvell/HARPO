@@ -44,4 +44,19 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
     
     def getWarningCoord( i : Int ) : AST.Coord = warnings(i).coord
     
+    def printErrors( out : java.io.PrintStream ) {
+        out.println( "Fatal errors" );
+        for( err <- fatals ) {
+          out.print( err.coord )
+          out.print( " " )
+          out.println( err.text )
+        }
+        out.println( "Warning errors" );
+        for( err <- warnings ) {
+          out.print( err.coord )
+          out.print( " " )
+          out.println( err.text )
+        }
+    }
+    
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="testsrc"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="C:/HARPO-L/scalatest_2.11-2.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/HARPO-L/org.scala-lang.modules.scala-xml_1.0.6.jar" sourcepath="C:/HARPO-L/org.scala-lang.modules.scala-xml_1.0.6.zip"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

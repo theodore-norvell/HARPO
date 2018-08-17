@@ -11,7 +11,7 @@ class TypeChecker (
     //classEnv : ClassEnvironment,
     //symbolTable : SymbolTable,
     typeCreator : TypeCreator )  
-extends Contracts {
+extends Contracts { 
   
     def typeCheck( exp : ExpNd ) : Option[Type] = {
         val ty : Option[Type]
@@ -315,6 +315,15 @@ extends Contracts {
             case cmd@WhileCmdNd( guard, body ) =>
                 cmd.guard = convertGuard( guard )
                 typeCheck( body )
+          
+            // make new case of assert command
+                
+            case cmd@AssertCmdNd(assertion) =>
+                cmd.assertion = convertAssertion(assertion)
+            
+            case cmd@AssumeCmdNd(assumption) =>
+                cmd.assumption = convertAssumption(assumption)
+                
                 
             case ForCmdNd( forDecl, repetitions, body ) =>
                 toDo( "For commands in type checker")
@@ -346,6 +355,37 @@ extends Contracts {
         result
     }
     
+    
+    
+    
+    
+    // ---- Checking the assertion expression.
+    
+    private def convertAssertion( assertion : ExpNd ) = {
+        val gTy = typeCheck(assertion)
+        val result = valueConvert( assertion )
+        for( ty <- result.tipe )
+            errorRecorder.checkFatal(ty==bool,
+                              "assertion expression must be boolean.",
+                              assertion.coord) 
+        result
+    }
+        private def convertAssumption( assumption : ExpNd ) = {
+        val gTy = typeCheck(assumption)
+        val result = valueConvert( assumption )
+        for( ty <- result.tipe )
+            errorRecorder.checkFatal(ty==bool,
+                              "assume expression must be boolean.",
+                              assumption.coord) 
+        result
+    }
+        
+        
+        
+        
+        
+        
+        
     private def insertAsExpressionForLiterals( ty : TypeNd, exp : ExpNd ) : ExpNd =
         // If the declaration is explicitly typed...
         ty match {

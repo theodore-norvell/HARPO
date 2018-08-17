@@ -2,35 +2,125 @@
  * HARPO Parser.
  * Use with JavaCC 5.0
  * Theodore Norvell (c) 2013
- */options{  JDK_VERSION = "1.7";
+ */
+
+/* Comments by Inaam
+This is a parser written in JavaCC
+This file is importing packages written in Scala
+	- 	frontEnd.Builder ;
+			Create a Builder type object and initialize using setBuilder method
+	-	frontEnd.AST.* ;
+			
+	-	frontEnd.Builder.* ;
+
+	List of Methods:
+		- setBuilder() -  called by builder
+		- setFileName() - 
+		- getCoord(with token)
+		- getCoord(with Integer-token)
+
+	TOKEN_MGR_DECL
+
+	SPECIAL TOKENS - for single line and multiline comment
+
+	SKIP - escape sequence and space character
+
+	TOKEN - paranthesis and operators(binary, logical, relational)
+
+	TOKEN - For reserved words/ keywords
+
+	TOKEN - For Names- Identifier
+
+	TOKEN - For Number
+				- DEC
+				- HEX
+				- OCT
+				- BIN
+	TOKEN - Real Number
+	TOKEN - For Unexpected Character
+
+	Firstly parser will see: class interface and global object declarations
+		- DeclListStart() subroutine is used
+		Non-Local Declarations:
+			- Class Declaration - > class member declaration
+			- Interface Declaration - > Generic Parameters
+									- > Interface members
+									- > Access modifiers
+			- Object Declaration Node
+									- > Parts of object declaration node
+										boolean isConst ;
+    									TypeNd ty ;
+									    InitExpNd exp ; 
+									    String name ;
+									    Token tk ;
+			- Method Declaration Node
+									- > Parts of method Decl Node
+									    Access acc = builder.publicAccess() ;
+									    ParamDeclNd param ; 
+									    String name ;
+									    ParamList paramList = builder.paramList() ;
+									    Token tk ;
+																		
+			- Thread Declaration Node
+									- > Parts of Thread Decl Node
+										CommandNd bl ;
+										Token tk ;
+			- Parameter Declaration
+									- > CParam
+									- > MParam
+									- > InParam
+									- > OutParam
+									- > ObjParam
+									- > Param Declaration subroutine called by all above subroutines
+
+			- TypeNd
+									- > String name ;
+									- > TypeNd ty ;
+									- > ExpNd bound ;
+									- > GenericArgs ga ;
+									- > Token tk ;
+									- > Coord coord ;
+									- > NameNd nameNd ;
+			- GenericArguments
+			- CommandBlock - > CommandNd LocalDeclarations - > CommandNd Command
+			- Command - > Assignment, while, for, co, with, it
+			- NonEmptyVariable List, NonEmptyExpressionList both - > ExpList
+			- Method implementation declaration
+				- initExp - >ExpNd- > Exp0- >Exp1- >Exp2- >Exp3- >Exp4- >Exp5- >Exp6
+				- Optional Guard
+				- ObjID ExpNd
+			- Name
+	
+*/
+options{  JDK_VERSION = "1.7";
   DEBUG_TOKEN_MANAGER = false ;
-  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)package parser;
-
-
-import frontEnd.Builder ;
-import frontEnd.AST.* ;
-import frontEnd.Builder.* ;
-
-public class HarpoParser{
-	Builder builder ;
-	String fileName = "<unknown>" ;
+  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
+	package parser;
+	import frontEnd.Builder ;
+	import frontEnd.AST.* ;
+	import frontEnd.Builder.* ;
 	
-	public void setBuilder( Builder b) { builder = b ; }
-
-	public void setFileName( String fn ) { fileName = fn ; }	 
-	
-	Coord getCoord(int i) {
-		return getCoord( getToken(i) ) ; }
+	public class HarpoParser	{
+		Builder builder ;
+		String fileName = "<unknown>" ;
 		
-	Coord getCoord( Token t) {
-		return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }}PARSER_END(HarpoParser)
+		public void setBuilder( Builder b) { builder = b ; }
+	
+		public void setFileName( String fn ) { fileName = fn ; }		 
+		
+		Coord getCoord(int i) {
+			return getCoord( getToken(i) ) ; }
+			
+		Coord getCoord( Token t) {
+			return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }	}PARSER_END(HarpoParser)
+
 
 TOKEN_MGR_DECLS:{  int commentNestingDepth  ; }
 
 SPECIAL_TOKEN : {
     < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? >
 } 
-// Coping with multiline comments.
+// Coping with multiple lines comments.
 <DEFAULT> MORE : {
   "(*" { commentNestingDepth = 1 ; } : IN_MULTI_LINE_COMMENT
 }
@@ -55,7 +145,7 @@ TOKEN :{    "("
 |	":"
 |	< IMPLIES : "=>" | "\u21d2" >
 |	< FOLLOWS_FROM :"<=" | "\u21d0" >
-|	< BICOND: "<=>" | "\u21d4" > 
+|	< BICOND : "<=>" | "\u21d4" > 
 |	< OR: "or" | "\\/" | "\u2228" >
 |	< AND: "and" | "/\\" | "\u2227" >
 |	< NOT : "not" | "~" | "\u00AC" >
@@ -75,11 +165,16 @@ TOKEN :{    "("
 |	"|"
 |	"||"
 |	"."
+//I need @ token
 }
 
 TOKEN :{
 	"accept"
-| 	"as"|	"class"
+| 	"as"
+|   "assert" // Verification
+|	"assume" // Verification
+| 	"borrows" // Verification|	"class"
+|	"claim" // Verification
 |	"co"
 |   "const"
 |	"do"
@@ -87,6 +182,8 @@ TOKEN :{
 |	"else"
 |   "extends"
 |	"for"
+|	"gives" // Verification
+|	"ghost" // Verification
 |	"if"
 |   "implements"
 |	"in"
@@ -95,15 +192,19 @@ TOKEN :{
 |	"new"
 |   "obj"
 |	"out"
+|	"pre" // Verification
+|	"post" // Verification
 |   "private"
 |	"proc"
 |   "public"
+|	"takes" // Verification
 |	"then"
 |	"thread"
 |   "type"
 |	"when"
 |	"while"
-|	"with"
+|	"with" 
+
 }
 
 // TODO extend the set of letters.
@@ -136,8 +237,8 @@ TOKEN : {
 }
 
 DeclList Start() : {
-	DeclList p=builder.declList() ;
-	DeclNd q ;
+	DeclList p=builder.declList() ; // for interface and class declaration
+	DeclNd q ; // for global object declaration
 }
 {
 	(   (  LOOKAHEAD("(" "class") q=ClassDecl()
@@ -430,6 +531,9 @@ CommandNd Command() : {
 	Token tk = getToken(1);
 }
 {
+	"assert" x=Exp()
+    {return builder.makeAssert(x, getCoord(tk)) ;}
+| 
 	LOOKAHEAD(ObjectId() (":=" | ",") )
 	// Assignment
 	vl=NonemptyVarList() tk=":=" el=NonemptyExpList() 
@@ -470,7 +574,10 @@ CommandNd Command() : {
 	|
 		"with" x=ObjectId() y=OptGuard() "do" p=Block() ["with"] ")"
 		{return builder.makeWith( x, y, p, getCoord(tk)) ;}
+		
+	
 	)
+
 }
 
 ExpList NonemptyVarList() : {

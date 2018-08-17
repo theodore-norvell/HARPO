@@ -10,7 +10,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
     
     private def makeMethodTipe(params : List[ParamDeclNd]) : Option[MethodType]= {
         for( p <- params ) {
-            if ( p.ty.tipe == None )
+            if ( p.ty.tipe == None ) 
                 return None 
             else if( p.paramCategory != InParamCategory && p.paramCategory != OutParamCategory ) {
                 errorRecorder.reportFatal("Parameters must be 'in' or 'out'.", p.coord ) 

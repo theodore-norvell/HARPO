@@ -48,6 +48,9 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def namedTypeNd( name : NameNd, coord : Coord) =  NamedTypeNd( name )( coord )
 
+  // Adding ghost types
+  def ghostTypeNd( name : NameNd, coord : Coord) = NamedTypeNd(name)(coord)
+  
   def arrayTypeNd( baseTy : TypeNd, bound : ExpNd, coord : Coord ) =  ArrayTypeNd( baseTy, bound )( coord )
   
   def specializedTypeNd( baseTy : TypeNd, ga : GenericArgs, coord : Coord ) =  SpecializedTypeNd( baseTy, ga toList )( coord )
@@ -118,6 +121,20 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   = new MethodImplementationDeclNd(nameNd, paramList toList, guard, fstCommand, sndCommand
                                   )( nameNd.qn.last, coord )
   
+                                  
+                                  
+                                  
+                                  
+                                  
+  // Trying to make the assert command in builder class
+  // What I understood, parser is calling builder method and builder methods(respective) 
+  // are creating trees from/with case classes in AST
+  //  def makeWhile( guard : ExpNd, p : CommandNd, coord : Coord ) = new WhileCmdNd( guard, p )( coord) 
+                                  
+  
+  def makeAssert(assertion : ExpNd, coord : Coord) = new AssertCmdNd(assertion)(coord)
+  def makeAssume(assumption: ExpNd, coord : Coord) = new AssumeCmdNd(assumption)(coord)
+                                  
   class MethodImplementationList extends ArrayBuffer[MethodImplementationDeclNd]
   
   def methodImplementationList() = new MethodImplementationList

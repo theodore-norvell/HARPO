@@ -11,7 +11,7 @@ class Checker( val errorRecorder : ErrorRecorder ) {
     val symbolTableMaker = new SymbolTableMaker( errorRecorder ) 
     val typeCreator = new TypeCreator( errorRecorder )
     val classEnvironmentCreator = new ClassEnvironmentCreator( errorRecorder ) 
-    
+     
     private def addStandardDecls( decls : DeclList ) = {
         
         val boolTypeDeclNd = new PrimitiveTypeDeclNd(boolFQN)(noCoord)

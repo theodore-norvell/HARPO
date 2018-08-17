@@ -11,7 +11,7 @@ import checker.CheckerTypes._
 object ExpCodeGen {
   def apply(init : InitExpNd, name : String) : String = {
     val ecg = new ExpCodeGen()
-    ecg.build(init, name)
+    ecg.build(init, name) 
   }
   
   def apply(init : InitExpNd, name : String, cName : String) : String = {
@@ -85,8 +85,8 @@ class ExpCodeGen {
       
       case MemberExpNd( x : ExpNd, name : String ) => build(x) + "." + NM.mkName(name)
       
-      //TODO case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) =>""
-      
+      //case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => ""
+       
       case FetchExpNd( x : ExpNd) => build(x)
     
       case AsExpNd( x : ExpNd, _ ) => build(x)   // TODO insert type conversions?
