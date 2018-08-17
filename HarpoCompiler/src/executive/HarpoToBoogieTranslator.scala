@@ -21,8 +21,6 @@ class HarpoToBoogieTranslator {
     
     private var files = new ArrayBuffer[(String,String)] 
     
-    private var fileContents = new ArrayBuffer[String]
-    
     def addFile( fileName : String, fileText : String ) {
         files += ((fileName, fileText))
     }
@@ -61,17 +59,18 @@ class HarpoToBoogieTranslator {
                         } }
         }
         println("Master Declaration List : ")
-        if( masterDeclList != null && errorRecorder.getFatalCount() == 0) {
+        println( masterDeclList.format(80) )
+        if( errorRecorder.getFatalCount() == 0) {
              println("I reached here");
             val checker = new Checker( errorRecorder )
             try { checker.runChecker( masterDeclList ) }
             // The only exception that the checker should throw is a CompilerBailOutException.
             catch{ case e : CompilerBailOutException => () } }
-    
-      // The boogie code generator
-        if(masterDeclList != null && errorRecorder.getFatalCount() == 0) {
+        errorRecorder.printErrors( Console.out ) ;
+        // The boogie code generator
+        if( errorRecorder.getFatalCount() == 0) {
             val boogieCodeGen=new BoogieBackEnd(masterDeclList)
-           // boogieOutput=boogieCodeGen.getBoogieCode() 
+           boogieOutput= boogieCodeGen.getBoogieCode();
             }
     }
 }

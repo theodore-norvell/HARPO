@@ -19,4 +19,6 @@ trait ErrorReport {
     def getWarningText( i : Int ) : String
     
     def getWarningCoord( i : Int ) : AST.Coord 
+    
+    def printErrors( stream : java.io.PrintStream ) 
 }

@@ -10,6 +10,7 @@ import CheckerTypes._
  * corresponding declaration.  There are a few other types of nodes that
  * also need to be linked to their declarations.
  */
+
 private class Resolver( val errorRecorder : ErrorRecorder, symTab : SymbolTable )
 extends Contracts {
 

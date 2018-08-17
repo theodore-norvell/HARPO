@@ -51,3 +51,19 @@ function Isint64(int) returns (bool);
 axiom (forall x:int :: Isint64(x) <==> min64 <= x && x <= max64);
 
 // Prelude ends
+type className; 
+function dtype(Ref) returns (className); 
+const unique Math:className;
+const unique Math.c:Field int;
+procedure Math.t0(this:Ref)
+modifies Heap;
+{
+var Permission : PermissionType where (forall <a> r:Ref, f : Field a :: Permission[r,f] == 0.0  ) ; 
+var oldHeap, tmpHeap : HeapType ;
+
+Permission[this, Math.c] := 1.0;
+assert Permission[this, Math.c] == 1.0;
+Heap[this, Math.c] := 0;
+assert Permission[this,Math.c] > 0.0 ;
+assert Heap[this,Math.c] >9;
+}

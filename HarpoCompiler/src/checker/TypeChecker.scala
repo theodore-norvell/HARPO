@@ -11,7 +11,7 @@ class TypeChecker (
     //classEnv : ClassEnvironment,
     //symbolTable : SymbolTable,
     typeCreator : TypeCreator )  
-extends Contracts {
+extends Contracts { 
   
     def typeCheck( exp : ExpNd ) : Option[Type] = {
         val ty : Option[Type]
@@ -375,7 +375,7 @@ extends Contracts {
         val result = valueConvert( assumption )
         for( ty <- result.tipe )
             errorRecorder.checkFatal(ty==bool,
-                              "assumr expression must be boolean.",
+                              "assume expression must be boolean.",
                               assumption.coord) 
         result
     }

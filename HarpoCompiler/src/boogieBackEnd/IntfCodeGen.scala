@@ -1,11 +1,9 @@
 package boogieBackEnd
-
-object IntfCodeGen{
-  val icg= new IntfCodeGen();
-  icg.build();
-}
-class IntfCodeGen {
-    def build()={
-    
+import frontEnd.AST._
+private class IntfCodeGen {
+  
+    def getIntfCode(dlNd : DeclNd): String = {
+    return ""
   }
+  
 }

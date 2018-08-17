@@ -17,7 +17,7 @@ modifies Heap;
 requires dtype(this) <: Math;
 {
   var Permission : PermissionType where (forall <a> r:Ref, f : Field a :: Permission[r,f] == 0.0  );
-  Permission[this, Math.c] := 1.0; // Claim Specification
+  Permission[this, Math.c] := 1.0;
   assert Permission[ this, Math.c ] == 1.0 ;
   Heap[this,Math.c]:= 4;
   assert Permission[ this, Math.c ] > 0.0 ;

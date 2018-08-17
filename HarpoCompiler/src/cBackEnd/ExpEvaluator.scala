@@ -17,7 +17,7 @@ class ExpEvaluator(var cTable:HashMap[String,String]) {
           case "int8"|"int16"|"int32"|"int64"=> getIntValue(exp).toString()
           case "real32"|"real64" => getRealValue(exp).toString()
           case "bool" => getBoolValue(exp).toString()
-          case _ => ""
+          case _ => "" 
         }
       
       case NewInitExpNd( ty : TypeNd, args : List[ExpNd] )=>

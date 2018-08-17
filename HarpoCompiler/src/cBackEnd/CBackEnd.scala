@@ -25,7 +25,6 @@ private val codeGenerator = new CodeGenerator()
 def getCCode() : String = {
   val code = genHeaderCode + genDeclCode + genConcurentCode
   NameManager.clear()
-  println("Came to C BackEnd");
   return code
 }
     

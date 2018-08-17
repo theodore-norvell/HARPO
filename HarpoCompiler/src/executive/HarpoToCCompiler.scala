@@ -65,7 +65,9 @@ class HarpoToCCompiler {
       }
     }
     
-    //println(masterDeclList.pp)
+    println(masterDeclList.pp)
+    println(masterDeclList.decls)
+//  //var pr= new PrintDeclList(masterDeclList)
     
 
     // Run the checker

@@ -245,6 +245,12 @@ class AST{
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "WhileCmdNd", guard, body )
     }
+    
+    // Making updates of annotation Commands
+    case class AssertCmdNd(var assertion: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "AssertCmdNd", assertion )
+    }
 
     case class ForCmdNd( decl: ForDecl, repetitions: ExpNd, body: CommandNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
@@ -270,11 +276,9 @@ class AST{
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "WithCmdNd", lock, guard, command )
     }
-// Making updates of annotation Commands
-    case class AssertCmdNd(var assertion: ExpNd )( coord: AST.Coord )
-        extends CommandNd( coord ) {
-        override def pp = Pretty.func( "AssertCmdNd", assertion )
-    }
+    
+    
+
     
     case class AssumeCmdNd(var assumption: ExpNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
