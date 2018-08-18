@@ -97,7 +97,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
             for ( decl <- decls.decls ) createTypesFromDecl( decl )
         }
         
-        def createTypesFromDeclSet( decls : Set[DeclNd] ) {
+        def createTypesFromDeclSet( decls : List[DeclNd] ) {
             for ( decl <- decls ) createTypesFromDecl( decl )
         }
 

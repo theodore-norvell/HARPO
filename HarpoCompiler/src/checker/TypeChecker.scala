@@ -132,7 +132,7 @@ extends Contracts {
         for( decl <- decls.decls ) typeCheck( decl ) 
     }
     
-    def typeCheck( decls : Set[DeclNd] ) {
+    def typeCheck( decls : List[DeclNd] ) {
         for( decl <- decls ) typeCheck( decl ) 
     }
     

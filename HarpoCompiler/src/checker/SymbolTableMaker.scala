@@ -46,7 +46,7 @@ extends Contracts {
                 buildSTFromDecl( decl, containingFQN ) }
         }
 
-        def buildSTFromDeclSet( decls : Set[DeclNd], containingFQN : FQN ) {
+        def buildSTFromDeclSet( decls : List[DeclNd], containingFQN : FQN ) {
             //Console.out.println( s"Building from ${decls.declarations.size} declarations.")
             for ( decl <- decls ) {
                 //Console.out.println( s"  >decl is ${decl.name}.")

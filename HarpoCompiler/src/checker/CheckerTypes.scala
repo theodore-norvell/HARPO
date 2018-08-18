@@ -39,7 +39,7 @@ object CheckerTypes extends Contracts {
         
         def isClass = decl.isInstanceOf[AST.ClassDeclNd]
         
-        def directMembers : Set[AST.DeclNd] = decl.directMembers
+        def directMembers : List[AST.DeclNd] = decl.directMembers
         
         var ancstrs : Set[ClassIntfType] = null
         
@@ -70,7 +70,7 @@ object CheckerTypes extends Contracts {
             ancestors - this }
         
         def allMembers : Set[AST.DeclNd] = {
-            ancestors.map( _.directMembers ).fold( Set.empty )( _.union(_) ) 
+            ancestors.map( _.directMembers.toSet ).fold( Set.empty )( _.union(_) ) 
         }
     }
 

@@ -21,7 +21,7 @@ extends Contracts {
               resolveDecl( decl, containingFQN, containingDecl )
         }
 
-        def resolveDeclSet( decls : Set[DeclNd], containingFQN : FQN, containingDecl : Option[DeclNd] ) {
+        def resolveDeclSet( decls : List[DeclNd], containingFQN : FQN, containingDecl : Option[DeclNd] ) {
             for ( decl <- decls )
               resolveDecl( decl, containingFQN, containingDecl )
         }

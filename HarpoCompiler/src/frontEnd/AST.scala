@@ -28,7 +28,7 @@ class AST{
             declarations += d
         }
         
-        def decls = declarations.toSet
+        def decls = declarations.toList
 
         override def pp = Pretty.prettyList( declarations )
     }
@@ -73,7 +73,7 @@ class AST{
           members.findDeclaration( name )
         }
         
-        def directMembers : Set[DeclNd] = members.decls
+        def directMembers : List[DeclNd] = members.decls.toList
 
     }
 
