@@ -8,3 +8,5 @@
 *.cache-main
 /.recommenders/
 bin/
+.DS_Store
+
