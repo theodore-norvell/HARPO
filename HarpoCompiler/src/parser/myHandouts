@@ -1,0 +1,188 @@
+/*
+						case ConstDeclNd()=>{ // To Do
+						  
+						}
+
+						case ParamDeclNd() => { // To Do
+						}
+
+						case MethodDeclNd() => { // To Do
+						}
+
+						case ThreadDeclNd() => {
+						}
+
+						case LocalDeclNd() => { // To Do
+						}
+						case GenericParamDeclNd() => { // To Do
+						}
+
+						// PrimitiveTypeDeclNd is used in the symbol table so that primitive types map to something.
+						case PrimitiveTypeDeclNd() => { // TO Do
+						}
+
+						// The variable in a for loop, co loop, or array initialization.
+						// Invariant: The parent of a ForVarDecl must be a ForDecl.
+						case ForVarDecl()=>{// To Do
+						}
+
+						// A for loop, co loop, or array initialization.
+						// These get their own FQN and so have their own "dummy" declaration
+						// The name is some string that can not conflict with a user defined name
+						case ForDecl() => {
+						}
+
+						// Method implementations are kind of odd as they are both declarations
+						// and references to other declarations.
+						case MethodImplementationDeclNd() => {
+
+						}
+						/****************/
+						/** Statements **/
+						/****************/
+
+						case SkipCmdNd() => {
+
+						}
+
+						case SeqCommandNd() => {
+
+						}
+
+						case LocalDeclCmdNd () => {
+
+						}
+
+						case AssignmentCmdNd() => {
+						}
+
+						case CallCmdNd() =>{
+
+						}
+
+						case IfCmdNd() => {
+						}
+
+						case WhileCmdNd() => {
+
+						}
+
+						case ForCmdNd() => {
+						}
+
+						case CoForCmdNd() => {
+						}
+
+						case CoCmdNd() => {
+						}
+
+						case AcceptCmdNd() => {
+						}
+
+						case WithCmdNd() => {
+						}
+						// Making commands for BoogieBackend
+						case AssertCmdNd() => {
+						}
+						case AssumeCmdNd() => {
+
+						}
+
+						/************/
+						/** Types **/
+						/**********/
+						// TODO override toString for all types.
+
+						case NoTypeNd() => {
+						}
+
+						case TopTypeNd() => {
+						}
+
+						case NamedTypeNd() => {
+
+						}
+
+						case ArrayTypeNd() =>{
+
+						}
+
+						/*******************/
+						/** Expressions  **/
+						/*****************/
+
+						case NoExpNd() => {
+
+						}
+
+						case IntLiteralExpNd() => {
+
+						}
+
+						case FloatLiteralExpNd() => {
+
+						}
+
+						case NameExpNd() => {
+
+						}
+
+						case BinaryOpExpNd() => {
+						}
+
+						case UnaryOpExpNd() => {
+						}
+
+						case AsExpNd() => {
+						}
+
+						case MemberExpNd() => {
+						}
+
+						case ChainExpNd() => {
+						}
+
+						case FetchExpNd() => {
+						}
+
+						/*********************************/
+						/** Initialization Expressions  **/
+						/*********************************/
+
+						case ValueInitExpNd() => {
+						}
+
+						case NewInitExpNd() => {
+						}
+
+						case ArrayInitExpNd() => {
+						}
+
+						case IfInitExpNd() => {
+						}
+
+						case WidenInitExpNd() => {
+						}
+						/************/
+						/** Names  **/
+						/************/
+
+						case NameNd() => {
+						}
+
+						/*********************/
+						/** Accessibility   **/
+						/*********************/
+
+
+						/**************************/
+						/** Parameter Categories **/
+						/**************************/
+
+
+						/*******************/
+						/** Operators    **/
+						/*****************/
+						}
+*/
+

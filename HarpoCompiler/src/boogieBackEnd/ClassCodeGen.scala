@@ -37,8 +37,6 @@ private class ClassCodeGen {
     val result: String = cmd match {
       case AssertCmdNd(assertion) => {
         val exp= new ExpCodeGen().getExpCode(assertion)
-        
-
         val expCode = new ExpCodeGen().getExpCode(assertion)
         val parts= expCode.split(" ")
         val per = "\nassert Permission[this," + parts(0) +"] > 0.0 ;"

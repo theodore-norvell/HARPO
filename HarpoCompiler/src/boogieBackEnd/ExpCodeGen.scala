@@ -56,9 +56,6 @@ class ExpCodeGen() {
       case SubOp => "-"
       case MulOp => "*"
       case SlashDivOp => "/"
-      //case WordDivOp()=>
-      //case RemOp()=>
-      //case IndexOp()=>
       case _ => op.toString()
     }
     result

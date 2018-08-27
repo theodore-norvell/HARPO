@@ -12,4 +12,4 @@ HashMap(checker.CheckerTypes.int8->"int",
 		checker.CheckerTypes.real32->"real",
     checker.CheckerTypes.real64->"real",
 		checker.CheckerTypes.bool->"bool")
-}
+} 

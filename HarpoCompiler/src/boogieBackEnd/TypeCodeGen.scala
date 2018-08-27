@@ -31,7 +31,7 @@ object TypeCodeGen {
         else {
             unreachable("Bad base type in TypeCodeGen." ) ; }
     
-    return codeType
+    return codeType 
   }
     
   private def extractBaseType(t : Type) : Type = {
