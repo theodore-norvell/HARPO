@@ -6,7 +6,8 @@ import frontEnd.ErrorRecorder
 import CheckerTypes._
 import contracts.Contracts
 import scala.collection.mutable 
-
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 
 class SymbolTableMaker( errorRecorder : ErrorRecorder )
 extends Contracts {
@@ -64,7 +65,7 @@ extends Contracts {
                 case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
                     buildSTFromInitExp( init, containingFQN ) 
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) => ()
-                case MethodDeclNd( _, params) =>
+                case MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
                     for( p <- params ) buildSTFromDecl( p, fqn ) 
                 case ThreadDeclNd( block : CommandNd) =>
                     buildSTfromCommand( block, fqn )
@@ -138,6 +139,12 @@ extends Contracts {
                     
                 //---- Adding assert case, i think it is skip in case of C
                 case AssertCmdNd(assertion)=> ()
+                
+                case AssumeCmdNd(assertion)=> ()
+                
+                case PreCndNd(assertion)=> ()
+//                case PostCmdNd(assertion)=> ()
+                
                     
                 case ForCmdNd( forDecl, repetitions, body ) => {
                     buildSTFromDecl( forDecl, containingFQN )

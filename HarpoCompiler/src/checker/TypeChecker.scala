@@ -5,6 +5,8 @@ import frontEnd.AST._
 import frontEnd.QN
 import frontEnd.ErrorRecorder
 import CheckerTypes._
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 
 class TypeChecker (
     errorRecorder : ErrorRecorder, 
@@ -43,7 +45,7 @@ extends Contracts {
                     case ParamDeclNd( ty, cat) =>
                         check( ty.tipe != None )
                         ty.tipe
-                    case node@MethodDeclNd( acc, params ) =>
+                    case node@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd] ) =>
                         check( node.tipe != None )
                         node.tipe
                     case _ => {
@@ -181,7 +183,7 @@ extends Contracts {
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
                 
-            case decl@MethodDeclNd( acc, params ) =>
+            case decl@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd] ) =>
                 for( pdn <- params ) typeCheck( pdn )
                 // TODO anything else to check?
                 // TODO set the .tipe field.
@@ -630,7 +632,7 @@ extends Contracts {
                         case Some( ObjDeclNd( isConst, acc, ty, init) ) =>
                             // TODO check accessibility
                             ty.tipe
-                        case Some( memberDecl@MethodDeclNd( acc, params) ) =>
+                        case Some( memberDecl@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd]) ) =>
                             // TODO check accessibility
                             memberDecl.tipe
                         case Some( ParamDeclNd( ty, paramCategory) ) =>

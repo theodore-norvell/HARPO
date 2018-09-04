@@ -49,11 +49,11 @@ class ClassCodeGen {
         
         for (mem <- clsNd.asInstanceOf[ClassLike].directMembers) {
           mem match {
-            case MethodDeclNd(acc : Access, params : List[ParamDeclNd]) =>
-              procCode += MethCodeGen(mem, clsNd.name) + "\n"
-              constructorCode += "InitProcStruct(&(" + NM.mkClassParaName(clsNd.name) + "->" + NM.mkName(mem.name) + ".ps));\n"
-              nameTbl(mem.name) = NM.mkMethodName(mem.name, clsNd.name)
-              NM.putParamMap(mem.name, clsNd.name, params)
+//            case MethodDeclNd(acc : Access, params : List[ParamDeclNd]) =>
+//              procCode += MethCodeGen(mem, clsNd.name) + "\n"
+//              constructorCode += "InitProcStruct(&(" + NM.mkClassParaName(clsNd.name) + "->" + NM.mkName(mem.name) + ".ps));\n"
+//              nameTbl(mem.name) = NM.mkMethodName(mem.name, clsNd.name)
+//              NM.putParamMap(mem.name, clsNd.name, params)
   
             case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
               val objCode = ObjCodeGen(mem)

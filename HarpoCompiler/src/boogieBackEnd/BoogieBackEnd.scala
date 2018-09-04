@@ -185,8 +185,6 @@
 						/*****************/
 						}
 */
-
-
 package boogieBackEnd
 import java.net.URL
 import scala.io.Source
@@ -223,12 +221,12 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 						for(dlNd : DeclNd <- dl.decls) {
 						dlNd match{          
 						case ClassDeclNd() => {
-						  val classCode=new ClassCodeGen();
-						  boogieCode += classCode.getClassCode(dlNd)
+						  val classCode=new ClassCodeGen(dlNd);
+						  boogieCode += classCode.getClassCode()
 						}
 						case IntfDeclNd() => {
-						  val intfCode=new IntfCodeGen();
-						  boogieCode += intfCode.getIntfCode(dlNd)
+						  val intfCode=new IntfCodeGen(dlNd);
+						  boogieCode += intfCode.getIntfCode()
 						}
 						case _ => val code = "No Declarations Found"
 						}

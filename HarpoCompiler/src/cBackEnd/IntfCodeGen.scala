@@ -1,11 +1,14 @@
 package cBackEnd
 
 import frontEnd._
+
 import frontEnd.AST._
 import java.io._
 import checker.Checker
 import checker.CheckerTypes._
 import scala.collection.mutable.HashMap
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 
 /**
  * @author nhacnguyen
@@ -37,7 +40,7 @@ class IntfCodeGen {
         
         for (mem <- intfNd.asInstanceOf[ClassLike].directMembers) {
           mem match {
-            case MethodDeclNd(acc : Access, params : List[ParamDeclNd]) =>
+            case MethodDeclNd(acc : Access, params : List[ParamDeclNd],  preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
               procCode = procCode + MethCodeGen(mem, intfNd.name) + "\n"
               constructorCode += "InitProcStruct(&(" + NM.mkClassParaName(intfNd.name) + "->" + NM.mkName(mem.name) + ".ps));\n"
               intfCode += NM.mkMethodName(mem.name, intfNd.name) + "* " + NM.mkName(mem.name) + ";\n"

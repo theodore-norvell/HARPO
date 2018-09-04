@@ -1,6 +1,8 @@
 (class Math() 
-	obj c: Int32:=0; 
+	obj c: Int32:=0;
+	public proc add()
+	pre 2>3 
 	(thread(*t0*) 
-		assert c>9 
+		assume c>9
 	thread) 
 class)

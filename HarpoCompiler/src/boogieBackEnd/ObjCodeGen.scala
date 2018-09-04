@@ -5,7 +5,7 @@ private class ObjCodeGen(dlNd: DeclNd) {
   def getInitObjCode(isConst: Boolean, acc: Access, ty: TypeNd, exp: InitExpNd, fqn: String): String = {
     val objName =  fqn
     val objType: String = TypeCodeGen(ty)
-    val objInit: String = new ExpCodeGen().getExpCode(exp, objName)
+    val objInit: String = new ExpCodeGen().getExpCode(exp, objName) //pass buffer to childs , append
     var objCode=""
     if(exp!=null){
     objCode = "\nPermission[this, " + objName + "] := 1.0;"

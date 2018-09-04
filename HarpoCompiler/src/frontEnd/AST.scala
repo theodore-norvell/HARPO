@@ -127,19 +127,55 @@ class AST{
         override def pp = Pretty.func( "ParamDeclNd[" :: name :: "]", ty, paramCategory.toString )
     }
 
-    case class MethodDeclNd( acc: Access, params: List[ ParamDeclNd ] )( name: String, coord: AST.Coord )
-        extends DeclNd( name, coord ) {
+//    case class MethodDeclNd( acc: Access, params: List[ ParamDeclNd ])( name: String, coord: AST.Coord )
+//        extends DeclNd( name, coord ){
+//        var tipe: Option[ MethodType ] = None;
+//        override def pp = {
+//            val ppp = Document.nest( 3, "MethodDeclNd(" :: acc.toString
+//                :: ", " :: params :: Document.text( ")" ) )
+//            tipe match {
+//                case Some( ty ) => Document.group( ppp :/: ": " :: ty.pp )
+//                case None => Document.group( ppp :/: ": NONE" )
+//            }
+//        }
+//    }
+    case class MethodDeclNd( acc: Access, params: List[ ParamDeclNd ], preCnds: List[PreCndNd], postCnds: List[PostCndNd] )( name: String, coord: AST.Coord )
+        extends DeclNd(name,coord) {
         var tipe: Option[ MethodType ] = None;
         override def pp = {
-            val ppp = Document.nest( 3, "MethodDeclNd(" :: acc.toString
-                :: ", " :: params :: Document.text( ")" ) )
+            val ppp = Document.nest( 3, "MethodwithSpecDeclNd(" :: acc.toString
+                :: ", " :: params :: preCnds :: postCnds :: Document.text( ")" ) )// after the )
             tipe match {
                 case Some( ty ) => Document.group( ppp :/: ": " :: ty.pp )
                 case None => Document.group( ppp :/: ": NONE" )
             }
         }
     }
+    
+    case class PreCndNd(var condition: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "PreCndNd", condition )
+    }
+    case class PostCndNd(var condition: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "PostCndNd", condition )
+    }
+//    case class GivesPerSpecNd(var condition: ExpNd )( coord: AST.Coord )
+//        extends CommandNd( coord ) {
+//        override def pp = Pretty.func( "GivesPerSpecNd", condition )
+//    }
+//    case class TakesPerSpecNd(var condition: ExpNd )( coord: AST.Coord )
+//    extends CommandNd( coord ) {
+//    override def pp = Pretty.func( "TakesPerSpecNd", condition )
+//    }
+//    case class BorrowsPerSpecNd(var condition: ExpNd)(coord: AST.Coord)
+//    extends CommandNd(coord){
+//    override def pp = Pretty.func("BorrowsPerSpecNd", condition)
+//    }
+//    
 
+    
+    
     case class ThreadDeclNd( block: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]", block )
@@ -245,12 +281,6 @@ class AST{
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "WhileCmdNd", guard, body )
     }
-    
-    // Making updates of annotation Commands
-    case class AssertCmdNd(var assertion: ExpNd )( coord: AST.Coord )
-        extends CommandNd( coord ) {
-        override def pp = Pretty.func( "AssertCmdNd", assertion )
-    }
 
     case class ForCmdNd( decl: ForDecl, repetitions: ExpNd, body: CommandNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
@@ -278,21 +308,22 @@ class AST{
     }
     
     
-
+    
+    /************************/
+    /***** Annotations *****/
+    /***********************/
+    
+    // Making updates of annotation Commands
+    case class AssertCmdNd(var assertion: ExpNd )( coord: AST.Coord )
+        extends CommandNd( coord ) {
+        override def pp = Pretty.func( "AssertCmdNd", assertion )
+    }
     
     case class AssumeCmdNd(var assumption: ExpNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "AssumeCmdNd", assumption )
     }
-    
-    
-    
-    
-//    case class WhileCmdNd( var guard: ExpNd, body: CommandNd )( coord: AST.Coord )
-//        extends CommandNd( coord ) {
-//        override def pp = Pretty.func( "WhileCmdNd", guard, body )
-//    }
-
+        
     /************/
     /** Types **/
     /**********/

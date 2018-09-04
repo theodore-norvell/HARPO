@@ -1,9 +1,9 @@
 package boogieBackEnd
 import frontEnd.AST
 import frontEnd.AST._
-private class ClassCodeGen {
+private class ClassCodeGen(val dlNd: DeclNd) {
 
-  def getClassCode(dlNd: DeclNd): String = {
+  def getClassCode(): String = {
     val objName="";
     var boogieClassCode = ""
     var objDecls = "";

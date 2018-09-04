@@ -1,11 +1,13 @@
 package cBackEnd
 
 import frontEnd._
+
 import frontEnd.AST._
 import java.io._
 import checker.Checker
 import checker.CheckerTypes._
-
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 /**
  * @author nhacnguyen
  */
@@ -20,7 +22,7 @@ class MethCodeGen {
   def build(methNd : DeclNd, clsName : String) : String = {
     var code : String = ""
     methNd match {
-      case MethodDeclNd( acc : Access, params : List[ParamDeclNd]) =>{
+      case MethodDeclNd( acc : Access, params : List[ParamDeclNd],preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>{
         val NM = NameManager
         val methName = NM.mkMethodName(methNd.name, clsName)
         code = "typedef struct " + methName + "{\nProcStruct ps;\n"

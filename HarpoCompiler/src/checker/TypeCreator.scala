@@ -128,7 +128,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                     promoteToLoc(ty)
                     check( ty.tipe != None)
                     
-                case declNd@MethodDeclNd( _, params)  =>  
+                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd])  =>  
                   for( p <- params ) createTypesFromDecl( p ) 
                   declNd.tipe = makeMethodTipe(params)
                     

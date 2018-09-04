@@ -5,6 +5,8 @@ import frontEnd.FQN
 import frontEnd.ErrorRecorder
 import contracts.Contracts
 import CheckerTypes._
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 
 /* The goal of the resolver is to hunt down all NameNds and link them to the
  * corresponding declaration.  There are a few other types of nodes that
@@ -42,7 +44,7 @@ extends Contracts {
                     resolveInitExp( init, containingFQN, containingDecl )
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
                     resolveType( ty, containingFQN, containingDecl )
-                case MethodDeclNd( acc : Access, params : List[ParamDeclNd]) =>
+                case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
                     for( pdn <- params ) resolveDecl( pdn, fqn, Some(decl))
                 case ThreadDeclNd( block : CommandNd) =>
                     resolveCommand( block, fqn, Some(decl) )
@@ -129,49 +131,69 @@ extends Contracts {
 
             command match {
                 case SkipCmdNd() => {}
+                
                 case SeqCommandNd( fstCmd, sndCmd ) =>
                     resolveCommand( fstCmd, containingFQN, containingDecl )
                     resolveCommand( sndCmd, containingFQN, containingDecl )
+                    
                 case LocalDeclCmdNd( decl ) =>
                     resolveDecl( decl, containingFQN, containingDecl )
+                    
                 case AssignmentCmdNd( lhs, rhs ) =>
                     for( exp <- lhs ) resolveExp( exp, containingFQN, containingDecl )
                     for( exp <- rhs ) resolveExp( exp, containingFQN, containingDecl )
+                    
                 case CallCmdNd( method, argList ) =>
                     resolveExp( method, containingFQN, containingDecl )
                     for( arg <- argList ) resolveExp( arg, containingFQN, containingDecl )
+                    
                 case IfCmdNd( guard, thenCmd, elseCmd ) =>
                     resolveExp( guard, containingFQN, containingDecl )
                     resolveCommand( thenCmd, containingFQN, containingDecl )
                     resolveCommand( elseCmd, containingFQN, containingDecl )
+                    
                 case WhileCmdNd( guard, body ) =>
                     resolveExp( guard, containingFQN, containingDecl )
-                    resolveCommand( body, containingFQN, containingDecl )
-                
-                // --- case for AssertCmdNd
-                case AssertCmdNd (assertion) =>
-                    resolveExp(assertion,containingFQN, containingDecl)
-                    
+                    resolveCommand( body, containingFQN, containingDecl )  
                     
                 case ForCmdNd( decl, repetitions, body ) =>
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )
                     resolveExp(repetitions, containingFQN, containingDecl )
                     resolveCommand( body, forsFQN, Some( decl ) )
+                    
                 case CoForCmdNd( decl, repetitions, body ) =>
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )
                     resolveExp(repetitions, containingFQN, containingDecl )
                     resolveCommand( body, forsFQN, Some(decl)  )
+                    
                 case CoCmdNd( fstCmd, sndCmd ) =>
                     resolveCommand( fstCmd, containingFQN, containingDecl )
                     resolveCommand( sndCmd, containingFQN, containingDecl )
+                    
                 case AcceptCmdNd( methodImplementationList ) =>
                     for ( methImpl <- methodImplementationList ) 
                         resolveDecl( methImpl, containingFQN, containingDecl )
-                    
+                 
                 case WithCmdNd( lock, guard, command ) =>
                     resolveCommand( command, containingFQN, containingDecl )
+                    
+                // --- case for AssertCmdNd
+                case AssertCmdNd (assertion) =>
+                resolveExp(assertion,containingFQN, containingDecl)
+                
+                // --- case for AssumeCmdNd
+                case AssumeCmdNd (assumption) =>
+                    resolveExp(assumption,containingFQN, containingDecl)
+                    
+                // --- case for PreCmdNd
+                case PreCndNd (condition) =>
+                    resolveExp(condition,containingFQN, containingDecl)
+//                    
+//                // --- case for PostCmdNd
+//                case PostCmdNd (condition) =>
+//                    resolveExp(condition,containingFQN, containingDecl)
             }
         }
         

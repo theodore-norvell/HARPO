@@ -26,11 +26,6 @@ import cBackEnd.CFG.StartCfgNd
 class BackEndTests extends  TestsBase {
   val out = new OutputStreamWriter(System.out)
   
-
-  //  (thread ((u,v):=( u<=v<v ,4) (u,v):=4,8) thread)
-// proc deposit(in value : int)
-// proc fetch(out value : int)
-  
   behavior of "The C back end" ;
   
   it should "generate code for Accept statement" in {

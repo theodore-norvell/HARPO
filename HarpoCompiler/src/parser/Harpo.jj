@@ -10,17 +10,13 @@ This file is importing packages written in Scala
 	- 	frontEnd.Builder ;
 			Create a Builder type object and initialize using setBuilder method
 	-	frontEnd.AST.* ;
-			
 	-	frontEnd.Builder.* ;
-
 	List of Methods:
 		- setBuilder() -  called by builder
 		- setFileName() - 
 		- getCoord(with token)
 		- getCoord(with Integer-token)
-
 	TOKEN_MGR_DECL
-
 	SPECIAL TOKENS - for single line and multiline comment
 
 	SKIP - escape sequence and space character
@@ -171,8 +167,8 @@ TOKEN :{    "("
 TOKEN :{
 	"accept"
 | 	"as"
-|   "assert" // Verification
-|	"assume" // Verification
+|   "assert" 
+|	"assume" 
 | 	"borrows" // Verification|	"class"
 |	"claim" // Verification
 |	"co"
@@ -192,8 +188,8 @@ TOKEN :{
 |	"new"
 |   "obj"
 |	"out"
-|	"pre" // Verification
-|	"post" // Verification
+|	"pre" 
+|	"post"
 |   "private"
 |	"proc"
 |   "public"
@@ -365,7 +361,12 @@ MethodDeclNd Method() : {
     ParamDeclNd param ; 
     String name ;
     ParamList paramList = builder.paramList() ;
-    Token tk ;
+    Token tk;
+    ExpNd x;
+    PreCndNd preCnd;
+    PreCndList preCndList = builder.preCndList();
+    PostCndNd postCnd;
+    PostCndList postCndList = builder.postCndList();
 }
 {
 	(acc=Access() )?
@@ -375,8 +376,20 @@ MethodDeclNd Method() : {
 	      ([","] param=MParam() { builder.add( paramList, param ) ; } )*
 	    )?
 	")"
-	// TODO specification annotations.
-	{return builder.methodDeclNd(name, acc, paramList, getCoord(tk)) ; }
+	// TODO specification annotations. 
+	(
+		preCnd = PreCond() { builder.add(preCndList,preCnd);}
+	|
+		postCnd = PostCond() { builder.add(postCndList,postCnd);}
+//	|
+//		"gives" x=Exp()
+//	|
+//		"takes" x=Exp()
+//	| 
+//		"borrows" x=Exp()
+	)*
+	
+	{return builder.methodDeclNd(name, acc, paramList,preCndList,postCndList, getCoord(tk)) ; }
 }
 
 ThreadDeclNd Thread() : {
@@ -438,7 +451,27 @@ ParamDeclNd Param(ParamCategory cat) : {
 	name=Name() ":" ty=Type() 
 	{return builder.paramDeclNd( name, ty, cat, getCoord(tk));}
 }
- 
+
+PreCndNd PreCond() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"pre" x=Exp()
+{return builder.makePre(x, getCoord(tk)) ;}
+}
+
+PostCndNd PostCond() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"post" x=Exp()
+{return builder.makePost(x, getCoord(tk)) ;}
+}
+
 
 /************/
 /** Types **/
@@ -533,6 +566,9 @@ CommandNd Command() : {
 {
 	"assert" x=Exp()
     {return builder.makeAssert(x, getCoord(tk)) ;}
+| 
+    "assume" x=Exp()
+    {return builder.makeAssume(x, getCoord(tk)) ;}
 | 
 	LOOKAHEAD(ObjectId() (":=" | ",") )
 	// Assignment

@@ -64,6 +64,4 @@ var oldHeap, tmpHeap : HeapType ;
 Permission[this, Math.c] := 1.0;
 assert Permission[this, Math.c] == 1.0;
 Heap[this, Math.c] := 0;
-assert Permission[this,Math.c] > 0.0 ;
-assert Heap[this,Math.c] >9;
 }

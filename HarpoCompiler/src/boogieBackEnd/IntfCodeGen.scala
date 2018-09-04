@@ -1,8 +1,8 @@
 package boogieBackEnd
 import frontEnd.AST._
-private class IntfCodeGen {
+private class IntfCodeGen(val dlNd: DeclNd) {
   
-    def getIntfCode(dlNd : DeclNd): String = {
+    def getIntfCode(): String = {
     return ""
   }
   

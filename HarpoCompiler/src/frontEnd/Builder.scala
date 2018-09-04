@@ -24,9 +24,34 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def paramList() =  new ParamList() ;
   
   def add( l : ParamList,  d : ParamDeclNd ) { l += d }
-   
-  def methodDeclNd( name : String, acc : Access, paramList : ParamList, coord : Coord )
-   =  MethodDeclNd( acc, paramList.toList )( name, coord )
+  
+  // Method Specification annotations
+  // Pre Condition Specification
+  class PreCndList extends ArrayBuffer[PreCndNd]
+
+  def preCndList() = new PreCndList()
+
+  def add(l: PreCndList, d: PreCndNd){l+=d}
+  
+  def makePre(condition: ExpNd, coord : Coord) = new PreCndNd(condition)(coord)
+  
+  // Pre Condition Specification
+  class PostCndList extends ArrayBuffer[PostCndNd]
+  
+  def postCndList() = new PostCndList()
+
+  def add(l: PostCndList, d: PostCndNd){l+=d;}
+  
+  def makePost(condition: ExpNd, coord : Coord) = new PostCndNd(condition)(coord)
+ 
+  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, coord : Coord ) =
+    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList )( name, coord )}
+
+//  def makeGives(condition: ExpNd, coord : Coord) = new GivesPerSpecNd(condition)(coord)
+//  
+//  def makeTakes(condition: ExpNd, coord : Coord) = new TakesPerSpecNd(condition)(coord)
+//  
+//  def makeBorrows(condition: ExpNd, coord : Coord) = new BorrowsPerSpecNd(condition)(coord)
   
   var next = 0 
   
@@ -128,11 +153,10 @@ class Builder( val errorRecorder : ErrorRecorder ) {
                                   
   // Trying to make the assert command in builder class
   // What I understood, parser is calling builder method and builder methods(respective) 
-  // are creating trees from/with case classes in AST
-  //  def makeWhile( guard : ExpNd, p : CommandNd, coord : Coord ) = new WhileCmdNd( guard, p )( coord) 
-                                  
+  // are creating trees from/with case classes in AST                          
   
   def makeAssert(assertion : ExpNd, coord : Coord) = new AssertCmdNd(assertion)(coord)
+  
   def makeAssume(assumption: ExpNd, coord : Coord) = new AssumeCmdNd(assumption)(coord)
                                   
   class MethodImplementationList extends ArrayBuffer[MethodImplementationDeclNd]
