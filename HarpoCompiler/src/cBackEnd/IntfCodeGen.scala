@@ -40,7 +40,7 @@ class IntfCodeGen {
         
         for (mem <- intfNd.asInstanceOf[ClassLike].directMembers) {
           mem match {
-            case MethodDeclNd(acc : Access, params : List[ParamDeclNd],  preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
+            case MethodDeclNd(acc : Access, params : List[ParamDeclNd],  preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>
               procCode = procCode + MethCodeGen(mem, intfNd.name) + "\n"
               constructorCode += "InitProcStruct(&(" + NM.mkClassParaName(intfNd.name) + "->" + NM.mkName(mem.name) + ".ps));\n"
               intfCode += NM.mkMethodName(mem.name, intfNd.name) + "* " + NM.mkName(mem.name) + ";\n"

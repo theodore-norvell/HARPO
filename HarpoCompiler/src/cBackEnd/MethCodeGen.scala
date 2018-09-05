@@ -22,7 +22,7 @@ class MethCodeGen {
   def build(methNd : DeclNd, clsName : String) : String = {
     var code : String = ""
     methNd match {
-      case MethodDeclNd( acc : Access, params : List[ParamDeclNd],preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>{
+      case MethodDeclNd( acc : Access, params : List[ParamDeclNd],preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>{
         val NM = NameManager
         val methName = NM.mkMethodName(methNd.name, clsName)
         code = "typedef struct " + methName + "{\nProcStruct ps;\n"

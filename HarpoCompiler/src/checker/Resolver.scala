@@ -44,8 +44,13 @@ extends Contracts {
                     resolveInitExp( init, containingFQN, containingDecl )
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
                     resolveType( ty, containingFQN, containingDecl )
-                case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
+                case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>
                     for( pdn <- params ) resolveDecl( pdn, fqn, Some(decl))
+                    for( precn <- preCndList ) resolveMethodSpec( precn, fqn, Some(decl))
+                    for( postcn <- postCndList ) resolveMethodSpec( postcn, fqn, Some(decl))
+                    for( givesper <- postCndList ) resolveMethodSpec( givesper, fqn, Some(decl))
+                    for( takesper <- postCndList ) resolveMethodSpec( takesper, fqn, Some(decl))
+                    for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
                 case ThreadDeclNd( block : CommandNd) =>
                     resolveCommand( block, fqn, Some(decl) )
                 case LocalDeclNd( isConst, ty, init, stmt ) =>
@@ -125,6 +130,35 @@ extends Contracts {
             }
         }
 
+        def resolveMethodSpec( spec : MethodSpecNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
+            check(  containingDecl == None && containingFQN.names.length == 0 
+                ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
+
+            spec match {
+                // --- case for PreCndNd
+                case PreCndNd (condition) =>
+                    resolveExp(condition,containingFQN, containingDecl)
+                    
+                // --- case for PostCndNd
+                case PostCndNd (condition) =>
+                    resolveExp(condition,containingFQN, containingDecl)
+                
+                // --- case for GivesPerNd
+                case GivesPerNd (objId) =>
+                    resolveExp(objId,containingFQN, containingDecl)
+                
+                // --- case for TakesPerNd
+                case TakesPerNd (objId) =>
+                    resolveExp(objId,containingFQN, containingDecl)
+                
+                // --- case for BorrowsPerNd
+                case BorrowsPerNd (objId) =>
+                    resolveExp(objId,containingFQN, containingDecl)
+                
+                case _ => ()
+            }
+        }
+
         def resolveCommand( command : CommandNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
             check(  containingDecl == None && containingFQN.names.length == 0 
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
@@ -181,19 +215,11 @@ extends Contracts {
                     
                 // --- case for AssertCmdNd
                 case AssertCmdNd (assertion) =>
-                resolveExp(assertion,containingFQN, containingDecl)
+                    resolveExp(assertion,containingFQN, containingDecl)
                 
                 // --- case for AssumeCmdNd
                 case AssumeCmdNd (assumption) =>
                     resolveExp(assumption,containingFQN, containingDecl)
-                    
-                // --- case for PreCmdNd
-                case PreCndNd (condition) =>
-                    resolveExp(condition,containingFQN, containingDecl)
-//                    
-//                // --- case for PostCmdNd
-//                case PostCmdNd (condition) =>
-//                    resolveExp(condition,containingFQN, containingDecl)
             }
         }
         

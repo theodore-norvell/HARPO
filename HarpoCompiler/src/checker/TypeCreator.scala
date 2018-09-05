@@ -5,7 +5,8 @@ import frontEnd.FQN
 import frontEnd.ErrorRecorder
 import CheckerTypes._
 import contracts.Contracts._
-
+import frontEnd.AST.PreCndNd;
+import frontEnd.AST.PostCndNd;
 class TypeCreator( errorRecorder : ErrorRecorder ) {
     
     private def makeMethodTipe(params : List[ParamDeclNd]) : Option[MethodType]= {
@@ -128,7 +129,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                     promoteToLoc(ty)
                     check( ty.tipe != None)
                     
-                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd])  =>  
+                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd])  =>  
                   for( p <- params ) createTypesFromDecl( p ) 
                   declNd.tipe = makeMethodTipe(params)
                     

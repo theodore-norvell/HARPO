@@ -169,7 +169,7 @@ TOKEN :{
 | 	"as"
 |   "assert" 
 |	"assume" 
-| 	"borrows" // Verification|	"class"
+| 	"borrows"|	"class"
 |	"claim" // Verification
 |	"co"
 |   "const"
@@ -178,7 +178,7 @@ TOKEN :{
 |	"else"
 |   "extends"
 |	"for"
-|	"gives" // Verification
+|	"gives"
 |	"ghost" // Verification
 |	"if"
 |   "implements"
@@ -193,7 +193,7 @@ TOKEN :{
 |   "private"
 |	"proc"
 |   "public"
-|	"takes" // Verification
+|	"takes"
 |	"then"
 |	"thread"
 |   "type"
@@ -367,6 +367,12 @@ MethodDeclNd Method() : {
     PreCndList preCndList = builder.preCndList();
     PostCndNd postCnd;
     PostCndList postCndList = builder.postCndList();
+    GivesPerNd givesPer;
+    GivesPerList givesPerList = builder.givesPerList();
+    TakesPerNd takesPer;
+    TakesPerList takesPerList = builder.takesPerList();
+    BorrowsPerNd borrowsPer;
+    BorrowsPerList borrowsPerList = builder.borrowsPerList();
 }
 {
 	(acc=Access() )?
@@ -381,15 +387,15 @@ MethodDeclNd Method() : {
 		preCnd = PreCond() { builder.add(preCndList,preCnd);}
 	|
 		postCnd = PostCond() { builder.add(postCndList,postCnd);}
-//	|
-//		"gives" x=Exp()
-//	|
-//		"takes" x=Exp()
-//	| 
-//		"borrows" x=Exp()
+	|
+		givesPer = GivesPer() { builder.add(givesPerList,givesPer);}
+	|
+		takesPer = TakesPer() { builder.add(takesPerList,takesPer);}
+	| 
+		borrowsPer = BorrowsPer() { builder.add(borrowsPerList, borrowsPer);}
 	)*
 	
-	{return builder.methodDeclNd(name, acc, paramList,preCndList,postCndList, getCoord(tk)) ; }
+	{return builder.methodDeclNd(name, acc, paramList,preCndList,postCndList,givesPerList,takesPerList,borrowsPerList, getCoord(tk)) ; }
 }
 
 ThreadDeclNd Thread() : {
@@ -472,6 +478,35 @@ PostCndNd PostCond() : {
 {return builder.makePost(x, getCoord(tk)) ;}
 }
 
+GivesPerNd GivesPer() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"gives" x=ObjectId()
+{return builder.makeGives(x, getCoord(tk)) ;}
+}
+
+TakesPerNd TakesPer() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"takes" x=ObjectId()
+{return builder.makeTakes(x, getCoord(tk)) ;}
+}
+
+BorrowsPerNd BorrowsPer() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"borrows" x=ObjectId()
+{return builder.makeBorrows(x, getCoord(tk)) ;}
+}
 
 /************/
 /** Types **/

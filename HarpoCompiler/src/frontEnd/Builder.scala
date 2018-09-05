@@ -35,7 +35,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def makePre(condition: ExpNd, coord : Coord) = new PreCndNd(condition)(coord)
   
-  // Pre Condition Specification
+  // Post Condition Specification
   class PostCndList extends ArrayBuffer[PostCndNd]
   
   def postCndList() = new PostCndList()
@@ -43,15 +43,41 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def add(l: PostCndList, d: PostCndNd){l+=d;}
   
   def makePost(condition: ExpNd, coord : Coord) = new PostCndNd(condition)(coord)
- 
-  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, coord : Coord ) =
-    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList )( name, coord )}
+  
+  
+  // Gives Condition Specification
+  class GivesPerList extends ArrayBuffer[GivesPerNd]
+  
+  def givesPerList() = new GivesPerList()
 
-//  def makeGives(condition: ExpNd, coord : Coord) = new GivesPerSpecNd(condition)(coord)
-//  
-//  def makeTakes(condition: ExpNd, coord : Coord) = new TakesPerSpecNd(condition)(coord)
-//  
-//  def makeBorrows(condition: ExpNd, coord : Coord) = new BorrowsPerSpecNd(condition)(coord)
+  def add(l: GivesPerList, d: GivesPerNd){l+=d;}
+  
+  def makeGives(objId: ExpNd, coord : Coord) = new GivesPerNd(objId)(coord)
+  
+
+  // Takes Condition Specification
+  class TakesPerList extends ArrayBuffer[TakesPerNd]
+  
+  def takesPerList() = new TakesPerList()
+
+  def add(l: TakesPerList, d: TakesPerNd){l+=d;}
+  
+  def makeTakes(objId: ExpNd, coord : Coord) = new TakesPerNd(objId)(coord)
+  
+  
+  // Borrows Condition Specification
+  class BorrowsPerList extends ArrayBuffer[BorrowsPerNd]
+  
+  def borrowsPerList() = new BorrowsPerList()
+
+  def add(l: BorrowsPerList, d: BorrowsPerNd){l+=d;}
+  
+  def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
+
+  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
+    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
+
+
   
   var next = 0 
   
@@ -145,12 +171,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def methodImpl( nameNd : NameNd, paramList : ParamList, guard : ExpNd, fstCommand : CommandNd, sndCommand : CommandNd, coord : Coord )
   = new MethodImplementationDeclNd(nameNd, paramList toList, guard, fstCommand, sndCommand
                                   )( nameNd.qn.last, coord )
-  
-                                  
-                                  
-                                  
-                                  
-                                  
+                     
   // Trying to make the assert command in builder class
   // What I understood, parser is calling builder method and builder methods(respective) 
   // are creating trees from/with case classes in AST                          

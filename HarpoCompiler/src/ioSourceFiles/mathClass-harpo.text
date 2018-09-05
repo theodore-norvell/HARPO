@@ -1,7 +1,11 @@
 (class Math() 
 	obj c: Int32:=0;
 	public proc add()
-	pre 2>3 
+	pre 2>3
+	post 4>8
+	gives c
+	takes c
+	borrows c 
 	(thread(*t0*) 
 		assume c>9
 	thread) 

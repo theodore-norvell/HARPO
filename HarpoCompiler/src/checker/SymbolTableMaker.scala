@@ -65,8 +65,13 @@ extends Contracts {
                 case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
                     buildSTFromInitExp( init, containingFQN ) 
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) => ()
-                case MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd]) =>
-                    for( p <- params ) buildSTFromDecl( p, fqn ) 
+                case MethodDeclNd( _, params, preCndList,postCndList, givesPerList, takesPerList, borrowsPerList) =>
+                    for( p <- params ) buildSTFromDecl( p, fqn )
+                    for( spec <- preCndList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- postCndList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- givesPerList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- takesPerList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- borrowsPerList ) buildSTfromMethodSpecDecl( spec, fqn )
                 case ThreadDeclNd( block : CommandNd) =>
                     buildSTfromCommand( block, fqn )
                 case LocalDeclNd( isConst, ty, init, stmt ) =>
@@ -117,6 +122,18 @@ extends Contracts {
                     unreachable()
             }
         }
+        
+       
+        def buildSTfromMethodSpecDecl( spec : MethodSpecNd, containingFQN : FQN ) {
+            spec match {
+                case PreCndNd(condition)=> ()
+                case PostCndNd(condition)=> ()
+                case GivesPerNd(objId)=>()
+                case TakesPerNd(objId)=>()
+                case BorrowsPerNd(objId)=>()
+            }
+        }
+        
 
         def buildSTfromCommand( command : CommandNd, containingFQN : FQN ) {
             command match {
@@ -137,15 +154,11 @@ extends Contracts {
                 case WhileCmdNd( guard, body ) =>
                     buildSTfromCommand( body, containingFQN )
                     
-                //---- Adding assert case, i think it is skip in case of C
+                //---- Adding assert case, 'skip' in case of C
                 case AssertCmdNd(assertion)=> ()
                 
                 case AssumeCmdNd(assertion)=> ()
-                
-                case PreCndNd(assertion)=> ()
-//                case PostCmdNd(assertion)=> ()
-                
-                    
+               
                 case ForCmdNd( forDecl, repetitions, body ) => {
                     buildSTFromDecl( forDecl, containingFQN )
                     buildSTfromCommand( body, forDecl.fvd.fqn ) }
