@@ -12,7 +12,7 @@ private class ClassCodeGen(val dlNd: DeclNd) {
     boogieClassCode += code;
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
-        case ObjDeclNd(isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
+        case ObjDeclNd(isGhost:Boolean,isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
           val objCodeGen= new ObjCodeGen(mem)
           objDecls += objCodeGen.getDeclObjCode(isConst, acc, ty, dlNd.name)
           if(init != null) {objInits += objCodeGen.getInitObjCode(isConst, acc, ty, init, dlNd.name + "." + mem.name)} else {objInits = ""}

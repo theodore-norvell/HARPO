@@ -118,7 +118,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                     for( p <- d.constructorParams ) createTypesFromDecl( p ) 
                     createTypesFromDeclSet( d.directMembers )
                     
-                case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+                case ObjDeclNd(isGhost:Boolean, isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     ty match { case NoTypeNd() => {}
                                case _ => {
                                     createTypeFromTypeNd( ty ) 
@@ -136,7 +136,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                 case thread : ThreadDeclNd =>
                     createTypesFromCommand( thread.block )
                     
-                case LocalDeclNd( _, ty, init, stmt ) =>
+                case LocalDeclNd(_, _, ty, init, stmt ) =>
                     createTypesFromCommand( stmt )
                     ty match { case NoTypeNd() => {} // Do it later.
                                case _ => {

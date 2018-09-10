@@ -390,7 +390,7 @@ class CodeGenerator {
       }
             
       decl match {
-        case LocalDeclNd( isConst : Boolean, ty : TypeNd, init : ExpNd, cmd : CommandNd) =>
+        case LocalDeclNd(isGhost, isConst : Boolean, ty : TypeNd, init : ExpNd, cmd : CommandNd) =>
           return "context->" + NameManager.mkLocalObjName(name.toString)
         case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
           decl.asInstanceOf[ParamDeclNd].paramCategory match {

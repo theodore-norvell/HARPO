@@ -445,7 +445,8 @@ class TypeCheckerUnitTests extends FlatSpec with BeforeAndAfterEach {
 
     private def makeOperandNode( typeNode: NamedTypeNd, name: String, coord: Coord ) = {
         val node = NameExpNd( NameNd( FQN( List( name ) ) )( coord ) )( coord )
-        val decl = ObjDeclNd( true, PrivateAccess, typeNode, null )( name, noCoord );
+        //false work for ghost field- temporary fill
+        val decl = ObjDeclNd(true, true, PrivateAccess, typeNode, null )( name, noCoord );
         node.name.decl = Some( decl )
         node
     }

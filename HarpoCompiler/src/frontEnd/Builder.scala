@@ -76,8 +76,6 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
     {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
-
-
   
   var next = 0 
   
@@ -86,8 +84,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
      ThreadDeclNd( bl)( name, coord ) 
   }
   
-  def objDeclNd(isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
-  =  ObjDeclNd( isConst, acc, ty, init )( name, coord) 
+  def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
+  =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 
   
   def paramDeclNd( name : String, ty : TypeNd, paramCategory : ParamCategory, coord : Coord) 
   =  ParamDeclNd( ty, paramCategory )( name, coord )
@@ -122,8 +120,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def seq( p : CommandNd, q : CommandNd, coord : Coord ) = new SeqCommandNd( p, q )( coord) 
   
-  def localDecl( isConst : Boolean, name : String, ty : TypeNd, x : ExpNd, p : CommandNd, coord : Coord )
-  = { val decl = LocalDeclNd( isConst, ty, x, p)( name, coord )
+  def localDecl( isGhost: Boolean, isConst : Boolean, name : String, ty : TypeNd, x : ExpNd, p : CommandNd, coord : Coord )
+  = { val decl = LocalDeclNd( isGhost,isConst, ty, x, p)( name, coord )
     new LocalDeclCmdNd( decl )( coord )
   }
   
@@ -337,6 +335,12 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def outParamCategory() =  OutParamCategory
   
   def objParamCategory() =  ObjParamCategory
+  
+  def ghostInParamCategory() =  GhostInParamCategory
+  
+  def ghostOutParamCategory() =  GhostOutParamCategory
+  
+  def ghostObjParamCategory() =  GhostObjParamCategory
   
   def noTypeNd(coord : Coord) =  NoTypeNd()( coord )
   
