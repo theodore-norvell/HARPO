@@ -278,7 +278,8 @@ DeclNd ClassMember() :
 {
     ( LOOKAHEAD( [Access()] (("ghost")|("obj"|"const"))) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method()
-    | LOOKAHEAD( "(" "thread" ) d=Thread() )
+    | LOOKAHEAD( "(" "thread" ) d=Thread()
+    | LOOKAHEAD("claim" "@") d = Claim() )
     {return d;}
 }
 
@@ -405,6 +406,62 @@ MethodDeclNd Method() : {
 	{return builder.methodDeclNd(name, acc, paramList,preCndList,postCndList,givesPerList,takesPerList,borrowsPerList, getCoord(tk)) ; }
 }
 
+
+/********************************************/
+/** Method Specifications and Permissions **/
+/******************************************/
+
+
+PreCndNd PreCond() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"pre" x=Exp()
+{return builder.makePre(x, getCoord(tk)) ;}
+}
+
+PostCndNd PostCond() : {
+ ExpNd x;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"post" x=Exp()
+{return builder.makePost(x, getCoord(tk)) ;}
+}
+
+GivesPerNd GivesPer() : {
+ ExpNd name;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"gives" name=ObjectId()
+{return builder.makeGives(name, getCoord(tk)) ;}
+}
+
+TakesPerNd TakesPer() : {
+ ExpNd name;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"takes" name=ObjectId()
+{return builder.makeTakes(name, getCoord(tk)) ;}
+}
+
+BorrowsPerNd BorrowsPer() : {
+ ExpNd name;
+ Token tk;
+}
+{
+{tk=getToken(1);}
+"borrows" name=ObjectId()
+{return builder.makeBorrows(name, getCoord(tk)) ;}
+}
+
 ThreadDeclNd Thread() : {
 	CommandNd bl ;
 	Token tk ;
@@ -484,55 +541,19 @@ ParamDeclNd Param(ParamCategory cat) : {
 	{return builder.paramDeclNd( name, ty, cat, getCoord(tk));}
 }
 
-PreCndNd PreCond() : {
- ExpNd x;
- Token tk;
+ObjInitClaimNd Claim() : {
+  ExpNd loc;
+  Token tk;
+  String cName;
+  ExpList ls = builder.expList();
 }
 {
-{tk=getToken(1);}
-"pre" x=Exp()
-{return builder.makePre(x, getCoord(tk)) ;}
+  {tk=getToken(1);} 
+  "claim" "@" (loc=ObjectId() { builder.add(ls,loc);})+
+  {cName="ObjectClaim";}
+  {return builder.makeObjInitClaimNd(cName,ls,getCoord(tk));}
 }
 
-PostCndNd PostCond() : {
- ExpNd x;
- Token tk;
-}
-{
-{tk=getToken(1);}
-"post" x=Exp()
-{return builder.makePost(x, getCoord(tk)) ;}
-}
-
-GivesPerNd GivesPer() : {
- ExpNd name;
- Token tk;
-}
-{
-{tk=getToken(1);}
-"gives" name=ObjectId()
-{return builder.makeGives(name, getCoord(tk)) ;}
-}
-
-TakesPerNd TakesPer() : {
- ExpNd name;
- Token tk;
-}
-{
-{tk=getToken(1);}
-"takes" name=ObjectId()
-{return builder.makeTakes(name, getCoord(tk)) ;}
-}
-
-BorrowsPerNd BorrowsPer() : {
- ExpNd name;
- Token tk;
-}
-{
-{tk=getToken(1);}
-"borrows" name=ObjectId()
-{return builder.makeBorrows(name, getCoord(tk)) ;}
-}
 
 /************/
 /** Types **/
@@ -754,8 +775,6 @@ MethodImplementationDeclNd MethodImpl() : {
   /********************************/
  /** Initialization Expressions **/
 /********************************/
-
-
 
 InitExpNd InitExp() : {
 	String name ;

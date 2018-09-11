@@ -1,7 +1,7 @@
 package frontEnd
 
-import scala.collection.mutable.ArrayBuffer 
-
+import scala.collection.mutable.ArrayBuffer  
+import scala.collection.mutable.ListBuffer;
 import frontEnd.AST._ 
 
 class Builder( val errorRecorder : ErrorRecorder ) {
@@ -17,8 +17,15 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def classDeclNd(name : String, coord : Coord) =  ClassDeclNd()( name, coord, errorRecorder )
   
-  def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
+  def makeObjInitClaimNd(name: String,locList: ExpList, coord: Coord)= new ObjInitClaimNd(locList.toList)( name, coord)
   
+  def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
+
+  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
+    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
+  
+  
+    
   class ParamList extends ArrayBuffer[ParamDeclNd] 
   
   def paramList() =  new ParamList() ;
@@ -74,8 +81,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
 
-  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
-    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
+  
+  
   
   var next = 0 
   

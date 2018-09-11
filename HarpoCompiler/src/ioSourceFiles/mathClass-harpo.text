@@ -1,4 +1,6 @@
 (class Math() 
+	claim@a
+	claim@a
 	ghost obj c: Int32:=0;
 	ghost const x: Int32:=9;
 	public proc add(in par: Int32)

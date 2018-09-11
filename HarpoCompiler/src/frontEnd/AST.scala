@@ -168,6 +168,19 @@ class AST{
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]", block )
     }
+    
+    
+    //Claim of class
+    case class ObjInitClaimNd (objIdList: List[ ExpNd ])(name: String, coord: AST.Coord)
+       extends DeclNd( name, coord ){
+      override def pp=Pretty.func("ObjectInitClaimNd", objIdList)
+    }
+    
+    //claim of thread
+    case class ThrClaimNd (objIdList: List[ ExpNd ])(name: String,coord: AST.Coord)
+      extends DeclNd(name,coord){
+     override def pp=Pretty.func("ThreadClaimNd", objIdList)
+    }
 
     case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
