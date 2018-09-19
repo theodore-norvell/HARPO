@@ -226,7 +226,7 @@ extends Contracts {
                 // TODO anything else to check?
                 // TODO set the .tipe field.
                 
-            case decl@ThreadDeclNd( block ) =>
+            case decl@ThreadDeclNd(thrClaim, block ) =>
                 typeCheck( block ) 
                 
             case decl@LocalDeclNd(isGhost, isConst, ty, initExp, cmd) =>

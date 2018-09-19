@@ -164,9 +164,9 @@ class AST{
         override def pp = Pretty.func( "BorrowsPerNd", objId )
     }
     
-    case class ThreadDeclNd( block: CommandNd )( name: String, coord: AST.Coord )
+    case class ThreadDeclNd(thrClaim:ThrClaimNd, block: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
-        override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]", block )
+        override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]",thrClaim, block )
     }
     
     
@@ -176,7 +176,7 @@ class AST{
       override def pp=Pretty.func("ObjectInitClaimNd", objIdList)
     }
     
-    //claim of thread
+    //Claim of thread
     case class ThrClaimNd (objIdList: List[ ExpNd ])(name: String,coord: AST.Coord)
       extends DeclNd(name,coord){
      override def pp=Pretty.func("ThreadClaimNd", objIdList)

@@ -75,7 +75,7 @@ extends Contracts {
                     for( givesper <- givesPerList ) buildSTfromMethodPerList( givesper, fqn )
                     for( takesper <- takesPerList ) buildSTfromMethodPerList( takesper, fqn )
                     for( borrowsper <- borrowsPerList ) buildSTfromMethodPerList( borrowsper, fqn )
-                case ThreadDeclNd( block : CommandNd) =>
+                case ThreadDeclNd(thrClaim:ThrClaimNd, block : CommandNd) =>
                     buildSTfromCommand( block, fqn )
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     buildSTfromCommand( stmt, fqn )

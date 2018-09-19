@@ -168,7 +168,7 @@ TOKEN :{
 |   "assert" 
 |	"assume" 
 | 	"borrows"|	"class"
-|	"claim" // Verification
+|	"claim"
 |	"co"
 |   "const"
 |	"do"
@@ -279,7 +279,7 @@ DeclNd ClassMember() :
     ( LOOKAHEAD( [Access()] (("ghost")|("obj"|"const"))) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method()
     | LOOKAHEAD( "(" "thread" ) d=Thread()
-    | LOOKAHEAD("claim" "@") d = Claim() )
+    | LOOKAHEAD("claim" "@") d = ObjClaim() )
     {return d;}
 }
 
@@ -464,11 +464,13 @@ BorrowsPerNd BorrowsPer() : {
 
 ThreadDeclNd Thread() : {
 	CommandNd bl ;
+	ThrClaimNd thrClaim=null;
 	Token tk ;
 }
 {
-	tk="(" "thread" bl=Block() ["thread"] ")"
-	{ return builder.threadDeclNd(bl, getCoord(tk)) ; }
+  //TBC
+	tk="(" "thread"  [thrClaim=ThrClaim()] bl=Block() ["thread"] ")"
+	{ return builder.threadDeclNd(thrClaim,bl, getCoord(tk)) ; }
 }
 
 
@@ -541,7 +543,7 @@ ParamDeclNd Param(ParamCategory cat) : {
 	{return builder.paramDeclNd( name, ty, cat, getCoord(tk));}
 }
 
-ObjInitClaimNd Claim() : {
+ObjInitClaimNd ObjClaim() : {
   ExpNd loc;
   Token tk;
   String cName;
@@ -554,6 +556,19 @@ ObjInitClaimNd Claim() : {
   {return builder.makeObjInitClaimNd(cName,ls,getCoord(tk));}
 }
 
+
+ThrClaimNd ThrClaim() : {
+ExpNd loc;
+Token tk;
+String cName;
+ExpList ls = builder.expList();
+}
+{
+  {tk=getToken(1);} 
+  "claim" "@" (loc=ObjectId() { builder.add(ls,loc);})+
+  {cName="ThreadClaim";}
+  {return builder.makeThrClaimNd(cName,ls,getCoord(tk));}
+}
 
 /************/
 /** Types **/

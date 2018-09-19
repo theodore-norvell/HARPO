@@ -1,6 +1,5 @@
-(class Math() 
-	claim@a
-	claim@a
+(class Math()
+	claim@a b f c s
 	ghost obj c: Int32:=0;
 	ghost const x: Int32:=9;
 	public proc add(in par: Int32)
@@ -9,7 +8,7 @@
 	post c>c
 	post c>1
 	//gives c
-	(thread(*t0*)
+	(thread(*t0*) claim@c b f m h
 		ghost const a: Int32:=9;
 		assume c>9
 	thread) 

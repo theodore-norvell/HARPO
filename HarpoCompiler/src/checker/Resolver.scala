@@ -54,7 +54,7 @@ extends Contracts {
                     for( givesper <- postCndList ) resolveMethodSpec( givesper, fqn, Some(decl))
                     for( takesper <- postCndList ) resolveMethodSpec( takesper, fqn, Some(decl))
                     for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
-                case ThreadDeclNd( block : CommandNd) =>
+                case ThreadDeclNd(thrClaim:ThrClaimNd, block : CommandNd) =>
                     resolveCommand( block, fqn, Some(decl) )
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 

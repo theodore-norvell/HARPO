@@ -86,10 +86,13 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   var next = 0 
   
-  def threadDeclNd( bl : CommandNd, coord : Coord ) = {
+  def threadDeclNd(thrClaim : ThrClaimNd, bl : CommandNd, coord : Coord ) = {
     val name = "t#" + next ; next += 1 
-     ThreadDeclNd( bl)( name, coord ) 
+     ThreadDeclNd(thrClaim, bl)( name, coord ) 
   }
+  
+  
+   def makeThrClaimNd(name: String,locList: ExpList, coord: Coord)= new ThrClaimNd(locList.toList)( name, coord)
   
   def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
   =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 
