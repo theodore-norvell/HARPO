@@ -18,7 +18,7 @@ private class ClassCodeGen(val dlNd: DeclNd) {
           if(init != null) {objInits += objCodeGen.getInitObjCode(isConst, acc, ty, init, dlNd.name + "." + mem.name)} else {objInits = ""}
           boogieClassCode += objDecls;
         }
-        case ThreadDeclNd(thrClaim: ThrClaimNd, block: CommandNd) =>
+        case ThreadDeclNd(thrClaim: ClaimNd, block: CommandNd) =>
           val threadName = mem.name.replace("#", "")
           val thrDecl = "\nprocedure " + dlNd.name + "." + threadName + "(this:Ref)"
           val thrClaim = "\nmodifies Heap;" // {add claim}

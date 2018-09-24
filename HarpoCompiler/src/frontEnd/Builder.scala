@@ -17,7 +17,13 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def classDeclNd(name : String, coord : Coord) =  ClassDeclNd()( name, coord, errorRecorder )
   
-  def makeObjInitClaimNd(name: String,locList: ExpList, coord: Coord)= new ObjInitClaimNd(locList.toList)( name, coord)
+  var claimId=0;
+  def makeClaimNd(locList: ExpList, coord: Coord)={
+    val name= "claim#"+claimId; claimId+=1;
+    new ClaimNd(locList.toList)( name, coord)
+  }
+  
+  def makeClassInvariant(condition : ExpNd, name: String, coord : Coord) = new ClassInvNd(condition)(name,coord)
   
   def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
 
@@ -80,20 +86,13 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def add(l: BorrowsPerList, d: BorrowsPerNd){l+=d;}
   
   def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
-
-  
-  
   
   var next = 0 
   
-  def threadDeclNd(thrClaim : ThrClaimNd, bl : CommandNd, coord : Coord ) = {
+  def threadDeclNd(thrClaim : ClaimNd, bl : CommandNd, coord : Coord ) = {
     val name = "t#" + next ; next += 1 
      ThreadDeclNd(thrClaim, bl)( name, coord ) 
   }
-  
-  
-   def makeThrClaimNd(name: String,locList: ExpList, coord: Coord)= new ThrClaimNd(locList.toList)( name, coord)
-  
   def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
   =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 
   
@@ -302,6 +301,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def expList(x:ExpNd) = {val result = new ExpList; result += x ; result} 
   
   def add( el : ExpList, exp : ExpNd ) { el += exp }
+  
  
 /*************************/
 /** Init Expressions    **/

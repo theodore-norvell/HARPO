@@ -11,7 +11,7 @@ import frontEnd.AST.GivesPerNd;
 import frontEnd.AST.TakesPerNd;
 import frontEnd.AST.BorrowsPerNd;
 
-/* The goal of the resolver is to hunt down all NameNds and link them to the
+/* The goal of the resolver is to hunt down all NameNds and link them to the 
  * corresponding declaration.  There are a few other types of nodes that
  * also need to be linked to their declarations.
  */
@@ -42,6 +42,8 @@ extends Contracts {
                     resolveClassLike(d, containingFQN, containingDecl) 
                 case d : IntfDeclNd =>
                     resolveClassLike(d, containingFQN, containingDecl) 
+                case ClaimNd(objList) => 
+                    for (id <- objList) {resolveObjId(id) }
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
@@ -54,8 +56,13 @@ extends Contracts {
                     for( givesper <- postCndList ) resolveMethodSpec( givesper, fqn, Some(decl))
                     for( takesper <- postCndList ) resolveMethodSpec( takesper, fqn, Some(decl))
                     for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
-                case ThreadDeclNd(thrClaim:ThrClaimNd, block : CommandNd) =>
-                    resolveCommand( block, fqn, Some(decl) )
+                case ThreadDeclNd(thrClaim:ClaimNd, block : CommandNd) =>
+                    {
+                      resolveCommand( block, fqn, Some(decl))
+                      thrClaim match {
+                      case ClaimNd(objIds) => {for(id<- objIds) resolveObjId(id)}
+                      }
+                    }
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
                     resolveExp( init, containingFQN, containingDecl )
@@ -261,6 +268,17 @@ extends Contracts {
                     unreachable("FetchExpNd in resolver)")
             }
         }
+        
+        def resolveObjId( exp : ExpNd) {
+            exp match {
+                case NameExpNd( name ) => {}
+                case FetchExpNd( exp ) => 
+                    unreachable("FetchExpNd in resolver)")
+            }
+        }
+        
+        
+
         
         resolveDeclList( decls, new FQN(), None )
     }

@@ -164,24 +164,23 @@ class AST{
         override def pp = Pretty.func( "BorrowsPerNd", objId )
     }
     
-    case class ThreadDeclNd(thrClaim:ThrClaimNd, block: CommandNd )( name: String, coord: AST.Coord )
+    case class ThreadDeclNd(thrClaim: ClaimNd, block: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]",thrClaim, block )
     }
     
+    // Class Invariant 
     
-    //Claim of class
-    case class ObjInitClaimNd (objIdList: List[ ExpNd ])(name: String, coord: AST.Coord)
+    case class ClassInvNd(var condition: ExpNd )( name: String, coord: AST.Coord )
+      extends DeclNd( name , coord) {
+    override def pp = Pretty.func( "ClassInvNd", condition )
+    }
+    //Claim Specification
+    case class ClaimNd (objIdList: List[ ExpNd ])(name: String, coord: AST.Coord)
        extends DeclNd( name, coord ){
-      override def pp=Pretty.func("ObjectInitClaimNd", objIdList)
+      override def pp=Pretty.func("ClaimNd["::name::"]", objIdList)
     }
     
-    //Claim of thread
-    case class ThrClaimNd (objIdList: List[ ExpNd ])(name: String,coord: AST.Coord)
-      extends DeclNd(name,coord){
-     override def pp=Pretty.func("ThreadClaimNd", objIdList)
-    }
-
     case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "LocalDeclNd[" :: name :: "]","Ghost :":: isGhost.toString,  ty, init, cmd )
@@ -416,6 +415,10 @@ class AST{
 
     case class FetchExpNd( x: ExpNd )( coord: AST.Coord ) extends ExpNd( coord ) {
         override def ppp = Pretty.func( "FetchExpNd", x )
+    }
+    
+    case class ObjIdsNd( x: List[ExpNd]) (coord: AST. Coord) extends ExpNd(coord) {
+        override def ppp = Pretty.func("ObjIdsNd", x)
     }
 
     /*******************/

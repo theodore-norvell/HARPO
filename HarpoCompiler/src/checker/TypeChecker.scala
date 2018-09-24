@@ -92,38 +92,6 @@ extends Contracts {
     }
 
     // Still working on - Inaam
-    def typeCheck( nameExp : NameExpNd ) : Option[Type] = {
-        val ty : Option[Type]
-        = nameExp match {
-            case NameExpNd( name ) =>
-                val decl = name.decl.getOrElse{
-                    Contracts.unreachable("Name Expression not resolved by type checking time.") }
-                decl match {
-                    case ObjDeclNd(isGhost, isConst, acc, ty, init) =>
-                        errorRecorder.checkFatal( ty.tipe != None,
-                                                 "The type of "+name+" can not be determined at this point.",
-                                                  nameExp.coord)
-                        ty.tipe
-                    case LocalDeclNd(isGhost, isConst, ty, init, cmd) =>
-                        errorRecorder.checkFatal( ty.tipe != None,
-                                                 "The type of "+name+" can not be determined at this point.",
-                                                  nameExp.coord)
-                        check( ty.tipe != None)
-                        ty.tipe
-                    case ParamDeclNd( ty, cat) =>
-                        check( ty.tipe != None )
-                        ty.tipe
-                    case node@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd] ) =>
-                        check( node.tipe != None )
-                        node.tipe
-                    case _ => {
-                        errorRecorder.reportFatal(name + " does not represent an object or location.", nameExp.coord ) ;
-                        None } }
-        }    
-        nameExp.tipe = ty ;
-        return ty
-    }
-    
     private def typeCheck( init : InitExpNd  ) : Option[Type] = {
         val optTy : Option[Type] = init match {
             
@@ -211,7 +179,9 @@ extends Contracts {
                 // Convert the initialization expression to match the expected type
                 decl.init = typeConvertInitExpNd( init, expectedType )
             
-                
+            case decl@ClaimNd(objIds) => {
+              for( id <- objIds ) typeCheckObjId( id )
+            }    
             case decl@ParamDeclNd( ty, cat ) =>
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
@@ -338,12 +308,22 @@ extends Contracts {
     
     def typeCheck(mPerNd: MethodPerNd){
       mPerNd match{
-        case mPerNd@GivesPerNd(objId)=> typeCheck(objId)
-        case mPerNd@TakesPerNd(objId)=> typeCheck(objId)
-        case mPerNd@BorrowsPerNd(objId)=> typeCheck(objId)
+        case mPerNd@GivesPerNd(objId)=> typeCheckObjId(objId)
+        case mPerNd@TakesPerNd(objId)=> typeCheckObjId(objId)
+        case mPerNd@BorrowsPerNd(objId)=> typeCheckObjId(objId)
       }
       
     }
+    
+    def typeCheckObjId(objId: ExpNd){
+      objId match {
+        case NameExpNd(i) => {}// TODO
+        case _ => println("Can't typeCheckObjId")
+      }
+    }
+    
+    
+    
     
     def typeCheck( command : CommandNd ) {
         command match {

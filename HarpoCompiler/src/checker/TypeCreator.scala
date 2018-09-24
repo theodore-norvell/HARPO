@@ -123,7 +123,11 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                                case _ => {
                                     createTypeFromTypeNd( ty ) 
                                     promoteToLoc(ty) } }
-                    
+                case ClaimNd(objIds: List[ExpNd]) =>
+                  for (id <- objIds) {  
+                    id match { //TODO
+                      case NameExpNd(i) => {} }
+                    }
                 case ParamDeclNd(ty , _) =>
                     createTypeFromTypeNd( ty ) 
                     promoteToLoc(ty)
@@ -135,7 +139,6 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                     
                 case thread : ThreadDeclNd =>
                     createTypesFromCommand( thread.block )
-                    
                 case LocalDeclNd(_, _, ty, init, stmt ) =>
                     createTypesFromCommand( stmt )
                     ty match { case NoTypeNd() => {} // Do it later.
