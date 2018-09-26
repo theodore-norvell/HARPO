@@ -280,8 +280,8 @@ DeclNd ClassMember() :
     ( LOOKAHEAD( [Access()] (("ghost")|("obj"|"const"))) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method()
     | LOOKAHEAD( "(" "thread" ) d=Thread()
-    | LOOKAHEAD( "claim" ) d=Claim()
-    | LOOKAHEAD("invariant") d=ClassInvariant())
+    | LOOKAHEAD( "claim" ) d= Claim()
+    | LOOKAHEAD( "invariant" ) d=ClassInvariant())
     {return d;}
 }
 
@@ -463,15 +463,19 @@ BorrowsPerNd BorrowsPer() : {
 {return builder.makeBorrows(name, getCoord(tk)) ;}
 }
 
+// Thread may start with a claim
 ThreadDeclNd Thread() : {
 	CommandNd bl ;
-	ClaimNd thrClaim;
+	ClaimNd claim;
+    ClaimList claimList = builder.claimList();
 	Token tk ;
 }
 {
-  //TBC
-	tk="(" "thread"  (thrClaim=Claim())+ bl=Block() ["thread"] ")"
-	{ return builder.threadDeclNd(thrClaim,bl, getCoord(tk)) ; }
+	(	  tk="(" "thread"
+	  (claim = Claim() { builder.add(claimList,claim); })*
+	  bl=Block() ["thread"] ")"
+	  {return builder.threadDeclNd(claimList, bl, getCoord(tk)) ;}
+	)
 }
 
 
@@ -550,20 +554,19 @@ ClaimNd Claim() : {
   ExpList ls = builder.expList();
 }
 {
-  {tk=getToken(1);}      "claim" "@" ( loc=ObjectId() { builder.add(ls,loc);} [","] )+
+  {tk=getToken(1);}        "claim" "@" ( loc=ObjectId() { builder.add(ls,loc);} [","] )+
   {return builder.makeClaimNd(ls,getCoord(tk));}
 }
 
 ClassInvNd ClassInvariant(): {
   ExpNd x;
   Token tk;
-  String name; }
+ }
 {
   	{ tk=getToken(1);}
-	name=Name()
   	(  	  "invariant" x=Exp()
   	)
-    {return builder.makeClassInvariant(x,name, getCoord(tk)) ;}
+    {return builder.makeClassInvariant(x, getCoord(tk)) ;}
 }
 
 

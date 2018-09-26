@@ -5,8 +5,9 @@ import frontEnd.FQN
 import frontEnd.ErrorRecorder
 import CheckerTypes._
 import contracts.Contracts._
-import frontEnd.AST.PreCndNd;
-import frontEnd.AST.PostCndNd;
+import frontEnd.AST.PreCndNd
+import frontEnd.AST.PostCndNd
+import frontEnd.AST.ExpNd
 class TypeCreator( errorRecorder : ErrorRecorder ) {
     
     private def makeMethodTipe(params : List[ParamDeclNd]) : Option[MethodType]= {
@@ -128,15 +129,30 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                     id match { //TODO
                       case NameExpNd(i) => {} }
                     }
+                case ClassInvNd(exp: ExpNd) =>  {  
+                    
+                    }
                 case ParamDeclNd(ty , _) =>
                     createTypeFromTypeNd( ty ) 
                     promoteToLoc(ty)
                     check( ty.tipe != None)
                     
-                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd])  =>  
+                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd])  => { 
+                  
                   for( p <- params ) createTypesFromDecl( p ) 
                   declNd.tipe = makeMethodTipe(params)
-                    
+                  
+                  for( pre <- preCndList ) {}
+                  
+                  for( post <- postCndList ) {}
+                  
+                  for( gives <- givesPerList ) {}
+                  
+                  for( takes <- takesPerList ) {}
+                  
+                  for( borrows <- borrowsPerList ) {}
+                  
+                }   
                 case thread : ThreadDeclNd =>
                     createTypesFromCommand( thread.block )
                 case LocalDeclNd(_, _, ty, init, stmt ) =>

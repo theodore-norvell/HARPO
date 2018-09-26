@@ -69,7 +69,8 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromClassLike(d, containingFQN)
         case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) =>
           buildSTFromInitExp(init, containingFQN)
-        case ClaimNd(objIds) => buildSTFromClaimList(objIds)
+        case ClaimNd(objList) => buildSTFromClaimNd(objList,containingFQN)
+        case ClassInvNd(exp) => buildSTFromClassInv(exp,containingFQN)
         case ParamDeclNd(ty: TypeNd, paramCategory: ParamCategory) => ()
         case MethodDeclNd(_, params, preCndList, postCndList, givesPerList, takesPerList, borrowsPerList) =>
           for (p <- params) buildSTFromDecl(p, fqn)
@@ -78,9 +79,9 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           for (givesper <- givesPerList) buildSTfromMethodPerList(givesper, fqn)
           for (takesper <- takesPerList) buildSTfromMethodPerList(takesper, fqn)
           for (borrowsper <- borrowsPerList) buildSTfromMethodPerList(borrowsper, fqn)
-        case ThreadDeclNd(thrClaim: ClaimNd, block: CommandNd) => {
+        case ThreadDeclNd(claimNdList, block) => {
           buildSTfromCommand(block, fqn)
-          buildSTFromThrClaim(thrClaim)
+          buildSTFromClaimNdList(claimNdList,fqn)
         }
         case LocalDeclNd(isGhost, isConst, ty, init, stmt) =>
           buildSTfromCommand(stmt, fqn)
@@ -133,18 +134,19 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           unreachable()
       }
     }
-    def buildSTFromThrClaim(thrClaimNd: ClaimNd) {
-      thrClaimNd match {
-        case ClaimNd(ls) => {
-          buildSTFromClaimList(ls)
-        }
-        case _ => null
+
+    def buildSTFromClaimNdList(claimNds: List[ClaimNd],containingFQN: FQN) {
+      for (claim <- claimNds) {
+        buildSTFromClaimNd(claim.objIdList,containingFQN)
       }
     }
-    def buildSTFromClaimList(objIds: List[ExpNd]) {
-      for (id <- objIds) {
-        //TODO
-      }
+    
+    def buildSTFromClaimNd(objIds: List[ExpNd],containingFQN: FQN) {
+    //TODO
+    }
+    
+    def buildSTFromClassInv(exp: ExpNd,containingFQN: FQN) {
+      //TODO
     }
 
     def buildSTfromMethodSpecList(spec: MethodSpecNd, containingFQN: FQN) {

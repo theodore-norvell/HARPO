@@ -43,7 +43,8 @@ extends Contracts {
                 case d : IntfDeclNd =>
                     resolveClassLike(d, containingFQN, containingDecl) 
                 case ClaimNd(objList) => 
-                    for (id <- objList) {resolveObjId(id) }
+                    for (id <- objList) {resolveObjId(id,containingFQN,Some(decl)) }
+                case ClassInvNd(exp) => resolveExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
@@ -53,15 +54,12 @@ extends Contracts {
                     for( pdn <- params ) resolveDecl( pdn, fqn, Some(decl))
                     for( precn <- preCndList ) resolveMethodSpec( precn, fqn, Some(decl))
                     for( postcn <- postCndList ) resolveMethodSpec( postcn, fqn, Some(decl))
-                    for( givesper <- postCndList ) resolveMethodSpec( givesper, fqn, Some(decl))
-                    for( takesper <- postCndList ) resolveMethodSpec( takesper, fqn, Some(decl))
-                    for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
-                case ThreadDeclNd(thrClaim:ClaimNd, block : CommandNd) =>
+                    for( givesper <- givesPerList ) resolveMethodPer( givesper, fqn, Some(decl))
+                    for( takesper <- takesPerList ) resolveMethodPer( takesper, fqn, Some(decl))
+                    for( borrowsper <- borrowsPerList ) resolveMethodPer( borrowsper, fqn, Some(decl))
+                case ThreadDeclNd(claimList: List[ClaimNd], block : CommandNd) =>
                     {
                       resolveCommand( block, fqn, Some(decl))
-                      thrClaim match {
-                      case ClaimNd(objIds) => {for(id<- objIds) resolveObjId(id)}
-                      }
                     }
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
@@ -251,7 +249,6 @@ extends Contracts {
                 case FloatLiteralExpNd(x) => {}
                 case NameExpNd( name ) => 
                     name.decl = symTab.lookUp( containingFQN, name )
-                    println("It's checking for name")
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )
@@ -269,10 +266,10 @@ extends Contracts {
             }
         }
         
-        def resolveObjId( exp : ExpNd) {
+        def resolveObjId( exp : ExpNd, containingFQN: FQN, containingDecl : Option[DeclNd] ) {
             exp match {
-                case NameExpNd( name ) => {}
-                case FetchExpNd( exp ) => 
+                case NameExpNd( name ) => name.decl = symTab.lookUp( containingFQN, name )
+                case _ => {}
                     unreachable("FetchExpNd in resolver)")
             }
         }

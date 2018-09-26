@@ -43,7 +43,7 @@ private def genConcurentCode() : String = {
       case dlNd : ClassDeclNd =>
         for (dllNd : DeclNd <- dlNd.directMembers ) {
           dllNd match {
-            case ThreadDeclNd(thrClaim: ClaimNd,block : CommandNd) =>
+            case ThreadDeclNd(claim: ClaimNd, block : CommandNd) =>
               val threadName = dllNd.name.replace("#", "")
               var startNd = cfgFactory.makeStartCfgNd("FuncThread_" + dlNd.name + threadName, dlNd.name, 0)
               cfgBuilder.run(block, startNd)

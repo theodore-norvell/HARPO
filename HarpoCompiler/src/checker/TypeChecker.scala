@@ -12,7 +12,7 @@ class TypeChecker (
     errorRecorder : ErrorRecorder, 
     //classEnv : ClassEnvironment,
     //symbolTable : SymbolTable,
-    typeCreator : TypeCreator )  
+    typeCreator : TypeCreator )
 extends Contracts { 
   
     def typeCheck( exp : ExpNd ) : Option[Type] = {
@@ -181,7 +181,10 @@ extends Contracts {
             
             case decl@ClaimNd(objIds) => {
               for( id <- objIds ) typeCheckObjId( id )
-            }    
+            }
+            case decl@ClassInvNd(exp) => {
+              typeCheck( exp )
+            } 
             case decl@ParamDeclNd( ty, cat ) =>
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
@@ -196,7 +199,7 @@ extends Contracts {
                 // TODO anything else to check?
                 // TODO set the .tipe field.
                 
-            case decl@ThreadDeclNd(thrClaim, block ) =>
+            case decl@ThreadDeclNd(claim, block ) =>
                 typeCheck( block ) 
                 
             case decl@LocalDeclNd(isGhost, isConst, ty, initExp, cmd) =>
@@ -317,14 +320,21 @@ extends Contracts {
     
     def typeCheckObjId(objId: ExpNd){
       objId match {
-        case NameExpNd(i) => {}// TODO
-        case _ => println("Can't typeCheckObjId")
+        case NameExpNd(i) => convertId(objId)
+        case _ => println("Type Not Allowed")
       }
     }
-    
-    
-    
-    
+     //Permission Nodes
+     private def convertId( id : ExpNd ) = {
+        val gTy = typeCheck(id)
+        val result = valueConvert( id )
+        for( ty <- result.tipe )
+            errorRecorder.checkFatal(ty != None,
+                              "Object Id must be on primitive object.",
+                              id.coord)
+        result
+    }
+     
     def typeCheck( command : CommandNd ) {
         command match {
             
@@ -376,7 +386,6 @@ extends Contracts {
             case cmd@AssumeCmdNd(assumption) =>
                 cmd.assumption = convertAssumption(assumption)
                 
-                
             case ForCmdNd( forDecl, repetitions, body ) =>
                 toDo( "For commands in type checker")
                 
@@ -397,6 +406,7 @@ extends Contracts {
         }
     }
     
+
     private def convertGuard( guard : ExpNd ) = {
         val gTy = typeCheck(guard)
         val result = valueConvert( guard )
@@ -406,11 +416,6 @@ extends Contracts {
                               guard.coord) 
         result
     }
-    
-    
-    
-    
-    
     // ---- Checking the assertion expression.
     
     private def convertAssertion( assertion : ExpNd ) = {

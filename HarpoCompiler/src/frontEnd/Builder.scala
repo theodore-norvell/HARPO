@@ -19,19 +19,20 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   var claimId=0;
   def makeClaimNd(locList: ExpList, coord: Coord)={
-    val name= "claim#"+claimId; claimId+=1;
+    val name= "*clm*"+claimId; claimId+=1;
     new ClaimNd(locList.toList)( name, coord)
   }
-  
-  def makeClassInvariant(condition : ExpNd, name: String, coord : Coord) = new ClassInvNd(condition)(name,coord)
+  var invariantId=0;
+  def makeClassInvariant(exp: ExpNd, coord : Coord) = {
+    val name = "*inv*"+invariantId;invariantId+=1;
+    new ClassInvNd(exp)(name,coord)
+  }
   
   def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
 
   def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
     {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
   
-  
-    
   class ParamList extends ArrayBuffer[ParamDeclNd] 
   
   def paramList() =  new ParamList() ;
@@ -87,11 +88,17 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
   
+  class ClaimList extends ArrayBuffer[ClaimNd]
+
+  def claimList() = new ClaimList()
+
+  def add(l: ClaimList, d: ClaimNd){l+=d}
+  
   var next = 0 
   
-  def threadDeclNd(thrClaim : ClaimNd, bl : CommandNd, coord : Coord ) = {
+  def threadDeclNd(claimList: ClaimList, bl : CommandNd, coord : Coord ) = {
     val name = "t#" + next ; next += 1 
-     ThreadDeclNd(thrClaim, bl)( name, coord ) 
+     ThreadDeclNd(claimList.toList, bl)( name, coord ) 
   }
   def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
   =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 

@@ -151,36 +151,35 @@ class AST{
     }
     
     abstract sealed class MethodPerNd(coord: AST.Coord) extends Pretty
-    case class GivesPerNd(var objId: ExpNd )( coord: AST.Coord )
+    case class GivesPerNd(objId: ExpNd )( coord: AST.Coord )
         extends MethodPerNd( coord ) {
         override def pp = Pretty.func( "GivesPerNd", objId )
     }    
-    case class TakesPerNd(var objId: ExpNd )( coord: AST.Coord )
+    case class TakesPerNd(objId: ExpNd )( coord: AST.Coord )
         extends MethodPerNd( coord ) {
         override def pp = Pretty.func( "TakesPerNd", objId )
     }    
-    case class BorrowsPerNd(var objId: ExpNd )( coord: AST.Coord )
+    case class BorrowsPerNd(objId: ExpNd )( coord: AST.Coord )
         extends MethodPerNd( coord ) {
         override def pp = Pretty.func( "BorrowsPerNd", objId )
     }
     
-    case class ThreadDeclNd(thrClaim: ClaimNd, block: CommandNd )( name: String, coord: AST.Coord )
+    case class ThreadDeclNd(claimList: List[ClaimNd], block: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
-        override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]",thrClaim, block )
+        override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]", claimList, block )
     }
     
     // Class Invariant 
     
-    case class ClassInvNd(var condition: ExpNd )( name: String, coord: AST.Coord )
+    case class ClassInvNd(exp:ExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
-    override def pp = Pretty.func( "ClassInvNd", condition )
+    override def pp = Pretty.func( "ClassInvNd["::name::"]", exp )
     }
     //Claim Specification
     case class ClaimNd (objIdList: List[ ExpNd ])(name: String, coord: AST.Coord)
        extends DeclNd( name, coord ){
-      override def pp=Pretty.func("ClaimNd["::name::"]", objIdList)
+      override def pp=Pretty.func("ClaimNd[" :: name :: "]", objIdList)
     }
-    
     case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "LocalDeclNd[" :: name :: "]","Ghost :":: isGhost.toString,  ty, init, cmd )
@@ -511,7 +510,7 @@ class AST{
     /** Names  **/
     /************/
 
-    sealed case class NameNd( qn: QN )( val coord: AST.Coord ) extends Pretty {
+    case class NameNd( qn: QN )( val coord: AST.Coord ) extends Pretty {
         var decl: Option[ DeclNd ] = None // Set during the resolution phase.
         override def toString = qn.toString
     }

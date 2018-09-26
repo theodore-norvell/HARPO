@@ -70,7 +70,7 @@ class ClassCodeGen {
              
                 //add class's field to nameTable, needed only when inheriting
               //nameTbl(mem.name) = NM.mkIntfObjName(mem.name, mClsName)
-            case ThreadDeclNd(thrClaim: ClaimNd, block : CommandNd) => 
+            case ThreadDeclNd(claimList: List[ClaimNd],block : CommandNd) => 
               val threadName = mem.name.replace("#", "")
               val memFuncName = NM.mkName("FuncThread_" + clsNd.name + threadName )
               declCode += "void " + memFuncName + "(Continuation *k);\n"

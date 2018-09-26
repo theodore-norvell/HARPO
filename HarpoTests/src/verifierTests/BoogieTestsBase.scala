@@ -1,6 +1,6 @@
-package tests
+package verifierTests
 
-import org.scalatest.FlatSpec 
+import org.scalatest.FlatSpec
 import org.scalatest.TestData
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
@@ -17,12 +17,12 @@ import frontEnd.AST
 import parser.HarpoParser
 import parser.ParseException
 import parser.TokenMgrError
-import checker.Checker 
+import checker.Checker
 import frontEnd.CompilerBailOutException
-import cBackEnd.CBackEnd
-
-class TestsBase extends FlatSpec with BeforeAndAfterEach {
-    
+import boogieBackEnd.BoogieBackEnd;
+class BoogieTestsBase extends FlatSpec with BeforeAndAfterEach {
+  
+      
     override def beforeEach(td: TestData) {   
         println(">>>>>>>>>>>>>Starting " + td.name+" >>>>>>>>>>>>>>>>>>" )
     }
@@ -31,16 +31,17 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
         println("<<<<<<<<<<<<<Finished " + td.name + " <<<<<<<<<<<<<<<<<")
     }
     
-  def tryWithParser( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = false ) =
+    
+    def tryWithParser( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = false ) =
     tryWith( str, expectedFatalErrors, expectedWarningErrors, false, false ) 
    
-  def tryWithChecker( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
+    def tryWithChecker( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
       tryWith( str, expectedFatalErrors, expectedWarningErrors, true, false)
  
-  def tryWithCBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) =
+    def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) =
       tryWith( str, expectedFatalErrors, expectedWarningErrors, runChecker,true)
       
-  def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean, runCBackEnd : Boolean )  : StandardErrorRecorder = {
+    def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean, runBoogieBackEnd : Boolean )  : StandardErrorRecorder = {
 
     // Output the input
     println( str ) ;
@@ -104,12 +105,13 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
                 println( errorRecorder.getErrorCoord(i) + " " + errorRecorder.getErrorText(i) ) ; }
     }
 
-    if( runCBackEnd ) {
-        assert(errorRecorder.getFatalCount() == 0, "Checking error prevents C back end from running.")
+    if( runBoogieBackEnd ) {
+        assert(errorRecorder.getFatalCount() == 0, "Checking error prevents Boogie back end from running.")
         if( dl != null ) {
-            println("-----------C Code  generated-------------\n")
-            val cCodeGen=new CBackEnd(dl)
-            println(cCodeGen.getCCode())       
+            println("-----------Boogie Code  generated-------------\n")
+            val boogieCodeGen=new BoogieBackEnd(dl)
+            val boogieOutput= boogieCodeGen.getBoogieCode();
+            println(boogieOutput)
         }
     }
     
@@ -118,4 +120,11 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
     errorRecorder
   }
 
+    
+    
+    
+  
+  
+  
+  
 }
