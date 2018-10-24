@@ -273,10 +273,7 @@ extends Contracts {
                     unreachable("FetchExpNd in resolver)")
             }
         }
-        
-        
 
-        
         resolveDeclList( decls, new FQN(), None )
     }
 

@@ -334,7 +334,6 @@ extends Contracts {
                               id.coord)
         result
     }
-     
     def typeCheck( command : CommandNd ) {
         command match {
             
