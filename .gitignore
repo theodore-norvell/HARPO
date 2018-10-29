@@ -1,10 +1,2 @@
-*.class
-*.log
-.settings/
-.project
-.classpath
-*.cache
 /.metadata/
-*.cache-main
 /.recommenders/
-bin/

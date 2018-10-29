@@ -21,6 +21,7 @@ extends Contracts {
 
     def resolve( decls : DeclList ) {
 
+      /* Option type is a container for zero of one element of given type*/
         def resolveDeclList( decls : DeclList, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
             for ( decl <- decls.decls )
               resolveDecl( decl, containingFQN, containingDecl )
@@ -42,13 +43,19 @@ extends Contracts {
                     resolveClassLike(d, containingFQN, containingDecl) 
                 case d : IntfDeclNd =>
                     resolveClassLike(d, containingFQN, containingDecl) 
-                case ClaimNd(objList) => 
-                    for (id <- objList) {resolveObjId(id,containingFQN,Some(decl)) }
-                case ClassInvNd(exp) => resolveExp(exp,containingFQN,containingDecl)
+                case ClaimNd(pmn) => {
+                  // TODO Compare Length - toDo("LocSetNd list and ExpNd list's lengths varies")
+                  if (pmn.locExp.length == pmn.locSet.length){
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                  }
+                }
+                case ClassInvNd(exp) =>
+                  resolveExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
-                case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
+                case ParamDeclNd(isGhost: Boolean, ty : TypeNd, paramCategory : ParamCategory) =>
                     resolveType( ty, containingFQN, containingDecl )
                 case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>
                     for( pdn <- params ) resolveDecl( pdn, fqn, Some(decl))
@@ -60,7 +67,14 @@ extends Contracts {
                 case ThreadDeclNd(claimList: List[ClaimNd], block : CommandNd) =>
                     {
                       resolveCommand( block, fqn, Some(decl))
-                    }
+                     for(clmnd <- claimList){
+                      // TODO Compare Length - toDo("LocSetNd list and ExpNd list's lengths varies")
+                       if (clmnd.pmn.locExp.length == clmnd.pmn.locSet.length){
+                      for(len <- clmnd.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                      for(lsn <- clmnd.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                      }
+                     }
+                }
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
                     resolveExp( init, containingFQN, containingDecl )
@@ -81,7 +95,6 @@ extends Contracts {
                 case PrimitiveTypeDeclNd( qn : FQN) => {}
             }
         }
-        
         
         def resolveClassLike( d : ClassLikeDeclNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
           
@@ -143,14 +156,11 @@ extends Contracts {
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             spec match {
-                // --- case for PreCndNd
                 case PreCndNd (condition) =>
                     resolveExp(condition,containingFQN, containingDecl)
                     
-                // --- case for PostCndNd
                 case PostCndNd (condition) =>
                     resolveExp(condition,containingFQN, containingDecl) 
-                case _ => ()
             }
         }
         
@@ -159,20 +169,37 @@ extends Contracts {
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             pers match {             
-                // --- case for GivesPerNd
-                case GivesPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                // --- case for TakesPerNd
-                case TakesPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                // --- case for BorrowsPerNd
-                case BorrowsPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                case _ => ()
+                case GivesPerNd (pmn) =>
+                  if (pmn.locExp.length == pmn.locSet.length){
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
+                case TakesPerNd (pmn) =>
+                if (pmn.locExp.length == pmn.locSet.length){
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
+                case BorrowsPerNd (pmn) =>
+                if (pmn.locExp.length == pmn.locSet.length){
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
             }
+        }
+        def resolvePermValue (len: ExpNd, containingFQN: FQN, containingDecl: Option[DeclNd]){
+          len match {
+            case FloatLiteralExpNd(x) => ()
+            case _ => ()
+            //toDo("Permission Value must be real")
+          }
+         
+        }
+        def resolveLocSetNd (lsn: LocSetNd, containingFQN: FQN, containingDecl: Option[DeclNd])
+        {
+          lsn match { 
+            case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
+            //toDo("Location Does not exist")
+        }
         }
 
         def resolveCommand( command : CommandNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {

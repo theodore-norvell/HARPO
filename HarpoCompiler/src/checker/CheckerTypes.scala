@@ -78,7 +78,7 @@ object CheckerTypes extends Contracts {
         override def toString = name.toString
     }
 
-    case class UniversalType( typeVar: TypeVar, body: Type ) extends Type {
+    case class UniversalType( typeVar: TypeVar, body: Type ) extends Type { 
         override def toString = s"(For all ${typeVar} in ${body})"
     }
 

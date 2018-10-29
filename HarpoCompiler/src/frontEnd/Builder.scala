@@ -3,25 +3,21 @@ package frontEnd
 import scala.collection.mutable.ArrayBuffer  
 import scala.collection.mutable.ListBuffer;
 import frontEnd.AST._ 
-
+import scala.collection.mutable.Set;
 class Builder( val errorRecorder : ErrorRecorder ) {
  
 
 /******************/
 /** Declarations **/
 /******************/
-    
+
+
   def makeCoord( file : String, line: Int, col : Int) =  Coord(file, line, col ) ;
   
   def declList() =  new DeclList()
   
   def classDeclNd(name : String, coord : Coord) =  ClassDeclNd()( name, coord, errorRecorder )
   
-  var claimId=0;
-  def makeClaimNd(locList: ExpList, coord: Coord)={
-    val name= "*clm*"+claimId; claimId+=1;
-    new ClaimNd(locList.toList)( name, coord)
-  }
   var invariantId=0;
   def makeClassInvariant(exp: ExpNd, coord : Coord) = {
     val name = "*inv*"+invariantId;invariantId+=1;
@@ -30,6 +26,52 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
 
+  // permission map
+  var claimId=0;
+  def makeClaimNd(pm: PermissionMapNd, coord: Coord)={
+    val name= "ClaimNd#"+claimId; claimId+=1;
+    new ClaimNd(pm)( name, coord)
+  }
+
+  // Object Permission Map list without the permission value
+  
+  class LocSetList extends ArrayBuffer[LocSetNd]
+  
+  def locSetList() =  new LocSetList ;
+  
+  def locSetList(x:LocSetNd) = {val result = new LocSetList; result += x ; result} 
+  
+  def add( lsl : LocSetList,  lsn : LocSetNd) { lsl += lsn; }
+  
+  def makeObjectIdLSN(objId : ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+   
+  // Sequence
+  
+/*************************/
+/** PermissionMapNd lists **/
+/*************************/
+  
+  class PermissionMapList extends ArrayBuffer[PermissionMapNd]
+  
+  def permissionMapList() = new PermissionMapList 
+  
+  def permissionMapList(x:PermissionMapNd) = {val result = new PermissionMapList; result += x ; result} 
+  
+  def add( pml : PermissionMapList, pmn : PermissionMapNd ) { pml += pmn }  
+    
+  var PermMapId = 0;
+  def makePermissionMapNd(lsl: LocSetList, el: ExpList, coord: AST.Coord) = {
+    val oldId = PermMapId;
+    val name = "PermMapNd#"+ (PermMapId+1); 
+    PermMapId+=1;
+    new PermissionMapNd(lsl.toList,el.toList,name,coord);
+  }
+
+  def makeDefaultPermissionValue ( coord : AST.Coord ) = {
+      var b : Double = 1.0; 
+      new FloatLiteralExpNd( b )(coord)
+  }
+  
   def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
     {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
   
@@ -66,7 +108,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: GivesPerList, d: GivesPerNd){l+=d;}
   
-  def makeGives(objId: ExpNd, coord : Coord) = new GivesPerNd(objId)(coord)
+  def makeGives(pmn: PermissionMapNd, coord : Coord) = new GivesPerNd(pmn)(coord)
   
 
   // Takes Condition Specification
@@ -76,7 +118,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: TakesPerList, d: TakesPerNd){l+=d;}
   
-  def makeTakes(objId: ExpNd, coord : Coord) = new TakesPerNd(objId)(coord)
+  def makeTakes(pmn: PermissionMapNd, coord : Coord) = new TakesPerNd(pmn)(coord)
   
   
   // Borrows Condition Specification
@@ -86,7 +128,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: BorrowsPerList, d: BorrowsPerNd){l+=d;}
   
-  def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
+  def makeBorrows(pmn: PermissionMapNd, coord : Coord) = new BorrowsPerNd(pmn)(coord)
   
   class ClaimList extends ArrayBuffer[ClaimNd]
 
@@ -103,8 +145,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
   =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 
   
-  def paramDeclNd( name : String, ty : TypeNd, paramCategory : ParamCategory, coord : Coord) 
-  =  ParamDeclNd( ty, paramCategory )( name, coord )
+  def paramDeclNd( isGhost: Boolean, name : String, ty : TypeNd, paramCategory : ParamCategory, coord : Coord) 
+  =  ParamDeclNd( isGhost, ty, paramCategory )( name, coord )
   
   
 /************/
@@ -309,7 +351,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def add( el : ExpList, exp : ExpNd ) { el += exp }
   
- 
+
 /*************************/
 /** Init Expressions    **/
 /*************************/
@@ -352,13 +394,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def outParamCategory() =  OutParamCategory
   
   def objParamCategory() =  ObjParamCategory
-  
-  def ghostInParamCategory() =  GhostInParamCategory
-  
-  def ghostOutParamCategory() =  GhostOutParamCategory
-  
-  def ghostObjParamCategory() =  GhostObjParamCategory
-  
+ 
   def noTypeNd(coord : Coord) =  NoTypeNd()( coord )
   
   def topTypeNd(coord : Coord) =  TopTypeNd()( coord )

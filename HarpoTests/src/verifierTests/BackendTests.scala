@@ -18,7 +18,7 @@ import frontEnd.AST.ClassLike
 import executive.HarpoToBoogieTranslator
 
 @RunWith(classOf[JUnitRunner])
-class UnitTests extends FlatSpec with BeforeAndAfterEach {
+class BackendTests extends FlatSpec with BeforeAndAfterEach {
 
   var hb = new HarpoToBoogieTranslator()
   val out = new OutputStreamWriter(System.out)

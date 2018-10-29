@@ -1,17 +1,18 @@
-(class Math()
+(class Math(ghost obj par1: Int16)
 	ghost obj c: Int32:=0;
 	ghost const x: Int32:=9;
-	//invariant 5>0
-	claim@c,x
-	public proc add(in par: Int32)
+	const y: Int32:=9;
+	invariant 5>0
+	claim x@(0.7),y@0.4
+	public proc add(ghost in par: Int32, ghost in par2: Int32,in par3: Int64, out par4: Int16)
 	pre c>8
 	post c>10
 	post x<1
 	takes x
 	gives c
-	(thread(*t0*) claim@c claim@x
+	(thread(*t0*) claim c@5 claim c@0.65,x
 		ghost const a: Int32:=9;
-		assume c>9
+		assume c>9 
 		assert a<20
 	thread) 
 class)

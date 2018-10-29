@@ -124,15 +124,10 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                                case _ => {
                                     createTypeFromTypeNd( ty ) 
                                     promoteToLoc(ty) } }
-                case ClaimNd(objIds: List[ExpNd]) =>
-                  for (id <- objIds) {  
-                    id match { //TODO
-                      case NameExpNd(i) => {} }
-                    }
-                case ClassInvNd(exp: ExpNd) =>  {  
-                    
-                    }
-                case ParamDeclNd(ty , _) =>
+                case ClaimNd(lpmn: PermissionMapNd) => {}
+
+                case ClassInvNd(exp: ExpNd) =>  {}
+                case ParamDeclNd(isGhost,ty , _) =>
                     createTypeFromTypeNd( ty ) 
                     promoteToLoc(ty)
                     check( ty.tipe != None)

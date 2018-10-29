@@ -69,9 +69,9 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromClassLike(d, containingFQN)
         case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) =>
           buildSTFromInitExp(init, containingFQN)
-        case ClaimNd(objList) => buildSTFromClaimNd(objList,containingFQN)
+        case ClaimNd(perMapNd) => buildSTFromClaimNd(perMapNd,containingFQN)
         case ClassInvNd(exp) => buildSTFromClassInv(exp,containingFQN)
-        case ParamDeclNd(ty: TypeNd, paramCategory: ParamCategory) => ()
+        case ParamDeclNd(isGhost: Boolean,ty: TypeNd, paramCategory: ParamCategory) => () // we don't need to make symbol table for parameter declarations
         case MethodDeclNd(_, params, preCndList, postCndList, givesPerList, takesPerList, borrowsPerList) =>
           for (p <- params) buildSTFromDecl(p, fqn)
           for (spec <- preCndList) buildSTfromMethodSpecList(spec, fqn)
@@ -130,37 +130,37 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromInitExp(a, fqn)
           buildSTFromInitExp(b, fqn)
         }
-        case WidenInitExpNd(a: InitExpNd) =>
+        case WidenInitExpNd(a: InitExpNd) => // What is this widenInitExpNd
           unreachable()
       }
     }
 
     def buildSTFromClaimNdList(claimNds: List[ClaimNd],containingFQN: FQN) {
       for (claim <- claimNds) {
-        buildSTFromClaimNd(claim.objIdList,containingFQN)
+        buildSTFromClaimNd(claim.pmn,containingFQN)
       }
     }
     
-    def buildSTFromClaimNd(objIds: List[ExpNd],containingFQN: FQN) {
-    //TODO
+    def buildSTFromClaimNd(perMapNd: PermissionMapNd,containingFQN: FQN) {
+      ()
     }
     
     def buildSTFromClassInv(exp: ExpNd,containingFQN: FQN) {
-      //TODO
+      ()
     }
 
-    def buildSTfromMethodSpecList(spec: MethodSpecNd, containingFQN: FQN) {
-      spec match {
+    def buildSTfromMethodSpecList(msn: MethodSpecNd, containingFQN: FQN) {
+      msn match {
         case PreCndNd(condition) => ()
         case PostCndNd(condition) => ()
       }
     }
 
-    def buildSTfromMethodPerList(per: MethodPerNd, containingFQN: FQN) {
-      per match {
-        case GivesPerNd(objId) => ()
-        case TakesPerNd(objId) => ()
-        case BorrowsPerNd(objId) => ()
+    def buildSTfromMethodPerList(mpn: MethodPerNd, containingFQN: FQN) {
+      mpn match {
+        case GivesPerNd(pmn) => ()
+        case TakesPerNd(pmn) => ()
+        case BorrowsPerNd(pmn) => ()
       }
     }
 

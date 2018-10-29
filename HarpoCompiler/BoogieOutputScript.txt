@@ -57,6 +57,9 @@ const unique Math:className;
 const unique Math.c:Field int;
 const unique Math.c:Field int;
 const unique Math.x:Field int;
+const unique Math.c:Field int;
+const unique Math.x:Field int;
+const unique Math.y:Field int;
 procedure Math.t0(this:Ref)
 modifies Heap;
 {
@@ -69,4 +72,7 @@ Heap[this, Math.c] := 0;
 Permission[this, Math.x] := 1.0;
 assert Permission[this, Math.x] == 1.0;
 Heap[this, Math.x] := 9;
+Permission[this, Math.y] := 1.0;
+assert Permission[this, Math.y] == 1.0;
+Heap[this, Math.y] := 9;
 }

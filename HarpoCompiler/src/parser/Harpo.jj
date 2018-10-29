@@ -338,7 +338,10 @@ ObjDeclNd Field() : {
 	{return p ;}
 }
 
-boolean Ghost() : {boolean isGhost=false;} {
+boolean Ghost() : {
+  boolean isGhost=false;
+}
+{
 	"ghost" {isGhost=true; }
 	{return isGhost;}
 }
@@ -434,33 +437,33 @@ PostCndNd PostCond() : {
 {return builder.makePost(x, getCoord(tk)) ;}
 }
 GivesPerNd GivesPer() : {
- ExpNd name;
+ PermissionMapNd permMapNd;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"gives" name=ObjectId()
-{return builder.makeGives(name, getCoord(tk)) ;}
+"gives" permMapNd=PermissionMap()
+{return builder.makeGives(permMapNd, getCoord(tk)) ;}
 }
 
 TakesPerNd TakesPer() : {
- ExpNd name;
+ PermissionMapNd permMapNd;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"takes" name=ObjectId()
-{return builder.makeTakes(name, getCoord(tk)) ;}
+"takes" permMapNd=PermissionMap()
+{return builder.makeTakes(permMapNd, getCoord(tk)) ;}
 }
 
 BorrowsPerNd BorrowsPer() : {
- ExpNd name;
+ PermissionMapNd permMapNd;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"borrows" name=ObjectId()
-{return builder.makeBorrows(name, getCoord(tk)) ;}
+"borrows" permMapNd=PermissionMap()
+{return builder.makeBorrows(permMapNd, getCoord(tk)) ;}
 }
 
 // Thread may start with a claim
@@ -485,77 +488,124 @@ ThreadDeclNd Thread() : {
 
 ParamDeclNd CParam() : {
 	ParamDeclNd param ;
-	Boolean isGhost; }
-	
+}
 {
-	param=ObjParam() {return param;}
+	(
+	  LOOKAHEAD ( [Ghost()] ("obj"))	  param=ObjParam() {return param;}
 	|
-	param=InParam() {return param ; }
+	  LOOKAHEAD ( [Ghost()] ("in"))
+	  param=InParam() {return param ; }
+	)
 }
 
 ParamDeclNd MParam() : {
 	ParamDeclNd param ; }
 {
+  (    
+    LOOKAHEAD ( [Ghost()] ("out"))
 	param=OutParam() {return param;}
 |
+	LOOKAHEAD ( [Ghost()] ("in"))
 	param=InParam() {return param ; }
+)
 }
 
 ParamDeclNd InParam() : {
+	boolean isGhost=false; 
 	ParamDeclNd param ; }
 {
   	(
-  	  "ghost" "in" param=Param( builder.ghostInParamCategory() )
-	  {return param ;}
-	)  |
-  	(
-	  "in" param=Param( builder.inParamCategory() )
+  	  (isGhost=Ghost())?
+  	  "in" param=Param( isGhost, builder.inParamCategory() )
 	  {return param ;}
 	)
 }
 
 ParamDeclNd OutParam() : {
+  	boolean isGhost=false; 
 	ParamDeclNd param ;
 }
 {
     (
-	  "out" param=Param(  builder.outParamCategory() )
+      (isGhost=Ghost())?
+	  "out" param=Param( isGhost, builder.outParamCategory() )
 	  {return param ;}
 	)
 }
 
 ParamDeclNd ObjParam() : {
 	ParamDeclNd param ;
-	Boolean isGhost; }
+	boolean isGhost=false; }
 {
 	(
-	  "ghost" {isGhost=true;}
-	  "obj" param=Param( builder.ghostObjParamCategory() )
+	  (isGhost=Ghost())?
+	  "obj" param=Param( isGhost, builder.objParamCategory() )
 	  {return param ;}	)
-  |
-	(
-      "obj" { isGhost = false; } param=Param( builder.objParamCategory() )
-      {return param ; }
-	)
+
 }
 
-ParamDeclNd Param(ParamCategory cat) : {
+// Ghost Parameters
+ParamDeclNd Param(boolean isGhost, ParamCategory cat) : {
 	String name ;
 	TypeNd ty ;
 	Token tk = getToken(1) ;
 } {
 	name=Name() ":" ty=Type() 
-	{return builder.paramDeclNd( name, ty, cat, getCoord(tk));}
+	{return builder.paramDeclNd( isGhost, name, ty, cat, getCoord(tk));}
 }
 
 ClaimNd Claim() : {
   ExpNd loc;
   Token tk;
-  ExpList ls = builder.expList();
+  PermissionMapNd permMapNd;
+  PermissionMapList pml = builder.permissionMapList();
+
 }
 {
-  {tk=getToken(1);}        "claim" "@" ( loc=ObjectId() { builder.add(ls,loc);} [","] )+
-  {return builder.makeClaimNd(ls,getCoord(tk));}
+   tk= "claim" (permMapNd = PermissionMap())
+	  { return builder.makeClaimNd(permMapNd,getCoord(tk));}
+}
+PermissionMapNd PermissionMap() : {
+  String name;
+  String defaultPer;
+  Token tk = getToken(1);
+  PermissionMapNd permMapNd;
+  ExpNd exp;
+  ExpList explst = builder.expList();
+  LocSetNd locSet;
+  LocSetList lsl = builder.locSetList() ;
+}
+{
+  // Supply default permission if not given "1.0"
+      locSet = LocSet() {builder.add(lsl,locSet);}
+     	  (("@" exp = Exp() { builder.add(explst,exp);}) | (exp = DefaultPermission(){ builder.add(explst,exp);}))
+     ([","]  locSet = LocSet() {builder.add(lsl,locSet);}
+     	  (("@" exp = Exp() { builder.add(explst,exp);}) | (exp = DefaultPermission(){ builder.add(explst,exp);}))
+     )*
+     	
+  {return permMapNd=builder.makePermissionMapNd(lsl,explst, getCoord(tk));}
+}
+
+LocSetNd LocSet(): {
+  ExpNd objId;
+  Token tk = getToken(1);
+  LocSetNd ls; 
+}
+{
+  	 objId = ObjectId()
+  	 { ls = builder.makeObjectIdLSN(objId,getCoord(tk)); }
+	{return ls;}
+}
+
+ExpNd DefaultPermission() : {
+ExpNd defPerVal;
+Token tk;
+}
+{
+  {tk = getToken(1); }
+ {defPerVal = builder.makeDefaultPermissionValue(getCoord(tk));
+ return defPerVal;
+}
 }
 
 ClassInvNd ClassInvariant(): {
@@ -988,6 +1038,7 @@ ExpNd OptGuard() :
    /*empty*/ { return builder.noExp(getCoord(1)) ; } 
 }
 
+
 ExpNd ObjectId() : { 
 	String str ;
 	NameNd name ;
@@ -1000,8 +1051,9 @@ ExpNd ObjectId() : {
 	|
 		tk = "." str=Name()   { r = builder.memberExp(r, str, getCoord(tk)) ; }
 	)*
-	{return r;}
+	{return r; }
 }
+
 String Name() : {
 	Token t ;	
 } {

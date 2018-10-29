@@ -42,7 +42,7 @@ extends Contracts {
                                                   exp.coord)
                         check( ty.tipe != None)
                         ty.tipe
-                    case ParamDeclNd( ty, cat) =>
+                    case ParamDeclNd(isGhost, ty, cat) =>
                         check( ty.tipe != None )
                         ty.tipe
                     case node@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd] ) =>
@@ -179,13 +179,17 @@ extends Contracts {
                 // Convert the initialization expression to match the expected type
                 decl.init = typeConvertInitExpNd( init, expectedType )
             
-            case decl@ClaimNd(objIds) => {
-              for( id <- objIds ) typeCheckObjId( id )
+            case decl@ClaimNd(pmn) => { 
+              for(lsn <- pmn.locSet){
+                typeCheck(lsn) 
+              }
+              for(len <- pmn.locExp)
+                 typeCheck(len)
             }
             case decl@ClassInvNd(exp) => {
               typeCheck( exp )
             } 
-            case decl@ParamDeclNd( ty, cat ) =>
+            case decl@ParamDeclNd( isGhost, ty, cat ) =>
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
                 
@@ -199,8 +203,15 @@ extends Contracts {
                 // TODO anything else to check?
                 // TODO set the .tipe field.
                 
-            case decl@ThreadDeclNd(claim, block ) =>
+            case decl@ThreadDeclNd(claimList, block ) => {
                 typeCheck( block ) 
+                for (cn <- claimList) {
+                  for(lsn <- cn.pmn.locSet)
+                  typeCheck(lsn) 
+                  for(len <- cn.pmn.locExp)
+                  typeCheck(len)
+                  }
+            }
                 
             case decl@LocalDeclNd(isGhost, isConst, ty, initExp, cmd) =>
                 val initExp$ = insertAsExpressionForLiterals(ty, initExp)
@@ -286,6 +297,42 @@ extends Contracts {
         }
     }
     
+    def typeCheck(pmn: PermissionMapNd) {
+            for(lsn <- pmn.locSet)
+              typeCheck(lsn) 
+            for(len <- pmn.locExp) {
+              typeCheck(len)
+            }
+    }
+//    
+//    val per : Double = permConvert(len) // float convert (float: does nothing, integer: convert to real, other error)
+//              val exp : ExpNd = FloatLiteralExpNd(per)(len.coord);
+//              typeCheck(exp)
+    
+    
+    def permConvert (exp : ExpNd) : Double = { 
+      exp match {
+         case IntLiteralExpNd( i ) => i.toDouble; 
+         case FloatLiteralExpNd( d ) => d.toDouble;
+      }
+    }
+    
+    def typeCheck(lsn: LocSetNd) {
+       lsn match {
+        case ObjectIdLSN(i) => typeCheck(i) // add other cases
+        case _ => println("Type Not Allowed")
+      }
+    }
+    
+    
+    def typeCheckObjId(objId: ExpNd){
+      objId match {
+        case NameExpNd(i) => convertId(objId)
+        case _ => println("Type Not Allowed")
+      }
+    }
+    
+    
     def typeCheck(mSpecNd: MethodSpecNd){
       mSpecNd match{
         case mSpecNd@PreCndNd(preCnd) => preCndCheck(preCnd)
@@ -311,19 +358,28 @@ extends Contracts {
     
     def typeCheck(mPerNd: MethodPerNd){
       mPerNd match{
-        case mPerNd@GivesPerNd(objId)=> typeCheckObjId(objId)
-        case mPerNd@TakesPerNd(objId)=> typeCheckObjId(objId)
-        case mPerNd@BorrowsPerNd(objId)=> typeCheckObjId(objId)
+        case mPerNd@GivesPerNd(pmn)=> 
+          {
+            for(lsn <- pmn.locSet)
+              typeCheck(lsn) 
+            for(len <- pmn.locExp)
+              typeCheck(len)
+          } 
+        case mPerNd@TakesPerNd(pmn)=> {
+            for(lsn <- pmn.locSet)
+              typeCheck(lsn) 
+            for(len <- pmn.locExp)
+              typeCheck(len)
+          } 
+        case mPerNd@BorrowsPerNd(pmn)=> {
+            for(lsn <- pmn.locSet)
+              typeCheck(lsn) 
+            for(len <- pmn.locExp)
+              typeCheck(len)} 
       }
       
     }
-    
-    def typeCheckObjId(objId: ExpNd){
-      objId match {
-        case NameExpNd(i) => convertId(objId)
-        case _ => println("Type Not Allowed")
-      }
-    }
+
      //Permission Nodes
      private def convertId( id : ExpNd ) = {
         val gTy = typeCheck(id)
@@ -684,7 +740,7 @@ extends Contracts {
                         case Some( memberDecl@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) ) =>
                             // TODO check accessibility
                             memberDecl.tipe
-                        case Some( ParamDeclNd( ty, paramCategory) ) =>
+                        case Some( ParamDeclNd(isGhost, ty, paramCategory) ) =>
                             // TODO add accessibility to constructor parameters and
                             // check accessibility
                             ty.tipe
