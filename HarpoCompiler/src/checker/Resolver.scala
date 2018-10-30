@@ -169,18 +169,15 @@ extends Contracts {
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             pers match {             
-                case GivesPerNd (pmn) =>
-                  if (pmn.locExp.length == pmn.locSet.length){
+                case GivesPerNd (pmn) => {
                   for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
                   for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
                  }
-                case TakesPerNd (pmn) =>
-                if (pmn.locExp.length == pmn.locSet.length){
+                case TakesPerNd (pmn) => {
                   for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
                   for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
                  }
-                case BorrowsPerNd (pmn) =>
-                if (pmn.locExp.length == pmn.locSet.length){
+                case BorrowsPerNd (pmn) => {
                   for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
                   for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
                  }
@@ -190,7 +187,6 @@ extends Contracts {
           len match {
             case FloatLiteralExpNd(x) => ()
             case _ => ()
-            //toDo("Permission Value must be real")
           }
          
         }
@@ -198,7 +194,7 @@ extends Contracts {
         {
           lsn match { 
             case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
-            //toDo("Location Does not exist")
+            // Add other Cases
         }
         }
 

@@ -183,7 +183,7 @@ extends Contracts {
               for(lsn <- pmn.locSet){
                 typeCheck(lsn) 
               }
-              for(len <- pmn.locExp)
+              for(len <- pmn.locExp)     
                  typeCheck(len)
             }
             case decl@ClassInvNd(exp) => {
@@ -206,10 +206,7 @@ extends Contracts {
             case decl@ThreadDeclNd(claimList, block ) => {
                 typeCheck( block ) 
                 for (cn <- claimList) {
-                  for(lsn <- cn.pmn.locSet)
-                  typeCheck(lsn) 
-                  for(len <- cn.pmn.locExp)
-                  typeCheck(len)
+                  typeCheck(cn.pmn)
                   }
             }
                 
@@ -304,18 +301,14 @@ extends Contracts {
               typeCheck(len)
             }
     }
-//    
-//    val per : Double = permConvert(len) // float convert (float: does nothing, integer: convert to real, other error)
-//              val exp : ExpNd = FloatLiteralExpNd(per)(len.coord);
-//              typeCheck(exp)
     
-    
-    def permConvert (exp : ExpNd) : Double = { 
-      exp match {
-         case IntLiteralExpNd( i ) => i.toDouble; 
-         case FloatLiteralExpNd( d ) => d.toDouble;
-      }
-    }
+//    def permConvert (exp : ExpNd) : ExpNd = { 
+//      exp match {
+//         case IntLiteralExpNd( i ) =>  FloatLiteralExpNd(i.toDouble.doubleValue())(exp.coord) 
+//         case FloatLiteralExpNd( d ) => FloatLiteralExpNd(d.toDouble.doubleValue())(exp.coord) 
+//      }
+//      
+//    }
     
     def typeCheck(lsn: LocSetNd) {
        lsn match {
@@ -323,7 +316,7 @@ extends Contracts {
         case _ => println("Type Not Allowed")
       }
     }
-    
+
     
     def typeCheckObjId(objId: ExpNd){
       objId match {

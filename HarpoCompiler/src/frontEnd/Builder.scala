@@ -62,9 +62,16 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   var PermMapId = 0;
   def makePermissionMapNd(lsl: LocSetList, el: ExpList, coord: AST.Coord) = {
     val oldId = PermMapId;
-    val name = "PermMapNd#"+ (PermMapId+1); 
+    val name = "PermMapNd#"+ (PermMapId+1);
     PermMapId+=1;
-    new PermissionMapNd(lsl.toList,el.toList,name,coord);
+    val realPermList = expList();
+    for(e <- el)   
+      e match {
+      case IntLiteralExpNd(i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
+      case FloatLiteralExpNd (i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
+      case _ => ()
+      }
+    new PermissionMapNd(lsl.toList, realPermList.toList,name,coord);
   }
 
   def makeDefaultPermissionValue ( coord : AST.Coord ) = {
