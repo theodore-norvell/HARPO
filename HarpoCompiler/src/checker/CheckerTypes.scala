@@ -82,7 +82,7 @@ object CheckerTypes extends Contracts {
         override def toString = s"(For all ${typeVar} in ${body})"
     }
 
-    case class AppliedType( typeFunc: Type, typeArg: Type ) extends Type {
+    case class AppliedType( typeFunc: Type, typeArg: Type ) extends Type { //type constructor
         override def toString = s"${typeFunc}{${typeArg}}"
     }
 
@@ -90,7 +90,7 @@ object CheckerTypes extends Contracts {
         override def toString = s"${base}[]"
     }
 
-    case class TopType() extends Type {
+    case class TopType() extends Type { // errors
         override def toString = "Top"
     }
 
@@ -110,6 +110,7 @@ object CheckerTypes extends Contracts {
     case class LocationType( base: PrimitiveType ) extends Type {
         override def toString = s"loc{${base}}"
     }
+    // need set of location type
 
     val int8FQN = new FQN( "Int8" )
 

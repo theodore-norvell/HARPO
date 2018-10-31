@@ -1,2 +1,13 @@
+*.class
+*.log
+RemoteSystemsTempFiles/*
 /.metadata/
+/.recommenders
+.settings/
+.project
+.classpath
+*.cache
+*.cache-main
 /.recommenders/
+bin/
+

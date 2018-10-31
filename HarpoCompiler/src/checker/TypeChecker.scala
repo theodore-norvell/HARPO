@@ -298,21 +298,25 @@ extends Contracts {
             for(lsn <- pmn.locSet)
               typeCheck(lsn) 
             for(len <- pmn.locExp) {
-              typeCheck(len)
+              typeCheck(len) // typecpnvert
             }
     }
     
 //    def permConvert (exp : ExpNd) : ExpNd = { 
 //      exp match {
 //         case IntLiteralExpNd( i ) =>  FloatLiteralExpNd(i.toDouble.doubleValue())(exp.coord) 
-//         case FloatLiteralExpNd( d ) => FloatLiteralExpNd(d.toDouble.doubleValue())(exp.coord) 
+//         case FloatLiteralExpNd( d ) => FloatLiteralExpNd(d.toDouble.doubleValue())(exp.coord)
 //      }
 //      
 //    }
     
     def typeCheck(lsn: LocSetNd) {
        lsn match {
-        case ObjectIdLSN(i) => typeCheck(i) // add other cases
+        case ObjectIdLSN(i) => typeCheck(i) // need to check that it actually represent a location, 
+        // Convert from location to set of location, insert a cast
+        // location holding int to set of int
+        // Need new type
+        // add other cases,
         case _ => println("Type Not Allowed")
       }
     }
@@ -324,7 +328,6 @@ extends Contracts {
         case _ => println("Type Not Allowed")
       }
     }
-    
     
     def typeCheck(mSpecNd: MethodSpecNd){
       mSpecNd match{

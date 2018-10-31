@@ -65,6 +65,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
     val name = "PermMapNd#"+ (PermMapId+1);
     PermMapId+=1;
     val realPermList = expList();
+    // Under implementation in Checker phase.
     for(e <- el)   
       e match {
       case IntLiteralExpNd(i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
