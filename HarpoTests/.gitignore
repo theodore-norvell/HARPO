@@ -1,1 +1,13 @@
 /bin/
+
+*.class
+*.log
+.settings/
+.project
+.classpath
+*.cache
+/.metadata/
+.DS_Store
+*.cache-main
+/.recommenders/
+bin/
