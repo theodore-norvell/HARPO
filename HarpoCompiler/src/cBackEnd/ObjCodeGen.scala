@@ -29,7 +29,7 @@ class ObjCodeGen {
   def build(objNd : DeclNd) : (String, String) = {
     val NM = NameManager
     objNd match {
-      case ObjDeclNd(isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+      case ObjDeclNd(isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
         val objName : String = objNd.name
         val objType : (String, String) = TypeCodeGen(ty)
         val objInit = ExpCodeGen(init, objName)

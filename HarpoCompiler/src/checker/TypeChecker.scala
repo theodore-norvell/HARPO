@@ -12,7 +12,7 @@ class TypeChecker (
     errorRecorder : ErrorRecorder, 
     //classEnv : ClassEnvironment,
     //symbolTable : SymbolTable,
-    typeCreator : TypeCreator )  
+    typeCreator : TypeCreator )
 extends Contracts { 
   
     def typeCheck( exp : ExpNd ) : Option[Type] = {
@@ -31,18 +31,18 @@ extends Contracts {
                 val decl = name.decl.getOrElse{
                     Contracts.unreachable("Name not resolved by type checking time.") }
                 decl match {
-                    case ObjDeclNd( isConst, acc, ty, init) =>
+                    case ObjDeclNd(isGhost, isConst, acc, ty, init) =>
                         errorRecorder.checkFatal( ty.tipe != None,
                                                  "The type of "+name+" can not be determined at this point.",
                                                   exp.coord)
                         ty.tipe
-                    case LocalDeclNd( isConst, ty, init, cmd) =>
+                    case LocalDeclNd(isGhost, isConst, ty, init, cmd) =>
                         errorRecorder.checkFatal( ty.tipe != None,
                                                  "The type of "+name+" can not be determined at this point.",
                                                   exp.coord)
                         check( ty.tipe != None)
                         ty.tipe
-                    case ParamDeclNd( ty, cat) =>
+                    case ParamDeclNd(isGhost, ty, cat) =>
                         check( ty.tipe != None )
                         ty.tipe
                     case node@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd] ) =>
@@ -90,7 +90,8 @@ extends Contracts {
         exp.tipe = ty ;
         return ty
     }
-  
+
+    // Still working on - Inaam
     private def typeCheck( init : InitExpNd  ) : Option[Type] = {
         val optTy : Option[Type] = init match {
             
@@ -149,7 +150,7 @@ extends Contracts {
                 typeCheck( decl.directMembers )
                 
                 
-            case decl@ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
+            case decl@ObjDeclNd(isGhost, isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
                 // If the init expression is an expression, we may
                 // need to convert a literal expression to an 'as' expresssion.
                 init match {
@@ -178,20 +179,34 @@ extends Contracts {
                 // Convert the initialization expression to match the expected type
                 decl.init = typeConvertInitExpNd( init, expectedType )
             
-                
-            case decl@ParamDeclNd( ty, cat ) =>
+            case decl@ClaimNd(pmn) => {
+              typeCheck( pmn )
+            }
+            case decl@ClassInvNd(exp) => {
+              typeCheck( exp )
+            } 
+            case decl@ParamDeclNd( isGhost, ty, cat ) =>
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
                 
             case decl@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[givesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd] ) =>
                 for( pdn <- params ) typeCheck( pdn )
+                for( precn <- preCndList ) typeCheck( precn )
+                for( postcn <- postCndList ) typeCheck( postcn )
+                for( gpl <- givesPerList ) typeCheck( gpl )
+                for( tpl <- takesPerList ) typeCheck( tpl)
+                for( bpl <- borrowsPerList ) typeCheck( bpl )
                 // TODO anything else to check?
                 // TODO set the .tipe field.
                 
-            case decl@ThreadDeclNd( block ) =>
+            case decl@ThreadDeclNd(claimList, block ) => {
                 typeCheck( block ) 
+                for (cn <- claimList) {
+                  typeCheck(cn.pmn)
+                  }
+            }
                 
-            case decl@LocalDeclNd( isConst, ty, initExp, cmd) =>
+            case decl@LocalDeclNd(isGhost, isConst, ty, initExp, cmd) =>
                 val initExp$ = insertAsExpressionForLiterals(ty, initExp)
                 decl.init = initExp$
                 
@@ -275,6 +290,88 @@ extends Contracts {
         }
     }
     
+    def typeCheck(pmn: PermissionMapNd) {
+            for(lsn <- pmn.locSet)
+              typeCheck(lsn) 
+            for(len <- pmn.locExp) {
+              val pTy = typeCheck(len)
+              val result = valueConvert(len)
+              check( result.tipe.isDefined ) 
+              for (ty <- result.tipe) {
+                 if(!(isRealType(ty)))
+                  {println(result.tipe)
+                  typeConvert(len, Some(real64))}
+              }
+            }
+    }
+    
+    def typeCheck(lsn: LocSetNd) {
+       lsn match {
+        case ObjectIdLSN(i) => typeCheck(i) // need to check that it actually represent a location, 
+        // Convert from location to set of location, insert a cast
+        // location holding int to set of int
+        // Need new type
+        // add other cases,
+        case _ => println("Type Not Allowed")
+      }
+    }
+
+    
+    def typeCheckObjId(objId: ExpNd){
+      objId match {
+        case NameExpNd(i) => convertId(objId)
+        case _ => println("Type Not Allowed")
+      }
+    }
+    
+    def typeCheck(mSpecNd: MethodSpecNd){
+      mSpecNd match{
+        case mSpecNd@PreCndNd(preCnd) => preCndCheck(preCnd)
+        case mSpecNd@PostCndNd(postCnd) => postCndCheck(postCnd)
+      }
+    }
+    
+    private def preCndCheck(pre: ExpNd)={
+      val pTy= typeCheck(pre)
+      val result = valueConvert(pre)
+      for (ty <- result.tipe)
+        errorRecorder.checkFatal(ty==bool, " 'pre' condition must be boolean.", pre.coord)
+      result
+    }
+    
+    private def postCndCheck(post: ExpNd)={
+      val pTy= typeCheck(post)
+      val result = valueConvert(post)
+      for (ty <- result.tipe)
+        errorRecorder.checkFatal(ty==bool, " 'post' condition must be boolean.", post.coord)
+      result
+    }
+    
+    def typeCheck(mPerNd: PermissionNd){
+      mPerNd match{
+        case mPerNd@GivesPerNd(pmn)=> {
+          typeCheck(pmn)
+          } 
+        case mPerNd@TakesPerNd(pmn)=> {
+          typeCheck(pmn)
+          } 
+        case mPerNd@BorrowsPerNd(pmn)=> {
+          typeCheck(pmn)
+          } 
+      }
+      
+    }
+
+     //Permission Nodes
+     private def convertId( id : ExpNd ) = {
+        val gTy = typeCheck(id)
+        val result = valueConvert( id )
+        for( ty <- result.tipe )
+            errorRecorder.checkFatal(ty != None,
+                              "Object Id must be on primitive object.",
+                              id.coord)
+        result
+    }
     def typeCheck( command : CommandNd ) {
         command match {
             
@@ -314,10 +411,11 @@ extends Contracts {
                 typeCheck( thenCmd )
                 typeCheck( elseCmd )
                 
-            case cmd@WhileCmdNd( guard, body ) =>
+            case cmd@WhileCmdNd( guard,lil, body ) => {
                 cmd.guard = convertGuard( guard )
                 typeCheck( body )
-          
+                for (li <- lil) typeCheck(li)
+            }
             // make new case of assert command
                 
             case cmd@AssertCmdNd(assertion) =>
@@ -326,27 +424,32 @@ extends Contracts {
             case cmd@AssumeCmdNd(assumption) =>
                 cmd.assumption = convertAssumption(assumption)
                 
-                
-            case ForCmdNd( forDecl, repetitions, body ) =>
+            case ForCmdNd( forDecl, repetitions,lil, body ) => {
+                for (li <- lil) typeCheck(li)
                 toDo( "For commands in type checker")
+            }
                 
-            case CoForCmdNd( forDecl, repetitions, body ) =>
+            case CoForCmdNd( forDecl, repetitions, cl, body ) => {
+              for (cn <- cl) typeCheck(cn.pmn)
                 toDo( "Co-for commands in type checker")
-                
-            case CoCmdNd( fstCmd, sndCmd ) =>
+            }   
+            case CoCmdNd(cl, fstCmd, sndCmd ) => {
                 typeCheck( fstCmd )
                 typeCheck( sndCmd )
-                
+                for (cn <- cl) typeCheck(cn.pmn)
+            }    
             case AcceptCmdNd( methodImplementationList ) =>
                 for ( methImpl <- methodImplementationList ) {
                     typeCheck( methImpl ) }
                 
-            case withCmd@WithCmdNd( lock, guard, command ) =>
+            case withCmd@WithCmdNd( lock, tpl, guard, command, gpl ) =>
                 withCmd.guard = convertGuard( guard )
+                for(pn <- tpl) typeCheck(pn)
+                for(pn <- gpl) typeCheck(pn)
                 toDo( "With commands in type checker")
         }
     }
-    
+
     private def convertGuard( guard : ExpNd ) = {
         val gTy = typeCheck(guard)
         val result = valueConvert( guard )
@@ -356,11 +459,6 @@ extends Contracts {
                               guard.coord) 
         result
     }
-    
-    
-    
-    
-    
     // ---- Checking the assertion expression.
     
     private def convertAssertion( assertion : ExpNd ) = {
@@ -372,7 +470,8 @@ extends Contracts {
                               assertion.coord) 
         result
     }
-        private def convertAssumption( assumption : ExpNd ) = {
+        
+    private def convertAssumption( assumption : ExpNd ) = {
         val gTy = typeCheck(assumption)
         val result = valueConvert( assumption )
         for( ty <- result.tipe )
@@ -381,13 +480,7 @@ extends Contracts {
                               assumption.coord) 
         result
     }
-        
-        
-        
-        
-        
-        
-        
+              
     private def insertAsExpressionForLiterals( ty : TypeNd, exp : ExpNd ) : ExpNd =
         // If the declaration is explicitly typed...
         ty match {
@@ -629,13 +722,13 @@ extends Contracts {
                                 s"Type ${classLikeDeclNd.fqn} has no member named ${name}",
                                 exp.coord)
                             None
-                        case Some( ObjDeclNd( isConst, acc, ty, init) ) =>
+                        case Some( ObjDeclNd(isGhost, isConst, acc, ty, init) ) =>
                             // TODO check accessibility
                             ty.tipe
                         case Some( memberDecl@MethodDeclNd( acc, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) ) =>
                             // TODO check accessibility
                             memberDecl.tipe
-                        case Some( ParamDeclNd( ty, paramCategory) ) =>
+                        case Some( ParamDeclNd(isGhost, ty, paramCategory) ) =>
                             // TODO add accessibility to constructor parameters and
                             // check accessibility
                             ty.tipe
@@ -660,11 +753,19 @@ extends Contracts {
                 exp$
             case _ => exp }
     
+    
+    
     private def typeConvert( exp : ExpNd, optType : Option[Type] ) : ExpNd = 
         (exp.tipe, optType) match {
             case(Some(tyFrom), Some(tyTo)) =>
                 if( tyFrom==tyTo) {
                     exp }
+                else if ( isIntegralType(tyFrom) && isRealType(tyTo) ) {
+                  println("it is trying to convert")
+                  val exp$ = AsExpNd( exp, nodeFor(tyTo) )( exp.coord )
+                    exp$.tipe = Some(tyTo); println(exp$.tipe)
+                    exp$
+                }
                 else if( isWiderThan( tyTo, tyFrom ) ) {
                     val exp$ = AsExpNd( exp, nodeFor(tyTo) )( exp.coord )
                     exp$.tipe = Some(tyTo)
@@ -705,6 +806,12 @@ extends Contracts {
     private def isIntegralType( t : Type ) : Boolean = {
         t match {
             case `int8`| `int16` | `int32` | `int64` => true ;
+            case _ => false ;
+        }
+    }
+    private def isRealType( t : Type ) : Boolean = {
+       t match {
+            case `real16` | `real32` | `real64` => true ;
             case _ => false ;
         }
     }

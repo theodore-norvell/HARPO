@@ -205,7 +205,7 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 			val boogieCode = getBoogiePrelude() + genDeclCode( masterDeclList )
 			return boogieCode.toString();
 	}   
-	private def getBoogiePrelude():String = {      
+	private def getBoogiePrelude():String = {       
         	val preludeUrl : URL = this.getClass().getResource("/boogieBackEnd/BoogiePrelude.txt")
           val prelude = new File(preludeUrl.toURI())
           val contents = Source.fromFile(prelude)
@@ -228,7 +228,12 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 						  val intfCode=new IntfCodeGen(dlNd);
 						  boogieCode += intfCode.getIntfCode()
 						}
-						case _ => val code = "No Declarations Found"
+						
+						case ObjDeclNd( isGhost,isConst, acc, ty, init ) => {
+						  val objCode = new ObjCodeGen(dlNd)  
+						}
+						
+						case _ => val code = "No declarations were found"
 						}
 					} 
 			return boogieCode;

@@ -1,23 +1,87 @@
 package frontEnd
 
-import scala.collection.mutable.ArrayBuffer 
-
+import scala.collection.mutable.ArrayBuffer  
+import scala.collection.mutable.ListBuffer;
 import frontEnd.AST._ 
-
+import scala.collection.mutable.Set;
 class Builder( val errorRecorder : ErrorRecorder ) {
  
 
 /******************/
 /** Declarations **/
 /******************/
-    
+
+
   def makeCoord( file : String, line: Int, col : Int) =  Coord(file, line, col ) ;
   
   def declList() =  new DeclList()
   
   def classDeclNd(name : String, coord : Coord) =  ClassDeclNd()( name, coord, errorRecorder )
   
+  var invariantId=0;
+  def makeClassInvariant(exp: ExpNd, coord : Coord) = {
+    val name = "*inv*"+invariantId;invariantId+=1;
+    new ClassInvNd(exp)(name,coord)
+  }
+  
   def intfDeclNd(name : String, coord : Coord) =  IntfDeclNd()( name, coord, errorRecorder )
+
+  // permission map
+  var claimId=0;
+  def makeClaimNd(pm: PermissionMapNd, coord: Coord)={
+    val name= "ClaimNd#"+claimId; claimId+=1;
+    new ClaimNd(pm)( name, coord)
+  }
+
+  // Object Permission Map list without the permission value
+  
+  class LocSetList extends ArrayBuffer[LocSetNd]
+  
+  def locSetList() =  new LocSetList ;
+  
+  def locSetList(x:LocSetNd) = {val result = new LocSetList; result += x ; result} 
+  
+  def add( lsl : LocSetList,  lsn : LocSetNd) { lsl += lsn; }
+  
+  def makeObjectIdLSN(objId : ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+   
+  // Sequence
+  
+/*************************/
+/** PermissionMapNd lists **/
+/*************************/
+  
+  class PermissionMapList extends ArrayBuffer[PermissionMapNd]
+  
+  def permissionMapList() = new PermissionMapList 
+  
+  def permissionMapList(x:PermissionMapNd) = {val result = new PermissionMapList; result += x ; result} 
+  
+  def add( pml : PermissionMapList, pmn : PermissionMapNd ) { pml += pmn }  
+    
+  var PermMapId = 0;
+  def makePermissionMapNd(lsl: LocSetList, el: ExpList, coord: AST.Coord) = {
+    val oldId = PermMapId;
+    val name = "PermMapNd#"+ (PermMapId+1);
+    PermMapId+=1;
+//    val realPermList = expList();
+    // Under implementation in Checker phase.
+//    for(e <- el)   
+//      e match {
+//      case IntLiteralExpNd(i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
+//      case FloatLiteralExpNd (i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
+//      case _ => ()
+//      }
+    new PermissionMapNd(lsl.toList, el.toList,name,coord);
+  }
+
+  def makeDefaultPermissionValue ( coord : AST.Coord ) = {
+      var b : Double = 1.0;  
+      new FloatLiteralExpNd( b )(coord)
+  }
+  
+  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
+    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
   
   class ParamList extends ArrayBuffer[ParamDeclNd] 
   
@@ -52,7 +116,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: GivesPerList, d: GivesPerNd){l+=d;}
   
-  def makeGives(objId: ExpNd, coord : Coord) = new GivesPerNd(objId)(coord)
+  def makeGives(pmn: PermissionMapNd, coord : Coord) = new GivesPerNd(pmn)(coord)
   
 
   // Takes Condition Specification
@@ -62,7 +126,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: TakesPerList, d: TakesPerNd){l+=d;}
   
-  def makeTakes(objId: ExpNd, coord : Coord) = new TakesPerNd(objId)(coord)
+  def makeTakes(pmn: PermissionMapNd, coord : Coord) = new TakesPerNd(pmn)(coord)
   
   
   // Borrows Condition Specification
@@ -72,25 +136,34 @@ class Builder( val errorRecorder : ErrorRecorder ) {
 
   def add(l: BorrowsPerList, d: BorrowsPerNd){l+=d;}
   
-  def makeBorrows(objId: ExpNd, coord : Coord) = new BorrowsPerNd(objId)(coord)
+  def makeBorrows(pmn: PermissionMapNd, coord : Coord) = new BorrowsPerNd(pmn)(coord)
+  
+  //Building Claim Specification 
+  
+  class ClaimList extends ArrayBuffer[ClaimNd]
 
-  def methodDeclNd( name : String, acc : Access, paramList : ParamList, preCndList: PreCndList, postCndList: PostCndList, givesPerList: GivesPerList, takesPerList: TakesPerList, borrowsPerList: BorrowsPerList, coord : Coord ) =
-    {MethodDeclNd( acc, paramList.toList, preCndList.toList, postCndList.toList, givesPerList.toList, takesPerList.toList, borrowsPerList.toList )( name, coord )}
+  def claimList() = new ClaimList()
 
+  def add(l: ClaimList, d: ClaimNd){l+=d}
+  
+  
+  class LoopInvList extends ArrayBuffer[LoopInvNd]
 
+  def loopInvList() = new LoopInvList()
+
+  def add(l: LoopInvList, d: LoopInvNd){l+=d}
   
   var next = 0 
   
-  def threadDeclNd( bl : CommandNd, coord : Coord ) = {
+  def threadDeclNd(claimList: ClaimList, bl : CommandNd, coord : Coord ) = {
     val name = "t#" + next ; next += 1 
-     ThreadDeclNd( bl)( name, coord ) 
+     ThreadDeclNd(claimList.toList, bl)( name, coord ) 
   }
+  def objDeclNd(isGhost:Boolean,isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
+  =  ObjDeclNd(isGhost,isConst, acc, ty, init )( name, coord) 
   
-  def objDeclNd(isConst : Boolean, name : String, acc : Access, ty : TypeNd, init : InitExpNd, coord : Coord )
-  =  ObjDeclNd( isConst, acc, ty, init )( name, coord) 
-  
-  def paramDeclNd( name : String, ty : TypeNd, paramCategory : ParamCategory, coord : Coord) 
-  =  ParamDeclNd( ty, paramCategory )( name, coord )
+  def paramDeclNd( isGhost: Boolean, name : String, ty : TypeNd, paramCategory : ParamCategory, coord : Coord) 
+  =  ParamDeclNd( isGhost, ty, paramCategory )( name, coord )
   
   
 /************/
@@ -122,8 +195,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   
   def seq( p : CommandNd, q : CommandNd, coord : Coord ) = new SeqCommandNd( p, q )( coord) 
   
-  def localDecl( isConst : Boolean, name : String, ty : TypeNd, x : ExpNd, p : CommandNd, coord : Coord )
-  = { val decl = LocalDeclNd( isConst, ty, x, p)( name, coord )
+  def localDecl( isGhost: Boolean, isConst : Boolean, name : String, ty : TypeNd, x : ExpNd, p : CommandNd, coord : Coord )
+  = { val decl = LocalDeclNd( isGhost,isConst, ty, x, p)( name, coord )
     new LocalDeclCmdNd( decl )( coord )
   }
   
@@ -149,22 +222,29 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def makeIf( guard : ExpNd, p : CommandNd, q : CommandNd, coord : Coord )
   = new IfCmdNd( guard, p, q )( coord) 
   
-  def makeWhile( guard : ExpNd, p : CommandNd, coord : Coord ) = new WhileCmdNd( guard, p )( coord) 
+  def makeWhile( guard : ExpNd, wlil: LoopInvList, p : CommandNd, coord : Coord ) = new WhileCmdNd( guard,wlil.toList, p )( coord) 
   
-  def makeFor( name : String, x : ExpNd, p : CommandNd, coord : Coord ) = {
+  def makeFor( name : String, x : ExpNd, flil: LoopInvList, p : CommandNd, coord : Coord ) = {
       val fvd = new ForVarDecl()(name, coord)
       val forDecl = new ForDecl( fvd )( nextForName(), coord) 
-      new ForCmdNd( forDecl, x, p )( coord ) }
+      new ForCmdNd( forDecl, x, flil.toList, p )( coord ) }
   
-  def makeCo( name : String, x : ExpNd, p : CommandNd, coord : Coord ) = {
-      val fvd = new ForVarDecl()(name, coord)
-      val forDecl = new ForDecl( fvd )( nextForName(), coord) 
-      new CoForCmdNd( forDecl, x, p )( coord ) ;
+  var loopInvId=0;
+  def makeLoopInvariant(exp: ExpNd, coord : Coord) = {
+    val name = "*inv*"+loopInvId;loopInvId+=1;
+    new LoopInvNd(exp)(name,coord)
   }
   
-  def makeCo( p : CommandNd, q : CommandNd, coord : Coord ) = new CoCmdNd( p, q )( coord ) 
   
-  def makeWith( x : ExpNd, y : ExpNd, p : CommandNd, coord : Coord ) = new WithCmdNd( x, y, p )( coord ) 
+  def makeCo( name : String, x : ExpNd,cl: ClaimList, p : CommandNd, coord : Coord ) = {
+      val fvd = new ForVarDecl()(name, coord)
+      val forDecl = new ForDecl( fvd )( nextForName(), coord) 
+      new CoForCmdNd( forDecl, x,cl.toList, p )( coord ) ;
+  }
+  
+  def makeCo(cl: ClaimList, p : CommandNd, q : CommandNd, coord : Coord ) = new CoCmdNd(cl.toList, p, q )( coord ) 
+  
+  def makeWith( x : ExpNd,tpl : TakesPerList, y : ExpNd, p : CommandNd, gpl: GivesPerList, coord : Coord ) = new WithCmdNd( x,tpl.toList, y, p, gpl.toList )( coord ) 
   
   def makeAccept( mil : MethodImplementationList, coord : Coord ) = new AcceptCmdNd( mil toList )( coord ) 
   
@@ -294,7 +374,8 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def expList(x:ExpNd) = {val result = new ExpList; result += x ; result} 
   
   def add( el : ExpList, exp : ExpNd ) { el += exp }
- 
+  
+
 /*************************/
 /** Init Expressions    **/
 /*************************/
@@ -337,7 +418,7 @@ class Builder( val errorRecorder : ErrorRecorder ) {
   def outParamCategory() =  OutParamCategory
   
   def objParamCategory() =  ObjParamCategory
-  
+ 
   def noTypeNd(coord : Coord) =  NoTypeNd()( coord )
   
   def topTypeNd(coord : Coord) =  TopTypeNd()( coord )

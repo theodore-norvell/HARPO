@@ -1,6 +1,6 @@
 package tests
 
-import org.scalatest.Suites
+import org.scalatest.Suites 
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.Assertions._
 import org.junit.runner.RunWith

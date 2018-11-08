@@ -43,7 +43,7 @@ private def genConcurentCode() : String = {
       case dlNd : ClassDeclNd =>
         for (dllNd : DeclNd <- dlNd.directMembers ) {
           dllNd match {
-            case ThreadDeclNd(block : CommandNd) =>
+            case ThreadDeclNd(claimList: List[ClaimNd], block : CommandNd) =>
               val threadName = dllNd.name.replace("#", "")
               var startNd = cfgFactory.makeStartCfgNd("FuncThread_" + dlNd.name + threadName, dlNd.name, 0)
               cfgBuilder.run(block, startNd)
@@ -81,7 +81,7 @@ private def genDeclCode() = {
         
   for (dlNd<-dl.decls){
     dlNd match{
-      case ObjDeclNd( isConst, acc, ty, init) =>{
+      case ObjDeclNd(isGhost, isConst, acc, ty, init) =>{
         if (dlNd.name != "true" && dlNd.name != "false"){
             val code = ObjCodeGen(dlNd)
             init match {                   

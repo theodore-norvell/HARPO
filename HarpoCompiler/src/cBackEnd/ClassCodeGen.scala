@@ -55,7 +55,7 @@ class ClassCodeGen {
 //              nameTbl(mem.name) = NM.mkMethodName(mem.name, clsNd.name)
 //              NM.putParamMap(mem.name, clsNd.name, params)
   
-            case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+            case ObjDeclNd(isGhost:Boolean, isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
               val objCode = ObjCodeGen(mem)
               clsCode += objCode._1 + ";\n"
               //generates codes for class constructor
@@ -70,7 +70,7 @@ class ClassCodeGen {
              
                 //add class's field to nameTable, needed only when inheriting
               //nameTbl(mem.name) = NM.mkIntfObjName(mem.name, mClsName)
-            case ThreadDeclNd( block : CommandNd) => 
+            case ThreadDeclNd(claimList: List[ClaimNd],block : CommandNd) => 
               val threadName = mem.name.replace("#", "")
               val memFuncName = NM.mkName("FuncThread_" + clsNd.name + threadName )
               declCode += "void " + memFuncName + "(Continuation *k);\n"
@@ -126,16 +126,16 @@ class ClassCodeGen {
       case IfCmdNd(guard : ExpNd, thenCmd : CommandNd, elseCmd : CommandNd) =>
         resCommandNd(thenCmd, table, className) + resCommandNd(elseCmd, table, className)
       
-      case WhileCmdNd(guard : ExpNd, body : CommandNd) =>
+      case WhileCmdNd(guard : ExpNd,lil: List[LoopInvNd], body : CommandNd) =>
         resCommandNd(body, table, className)
       
-      case ForCmdNd(decl : ForDecl, repetitions : ExpNd, body : CommandNd) =>
+      case ForCmdNd(decl : ForDecl, repetitions : ExpNd, lil: List[LoopInvNd], body : CommandNd) =>
         resCommandNd(body, table, className)
       
-      case CoForCmdNd(decl : ForDecl, repetitions : ExpNd, body : CommandNd) =>
+      case CoForCmdNd(decl : ForDecl, repetitions : ExpNd, cl: List[ClaimNd], body : CommandNd) =>
         resCommandNd(body, table, className)
       
-      case CoCmdNd(fstCmd : CommandNd, sndCmd : CommandNd) =>
+      case CoCmdNd(cl: List[ClaimNd], fstCmd : CommandNd, sndCmd : CommandNd) =>
         //TODO: this will only work if there's only a single co in the class, need to fix that
         constructorCode += "InitCounter(2, &" + NM.mkClassParaName(className) + "->" + NM.mkCounterName(className) + ");\n"
         "Counter " + NM.mkCounterName(className) + ";\n" + resCommandNd(fstCmd, table, className) + resCommandNd(sndCmd, table, className)
@@ -148,7 +148,7 @@ class ClassCodeGen {
         }
         code
       
-      case WithCmdNd(lock : ExpNd, guard : ExpNd, command : CommandNd) =>
+      case WithCmdNd(lock : ExpNd, tpl: List[TakesPerNd], guard : ExpNd, command : CommandNd, gpl: List [GivesPerNd]) =>
         resCommandNd(command, table, className)
       
       case _ => ""

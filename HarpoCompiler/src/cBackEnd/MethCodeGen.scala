@@ -28,7 +28,7 @@ class MethCodeGen {
         code = "typedef struct " + methName + "{\nProcStruct ps;\n"
         for (mem <- params){
           mem match {
-            case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) => {
+            case ParamDeclNd(isGhost: Boolean, ty : TypeNd, paramCategory : ParamCategory) => {
               val objType : (String, String) = TypeCodeGen(ty)
               val objName : String = paramCategory match {
                 case InParamCategory => NM.mkName(mem.name)

@@ -11,14 +11,14 @@ private class ClassCodeGen(val dlNd: DeclNd) {
     val code = "\ntype className; \nfunction dtype(Ref) returns (className); \nconst unique " + dlNd.name + ":className;";
     boogieClassCode += code;
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
-      mem match {
-        case ObjDeclNd(isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
+      mem match { 
+        case ObjDeclNd(isGhost:Boolean,isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
           val objCodeGen= new ObjCodeGen(mem)
           objDecls += objCodeGen.getDeclObjCode(isConst, acc, ty, dlNd.name)
           if(init != null) {objInits += objCodeGen.getInitObjCode(isConst, acc, ty, init, dlNd.name + "." + mem.name)} else {objInits = ""}
           boogieClassCode += objDecls;
         }
-        case ThreadDeclNd(block: CommandNd) =>
+        case ThreadDeclNd(claimList: List[ClaimNd],block: CommandNd) =>
           val threadName = mem.name.replace("#", "")
           val thrDecl = "\nprocedure " + dlNd.name + "." + threadName + "(this:Ref)"
           val thrClaim = "\nmodifies Heap;" // {add claim}

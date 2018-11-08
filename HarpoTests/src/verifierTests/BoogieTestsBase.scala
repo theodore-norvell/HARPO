@@ -1,9 +1,9 @@
 package verifierTests
+
 import org.scalatest.FlatSpec
 import org.scalatest.TestData
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
 import java.io.Reader
@@ -17,26 +17,33 @@ import frontEnd.AST
 import parser.HarpoParser
 import parser.ParseException
 import parser.TokenMgrError
-import checker.Checker 
+import checker.Checker
 import frontEnd.CompilerBailOutException
-import boogieBackEnd.BoogieBackEnd
-
-class BufferSystemTestsBase extends FlatSpec{
- 
-  var tranSource: String = ""
-  def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) : String = 
-    { 
-    val boogieBuffer = tryWith( str, expectedFatalErrors, expectedWarningErrors, runChecker,true)
-    boogieBuffer
+import boogieBackEnd.BoogieBackEnd;
+class BoogieTestsBase extends FlatSpec with BeforeAndAfterEach {
+  
+      
+    override def beforeEach(td: TestData) {   
+        println(">>>>>>>>>>>>>Starting " + td.name+" >>>>>>>>>>>>>>>>>>" )
     }
 
-  def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean, runBoogieBackEnd : Boolean ): String = 
-  {    
-    // Output the input
-    println("---------------Harpo Source Begins----------------")
-    println(str) ;
-    println("---------------Harpo Source Ends----------------")
+    override def afterEach(td: TestData) { 
+        println("<<<<<<<<<<<<<Finished " + td.name + " <<<<<<<<<<<<<<<<<")
+    }
     
+    def tryWithParser( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
+    tryWith( str, expectedFatalErrors, expectedWarningErrors, false, false ) 
+   
+    def tryWithChecker( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
+      tryWith( str, expectedFatalErrors, expectedWarningErrors, true, false)
+ 
+    def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) =
+      tryWith( str, expectedFatalErrors, expectedWarningErrors, runChecker,true)
+      
+    def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean, runBoogieBackEnd : Boolean )  : StandardErrorRecorder = {
+
+    // Output the input
+    println( str ) ;
     // Build the builder and the parser
     val errorRecorder = new StandardErrorRecorder()
     val reader  = new StringReader(str) 
@@ -44,8 +51,8 @@ class BufferSystemTestsBase extends FlatSpec{
     val builder = new frontEnd.Builder(errorRecorder) ;
     p.setBuilder( builder )
     
+    // Run the parser.
     
-    // Run the parser, return AST
     val dl : frontEnd.AST.DeclList =
         try { p.Start().asInstanceOf[frontEnd.AST.DeclList] }
         catch{ case ex : ParseException => {    
@@ -58,6 +65,7 @@ class BufferSystemTestsBase extends FlatSpec{
                    errorRecorder.reportFatal(ex.getMessage(), coord)
                    null }
                 }
+
     // Output all errors
     if( errorRecorder.getTotalErrorCount() > 0 ) {
         println("-----------------------------") ;
@@ -65,15 +73,14 @@ class BufferSystemTestsBase extends FlatSpec{
             println( errorRecorder.getErrorCoord(i) + " " + errorRecorder.getErrorText(i)) ;
     }
     
-    
-    // Output the Declaration List Tree
+    // Output the tree.
     if( dl != null ) {
         println("----The AST after parsing-------------\n")
         println( dl.format( 80 ) )
     }
+    println
+    println("---------------------------------------") ;
     
-    
-    // Run the Checker, return attributed syntax tree
     if( runChecker ) {
         assert(errorRecorder.getFatalCount() == 0, "1st pass error prevents checker from running.")
         val checker = new Checker( errorRecorder )
@@ -84,32 +91,30 @@ class BufferSystemTestsBase extends FlatSpec{
         catch{ case e : CompilerBailOutException =>
                     println("----The checker has bailed---") ; }
         
-    
-    // Output the tree.
-    println("----The AST after checking---") ;
-    println( dl.format( 80 ) )
-    println
-    println("---------------------------------------") ;
-    
+        // Output the tree.
+        println("----The AST after checking---") ;
+        println( dl.format( 80 ) )
+        println
+        println("---------------------------------------") ;
     
     // Output all errors
-    if( errorRecorder.getTotalErrorCount() > 0 ) {
-        println("-----------------------------")
-           for( i <- 0 until errorRecorder.getTotalErrorCount() )
+        if( errorRecorder.getTotalErrorCount() > 0 ) {
+            println("-----------------------------")
+            for( i <- 0 until errorRecorder.getTotalErrorCount() )
                 println( errorRecorder.getErrorCoord(i) + " " + errorRecorder.getErrorText(i) ) ; }
     }
-    
-    
-    // Run Boogie BackEnd
+
     if( runBoogieBackEnd ) {
         assert(errorRecorder.getFatalCount() == 0, "Checking error prevents Boogie back end from running.")
         if( dl != null ) {
-            println("-----------Boogie Code generated-------------\n")
+            println("-----------Boogie Code  generated-------------\n")
             val boogieCodeGen=new BoogieBackEnd(dl)
-            tranSource = boogieCodeGen.getBoogieCode()   // Comparsion
+            val boogieOutput= boogieCodeGen.getBoogieCode();
+            println(boogieOutput)
         }
     }
-    tranSource
+    assertResult(expectedFatalErrors) ( errorRecorder.getFatalCount()) 
+    assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
+    errorRecorder
   }
-
 }

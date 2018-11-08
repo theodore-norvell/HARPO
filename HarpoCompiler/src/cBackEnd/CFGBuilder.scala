@@ -44,7 +44,7 @@ class CFGBuilder {
       lastNd.setNext(assignmentNd)
       return assignmentNd
 
-    case WhileCmdNd(guard, body) =>
+    case WhileCmdNd(guard,lil, body) =>
       var whileNd = factory.makeWhileCfgNd(guard)
       lastNd.setNext(whileNd)
       var result = build(body, whileNd)
@@ -65,7 +65,7 @@ class CFGBuilder {
     
     
     
-    case CoCmdNd(fstCmd, sndCmd) =>
+    case CoCmdNd(cl, fstCmd, sndCmd) =>
       var coNd = factory.makeCoCfgNd()
       var mergeNd = factory.makeMergeCfgNd()
       lastNd.setNext(coNd)
@@ -92,7 +92,7 @@ class CFGBuilder {
       }
       return mergeNd
 
-    case WithCmdNd(lock, guard, command) =>
+    case WithCmdNd(lock, tpl, guard, command,  gpl) =>
       var withNd = factory.makeWithCfgNd(lock, guard)
       var endNd = factory.makeEndSeqCfgNd()
       lastNd.setNext(withNd)
@@ -100,7 +100,7 @@ class CFGBuilder {
       lastNd.setNext(result)
       return endNd
 
-    case ForCmdNd(forDecl, repetitions, body) =>
+    case ForCmdNd(forDecl, repetitions,lil, body) =>
       var forNd = factory.makeForCfgNd(forDecl.fvd.name, repetitions)
       lastNd.setNext(forNd)
       var result = build(body, forNd)
@@ -122,7 +122,7 @@ class CFGBuilder {
       //    return result
       return cmdNd
 
-    case CoForCmdNd(forDecl: ForDecl, repetitions: ExpNd, body: CommandNd) =>
+    case CoForCmdNd(forDecl: ForDecl, repetitions: ExpNd,cl: List[ClaimNd], body: CommandNd) =>
       var coForNd = factory.makeCoForNd(forDecl.fvd.name, repetitions)
       var endNd = factory.makeEndSeqCfgNd()
       lastNd.setNext(coForNd)
