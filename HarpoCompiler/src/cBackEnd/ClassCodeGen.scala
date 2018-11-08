@@ -55,7 +55,7 @@ class ClassCodeGen {
 //              nameTbl(mem.name) = NM.mkMethodName(mem.name, clsNd.name)
 //              NM.putParamMap(mem.name, clsNd.name, params)
   
-            case ObjDeclNd(isGhost:Boolean, isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+            case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
               val objCode = ObjCodeGen(mem)
               clsCode += objCode._1 + ";\n"
               //generates codes for class constructor

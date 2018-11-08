@@ -115,9 +115,10 @@ class AST{
             members.decls.toSeq )
     }
 
-    case class ObjDeclNd( isGhost: Boolean,isConst: Boolean, acc: Access, ty: TypeNd, var init: InitExpNd )( name: String, coord: AST.Coord )
+    case class ObjDeclNd( isConst: Boolean, acc: Access, ty: TypeNd, var init: InitExpNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
-        override def pp = Pretty.func("ObjDeclNd[" :: name :: "]","Ghost :":: isGhost.toString, ty, init )
+
+        override def pp = Pretty.func( "ObjDeclNd[" :: name :: "]", ty, init )
     }
 
     case class ParamDeclNd( ty: TypeNd, paramCategory: ParamCategory )( name: String, coord: AST.Coord )
@@ -126,6 +127,18 @@ class AST{
         override def pp = Pretty.func( "ParamDeclNd[" :: name :: "]", ty, paramCategory.toString )
     }
 
+//    case class MethodDeclNd( acc: Access, params: List[ ParamDeclNd ])( name: String, coord: AST.Coord )
+//        extends DeclNd( name, coord ){
+//        var tipe: Option[ MethodType ] = None;
+//        override def pp = {
+//            val ppp = Document.nest( 3, "MethodDeclNd(" :: acc.toString
+//                :: ", " :: params :: Document.text( ")" ) )
+//            tipe match {
+//                case Some( ty ) => Document.group( ppp :/: ": " :: ty.pp )
+//                case None => Document.group( ppp :/: ": NONE" )
+//            }
+//        }
+//    }
     case class MethodDeclNd( acc: Access, params: List[ ParamDeclNd ], preCnds: List[PreCndNd], postCnds: List[PostCndNd], givesPers: List[GivesPerNd], takesPers: List[TakesPerNd], borrowsPers: List[BorrowsPerNd] )( name: String, coord: AST.Coord )
         extends DeclNd(name,coord) {
         var tipe: Option[ MethodType ] = None;
@@ -149,29 +162,28 @@ class AST{
         extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "PostCndNd", condition )
     }
-    
-    abstract sealed class MethodPerNd(coord: AST.Coord) extends Pretty
     case class GivesPerNd(var objId: ExpNd )( coord: AST.Coord )
-        extends MethodPerNd( coord ) {
+        extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "GivesPerNd", objId )
     }    
     case class TakesPerNd(var objId: ExpNd )( coord: AST.Coord )
-        extends MethodPerNd( coord ) {
+        extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "TakesPerNd", objId )
     }    
     case class BorrowsPerNd(var objId: ExpNd )( coord: AST.Coord )
-        extends MethodPerNd( coord ) {
+        extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "BorrowsPerNd", objId )
     }
-    
+
+       
     case class ThreadDeclNd( block: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "ThreadDeclNd[" :: name :: "]", block )
     }
 
-    case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
+    case class LocalDeclNd( isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
-        override def pp = Pretty.func( "LocalDeclNd[" :: name :: "]","Ghost :":: isGhost.toString,  ty, init, cmd )
+        override def pp = Pretty.func( "LocalDeclNd[" :: name :: "]", isConst.toString, ty, init, cmd )
     }
     
     case class GenericParamDeclNd( ty: TypeNd )( name: String, coord: AST.Coord )
@@ -486,10 +498,6 @@ class AST{
     case object InParamCategory extends ParamCategory;
     case object OutParamCategory extends ParamCategory;
     case object ObjParamCategory extends ParamCategory;
-    // Temporary abstraction 
-    case object GhostInParamCategory extends ParamCategory;
-    case object GhostOutParamCategory extends ParamCategory;
-    case object GhostObjParamCategory extends ParamCategory;
 
     /************/
     /** Names  **/

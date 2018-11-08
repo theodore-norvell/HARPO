@@ -1,6 +1,6 @@
 package checker
 
-import frontEnd.AST._ 
+import frontEnd.AST._
 import frontEnd.{RQN,FQN}
 import frontEnd.ErrorRecorder
 import CheckerTypes._
@@ -8,9 +8,6 @@ import contracts.Contracts
 import scala.collection.mutable 
 import frontEnd.AST.PreCndNd;
 import frontEnd.AST.PostCndNd;
-import frontEnd.AST.GivesPerNd;
-import frontEnd.AST.BorrowsPerNd;
-import frontEnd.AST.TakesPerNd;
 
 class SymbolTableMaker( errorRecorder : ErrorRecorder )
 extends Contracts {
@@ -65,19 +62,19 @@ extends Contracts {
                     buildSTFromClassLike(d, containingFQN) 
                 case d : IntfDeclNd =>
                     buildSTFromClassLike(d, containingFQN) 
-                case ObjDeclNd(isGhost, isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
+                case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) => 
                     buildSTFromInitExp( init, containingFQN ) 
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) => ()
                 case MethodDeclNd( _, params, preCndList,postCndList, givesPerList, takesPerList, borrowsPerList) =>
                     for( p <- params ) buildSTFromDecl( p, fqn )
-                    for( spec <- preCndList ) buildSTfromMethodSpecList( spec, fqn )
-                    for( spec <- postCndList ) buildSTfromMethodSpecList( spec, fqn )
-                    for( givesper <- givesPerList ) buildSTfromMethodPerList( givesper, fqn )
-                    for( takesper <- takesPerList ) buildSTfromMethodPerList( takesper, fqn )
-                    for( borrowsper <- borrowsPerList ) buildSTfromMethodPerList( borrowsper, fqn )
+                    for( spec <- preCndList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- postCndList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- givesPerList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- takesPerList ) buildSTfromMethodSpecDecl( spec, fqn )
+                    for( spec <- borrowsPerList ) buildSTfromMethodSpecDecl( spec, fqn )
                 case ThreadDeclNd( block : CommandNd) =>
                     buildSTfromCommand( block, fqn )
-                case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
+                case LocalDeclNd( isConst, ty, init, stmt ) =>
                     buildSTfromCommand( stmt, fqn )
                 case GenericParamDeclNd( ty : TypeNd)  => ()
                 case ForDecl( fvd ) => buildSTFromDecl( fvd, fqn )
@@ -126,15 +123,11 @@ extends Contracts {
             }
         }
         
-        def buildSTfromMethodSpecList( spec : MethodSpecNd, containingFQN : FQN ) {
+       
+        def buildSTfromMethodSpecDecl( spec : MethodSpecNd, containingFQN : FQN ) {
             spec match {
                 case PreCndNd(condition)=> ()
                 case PostCndNd(condition)=> ()
-            }
-        }
-        
-        def buildSTfromMethodPerList( per : MethodPerNd, containingFQN : FQN ) {
-            per match {
                 case GivesPerNd(objId)=>()
                 case TakesPerNd(objId)=>()
                 case BorrowsPerNd(objId)=>()

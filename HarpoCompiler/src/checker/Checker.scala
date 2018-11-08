@@ -1,6 +1,6 @@
 package checker
 
-import frontEnd.AST._ 
+import frontEnd.AST._
 import frontEnd.QN
 import frontEnd.ErrorRecorder
 import CheckerTypes._
@@ -19,17 +19,8 @@ class Checker( val errorRecorder : ErrorRecorder ) {
         val falseInit = ValueInitExpNd(NameExpNd(NameNd(falseFQN)(noCoord))(noCoord))(noCoord)
         val boolTypeNd0 = new NamedTypeNd( NameNd(boolFQN)(noCoord))(noCoord)
         val boolTypeNd1 = new NamedTypeNd( NameNd(boolFQN)(noCoord))(noCoord)
-        //TODO for isGhost, ObjDeclNd need to be double checked
-        val trueDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-        val falseDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, falseInit)("false",noCoord)
-//        val trueGhostConstDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-//        val falseGhostConstDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd1, falseInit)("false",noCoord)
-//        val trueConstDecl = ObjDeclNd(false,true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-//        val falseConstDecl = ObjDeclNd(false,true, PublicAccess, boolTypeNd1, falseInit)("false",noCoord)
-//        val trueObjDecl = ObjDeclNd(false,false, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-//        val falseObjDecl = ObjDeclNd(true,false, PublicAccess, boolTypeNd1, falseInit)("false",noCoord)
-//        val trueGhostObjDecl = ObjDeclNd(true,false, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-//        val falseGhostObjDecl = ObjDeclNd(true,false, PublicAccess, boolTypeNd1, falseInit)("false",noCoord)
+        val trueDecl = ObjDeclNd(true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
+        val falseDecl = ObjDeclNd(true, PublicAccess, boolTypeNd1, falseInit)("false",noCoord)
         decls.addDeclaration(boolTypeDeclNd)
         decls.addDeclaration(PrimitiveTypeDeclNd(int8FQN)(noCoord))
         decls.addDeclaration(PrimitiveTypeDeclNd(int16FQN)(noCoord))
@@ -40,14 +31,6 @@ class Checker( val errorRecorder : ErrorRecorder ) {
         decls.addDeclaration(PrimitiveTypeDeclNd(real64FQN)(noCoord))
         decls.addDeclaration(trueDecl)
         decls.addDeclaration(falseDecl)
-//        decls.addDeclaration(trueGhostConstDecl)
-//        decls.addDeclaration(falseGhostConstDecl)
-//        decls.addDeclaration(trueConstDecl)
-//        decls.addDeclaration(falseConstDecl)
-//        decls.addDeclaration(trueGhostObjDecl)
-//        decls.addDeclaration(falseGhostObjDecl)
-//        decls.addDeclaration(trueObjDecl)
-//        decls.addDeclaration(falseObjDecl)
     }
 
           
@@ -60,7 +43,6 @@ class Checker( val errorRecorder : ErrorRecorder ) {
         
         if( errorRecorder.getFatalCount() > 0 ) {
             // Failed to build the symbol table.
-            println("Failed to build the symbol table. Fetal Count: ", errorRecorder.getFatalCount())
             errorRecorder.bailOut() }
         
         symbolTable.dump

@@ -81,7 +81,7 @@ private def genDeclCode() = {
         
   for (dlNd<-dl.decls){
     dlNd match{
-      case ObjDeclNd(isGhost, isConst, acc, ty, init) =>{
+      case ObjDeclNd( isConst, acc, ty, init) =>{
         if (dlNd.name != "true" && dlNd.name != "false"){
             val code = ObjCodeGen(dlNd)
             init match {                   

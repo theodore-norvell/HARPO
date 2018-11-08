@@ -46,7 +46,7 @@ class IntfCodeGen {
               intfCode += NM.mkMethodName(mem.name, intfNd.name) + "* " + NM.mkName(mem.name) + ";\n"
               nameTbl(mem.name) = NM.mkMethodName(mem.name, intfNd.name)
               NM.putParamMap(mem.name, intfNd.name, params)
-            case ObjDeclNd(isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+            case ObjDeclNd(isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
               val objCode = ObjCodeGen(mem)
               intfCode += objCode._1 + ";\n"
               nameTbl(mem.name) = NM.mkIntfObjName(mem.name, intfNd.name)

@@ -1,15 +1,12 @@
 package checker
 
-import frontEnd.AST._ 
+import frontEnd.AST._
 import frontEnd.FQN
 import frontEnd.ErrorRecorder
 import contracts.Contracts
 import CheckerTypes._
 import frontEnd.AST.PreCndNd;
 import frontEnd.AST.PostCndNd;
-import frontEnd.AST.GivesPerNd;
-import frontEnd.AST.TakesPerNd;
-import frontEnd.AST.BorrowsPerNd;
 
 /* The goal of the resolver is to hunt down all NameNds and link them to the
  * corresponding declaration.  There are a few other types of nodes that
@@ -42,7 +39,7 @@ extends Contracts {
                     resolveClassLike(d, containingFQN, containingDecl) 
                 case d : IntfDeclNd =>
                     resolveClassLike(d, containingFQN, containingDecl) 
-                case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
+                case ObjDeclNd( isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
                 case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
@@ -56,7 +53,7 @@ extends Contracts {
                     for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
                 case ThreadDeclNd( block : CommandNd) =>
                     resolveCommand( block, fqn, Some(decl) )
-                case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
+                case LocalDeclNd( isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
                     resolveExp( init, containingFQN, containingDecl )
                     resolveCommand( stmt, fqn, Some(decl) )
@@ -144,16 +141,8 @@ extends Contracts {
                     
                 // --- case for PostCndNd
                 case PostCndNd (condition) =>
-                    resolveExp(condition,containingFQN, containingDecl) 
-                case _ => ()
-            }
-        }
-        
-        def resolveMethodPer( pers : MethodPerNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
-            check(  containingDecl == None && containingFQN.names.length == 0 
-                ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
-
-            pers match {             
+                    resolveExp(condition,containingFQN, containingDecl)
+                
                 // --- case for GivesPerNd
                 case GivesPerNd (objId) =>
                     resolveExp(objId,containingFQN, containingDecl)
@@ -244,7 +233,6 @@ extends Contracts {
                 case FloatLiteralExpNd(x) => {}
                 case NameExpNd( name ) => 
                     name.decl = symTab.lookUp( containingFQN, name )
-                    println("It's checking for name")
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )

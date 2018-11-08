@@ -103,8 +103,10 @@ This file is importing packages written in Scala
 		public void setBuilder( Builder b) { builder = b ; }
 	
 		public void setFileName( String fn ) { fileName = fn ; }		 
+		
 		Coord getCoord(int i) {
 			return getCoord( getToken(i) ) ; }
+			
 		Coord getCoord( Token t) {
 			return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }	}PARSER_END(HarpoParser)
 
@@ -159,7 +161,7 @@ TOKEN :{    "("
 |	"|"
 |	"||"
 |	"."
-|   "@"
+//I need @ token
 }
 
 TOKEN :{
@@ -177,7 +179,7 @@ TOKEN :{
 |   "extends"
 |	"for"
 |	"gives"
-|	"ghost"
+|	"ghost" // Verification
 |	"if"
 |   "implements"
 |	"in"
@@ -198,6 +200,7 @@ TOKEN :{
 |	"when"
 |	"while"
 |	"with" 
+
 }
 
 // TODO extend the set of letters.
@@ -276,7 +279,7 @@ DeclNd ClassMember() :
 	DeclNd d ;
 }
 {
-    ( LOOKAHEAD( [Access()] (("ghost")|("obj"|"const"))) d=Field()
+    ( LOOKAHEAD( [Access()] ("obj"|"const")) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method()
     | LOOKAHEAD( "(" "thread" ) d=Thread() )
     {return d;}
@@ -313,8 +316,7 @@ void GParam(ClassLike p):{
 DeclNd IntfMember() :{
 	DeclNd d ;}{    ( LOOKAHEAD( [Access()] ("obj" | "const") ) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method() )
-    {return d;}
-    }
+    {return d;}}
 
 Access Access() : {} {
 	"private"
@@ -322,8 +324,7 @@ Access Access() : {} {
 |
 	"public"
 	{return builder.publicAccess() ; }
-}
-
+}
 ObjDeclNd Field() : {
     ObjDeclNd p ;
     // By default fields are private.
@@ -331,37 +332,28 @@ ObjDeclNd Field() : {
 }
 {
 	(acc=Access() )?
-	p=ObjDecl(acc)
+	p=ObjDecl( acc )
 	{return p ;}
 }
 
-boolean Ghost() : {boolean isGhost=false;} {
-	"ghost" {isGhost=true; }
-	{return isGhost;}
-}
-
 ObjDeclNd ObjDecl(Access acc) : {
-	boolean isConst= false ;
-	boolean isGhost=false;
+	boolean isConst ;
     TypeNd ty ;
     InitExpNd exp ; 
     String name ;
     Token tk ;
 }
-{  (isGhost=Ghost())?
-  (          "obj" {isConst=false;}
-   | 
-      "const" {isConst=true;}
-  )
-
-  { tk = getToken(1); }
+{
+	( "obj"   {isConst=false;}
+	| "const" {isConst=true;} )
+	{ tk = getToken(1); }
 	name=Name() 
 	(	     ":" ty=Type()
 	 |
 	     { ty = builder.noTypeNd(getCoord(tk)) ; }
 	)
 	":=" exp=InitExp() 
-	{return builder.objDeclNd(isGhost, isConst, name, acc, ty, exp, getCoord(tk) );}
+	{return builder.objDeclNd( isConst, name, acc, ty, exp, getCoord(tk) );}
 }
 
 MethodDeclNd Method() : {
@@ -389,7 +381,8 @@ MethodDeclNd Method() : {
 	"(" ( param=MParam() { builder.add( paramList, param ) ; }
 	      ([","] param=MParam() { builder.add( paramList, param ) ; } )*
 	    )?
-	")" 
+	")"
+	// TODO specification annotations. 
 	(
 		preCnd = PreCond() { builder.add(preCndList,preCnd);}
 	|
@@ -420,12 +413,10 @@ ThreadDeclNd Thread() : {
 /**************/
 
 ParamDeclNd CParam() : {
-	ParamDeclNd param ;
-	Boolean isGhost; }
-	
+	ParamDeclNd param ; }
 {
 	param=ObjParam() {return param;}
-	|
+|
 	param=InParam() {return param ; }
 }
 
@@ -440,39 +431,22 @@ ParamDeclNd MParam() : {
 ParamDeclNd InParam() : {
 	ParamDeclNd param ; }
 {
-  	(
-  	  "ghost" "in" param=Param( builder.ghostInParamCategory() )
-	  {return param ;}
-	)  |
-  	(
-	  "in" param=Param( builder.inParamCategory() )
-	  {return param ;}
-	)
+	"in" param=Param( builder.inParamCategory() )
+	{return param ;}
 }
 
 ParamDeclNd OutParam() : {
-	ParamDeclNd param ;
-}
+	ParamDeclNd param ; }
 {
-    (
-	  "out" param=Param(  builder.outParamCategory() )
-	  {return param ;}
-	)
+	"out" param=Param(  builder.outParamCategory() )
+	{return param ;}
 }
 
 ParamDeclNd ObjParam() : {
-	ParamDeclNd param ;
-	Boolean isGhost; }
+	ParamDeclNd param ; }
 {
-	(
-	  "ghost" {isGhost=true;}
-	  "obj" param=Param( builder.ghostObjParamCategory() )
-	  {return param ;}	)
-  |
-	(
-      "obj" { isGhost = false; } param=Param( builder.objParamCategory() )
-      {return param ; }
-	)
+	"obj" param=Param( builder.objParamCategory() )
+	{return param ;}
 }
 
 ParamDeclNd Param(ParamCategory cat) : {
@@ -505,33 +479,33 @@ PostCndNd PostCond() : {
 }
 
 GivesPerNd GivesPer() : {
- ExpNd name;
+ ExpNd x;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"gives" name=ObjectId()
-{return builder.makeGives(name, getCoord(tk)) ;}
+"gives" x=ObjectId()
+{return builder.makeGives(x, getCoord(tk)) ;}
 }
 
 TakesPerNd TakesPer() : {
- ExpNd name;
+ ExpNd x;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"takes" name=ObjectId()
-{return builder.makeTakes(name, getCoord(tk)) ;}
+"takes" x=ObjectId()
+{return builder.makeTakes(x, getCoord(tk)) ;}
 }
 
 BorrowsPerNd BorrowsPer() : {
- ExpNd name;
+ ExpNd x;
  Token tk;
 }
 {
 {tk=getToken(1);}
-"borrows" name=ObjectId()
-{return builder.makeBorrows(name, getCoord(tk)) ;}
+"borrows" x=ObjectId()
+{return builder.makeBorrows(x, getCoord(tk)) ;}
 }
 
 /************/
@@ -597,25 +571,20 @@ CommandNd Block() : {
 
 CommandNd LocalDeclaration() : {
 	boolean isConst ;
-	boolean isGhost=false;
 	String name ;
 	TypeNd ty ;
 	ExpNd x ;
 	CommandNd p ;
 	Token tk = getToken(1);
-}
-{
-  (isGhost= Ghost())?
-	 ("obj"   {isConst=false;}
-	| 
-	 "const" {isConst=true;})
+} {
+	("obj"    {isConst=false;}
+	| "const" {isConst=true;} )
 	name=Name()
-
 	( ":" ty = Type() 
 	| {ty = builder.noTypeNd(getCoord(tk));} )
 	":=" x = Exp()
 	p = Block()
-	{return builder.localDecl(isGhost, isConst, name, ty, x, p, getCoord(tk));}
+	{return builder.localDecl(isConst, name, ty, x, p, getCoord(tk));}
 }
 
 CommandNd Command() : {
@@ -968,6 +937,7 @@ ExpNd ObjectId() : {
 	)*
 	{return r;}
 }
+
 String Name() : {
 	Token t ;	
 } {

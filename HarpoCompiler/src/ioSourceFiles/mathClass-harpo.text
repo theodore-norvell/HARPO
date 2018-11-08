@@ -1,14 +1,12 @@
 (class Math() 
-	ghost obj c: Int32:=0;
-	ghost const x: Int32:=9;
-	public proc add(in par: Int32)
-	pre c>8
-	post 4>9
-	post c>c
-	post c>1
-	//gives c
-	(thread(*t0*)
-		ghost const a: Int32:=9;
+	obj c: Int32:=0;
+	public proc add()
+	pre 2>3
+	post 4>8
+	gives c
+	takes c
+	borrows c 
+	(thread(*t0*) 
 		assume c>9
 	thread) 
 class)

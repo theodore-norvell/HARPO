@@ -60,9 +60,8 @@ class HarpoToBoogieTranslator {
         }
         println("Master Declaration List : ")
         println( masterDeclList.format(80) )
-        println("Master Declaration List End")
         if( errorRecorder.getFatalCount() == 0) {
-             println("Checker Start");
+             println("I reached here");
             val checker = new Checker( errorRecorder )
             try { checker.runChecker( masterDeclList ) }
             // The only exception that the checker should throw is a CompilerBailOutException.
@@ -70,10 +69,8 @@ class HarpoToBoogieTranslator {
         errorRecorder.printErrors( Console.out ) ;
         // The boogie code generator
         if( errorRecorder.getFatalCount() == 0) {
-           println("Fetal Errors= ", errorRecorder.getFatalCount());
            println("Master Declaration List after Checking : ")
            println( masterDeclList.format(80) )
-           println("End Master Declaration List")
            val boogieCodeGen=new BoogieBackEnd(masterDeclList)
            boogieOutput= boogieCodeGen.getBoogieCode();
             }
