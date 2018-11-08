@@ -1,68 +1,0 @@
-/**
- * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */
-/* Push the changes to GitHub*/options{  static = true;}PARSER_BEGIN(calculator)package parserCal;
-
-public class calculator{  public static void main(String args []) throws ParseException, TokenMgrError  {    calculator parser = new calculator(System.in);
-    parser.Start();
-  }
-}PARSER_END(calculator)SKIP :{  " "}
-
-TOKEN :  /*End of Line*/
-{
-  < EOL : "\n"|"\r"|"\t"|"\r\n" >}TOKEN : /* OPERATORS */{  < PLUS : "+" >| < MINUS : "-" >| < MULTIPLY : "*" >| < DIVIDE : "/" >}TOKEN :{  < Number : (<DIGIT> |<DIGIT> "." | "." <DIGIT> |<DIGIT> "." <DIGIT>)+ >| < #DIGIT : ([ "0"-"9" ])+>}
-void start(PrintStream printStream) throws NumberFormatException:
-{}
-{
-(previousValue=Expression()
-< EOL >
-{println(previousValue);}
-)*
-< EOF >
-}
-double Expression() throws NumberFormatException :
-{ double i;
-  double value;}
-{
-  value = Term()
-  (
-    < PLUS >
-	i= Term()
-	{value +=i;}
-|
-	< MINUS >
-	i= Term()
-	{value -=i;}
-| 	< MULTIPLY >
-	i= Term()
-	{value *=i;}
-|
-	< DIVIDE >
-	i= Term()
-	{value /=i;}
-   )*
-  {return value;}}
-
-double Term() throws NumberFormatException:
-{
-  double i;
-  double value;
-}
-{
-	Value = Primary()
-	(	<MULTIPLY>
-		i= Primary()
-		{value *= i;}
-		|
-		<DIVIDE>
-		i= Primary()
-		{value /= i;}
-	)*
-	{return value;}
-}
-double Primary() throws NumberFormatException :
-{Token t;}
-{
-t= < Number >
-{ return Double.parseDouble(t.image); }
-}
