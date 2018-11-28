@@ -229,8 +229,10 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 						  boogieCode += intfCode.getIntfCode()
 						}
 						
-						case ObjDeclNd( isGhost,isConst, acc, ty, init ) => {
-						  val objCode = new ObjCodeGen(dlNd)  
+						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
+						  val objCode = new ObjCodeGen(dlNd)
+						  val fqn = dlNd.fqn;
+						  objCode.getObjInitCode(isConst, acc, ty, initExp, fqn.toString())
 						}
 						
 						case _ => val code = "No declarations were found"

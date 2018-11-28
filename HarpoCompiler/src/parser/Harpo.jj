@@ -85,7 +85,8 @@ This file is importing packages written in Scala
 				- initExp - >ExpNd- > Exp0- >Exp1- >Exp2- >Exp3- >Exp4- >Exp5- >Exp6
 				- Optional Guard
 				- ObjID ExpNd
-			- Name */options{  JDK_VERSION = "1.7";
+			- Name */
+			options{  JDK_VERSION = "1.7";
   DEBUG_TOKEN_MANAGER = false ;
   DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
 	package parser;
@@ -149,7 +150,7 @@ TOKEN :{    "("
 |	"+"
 |	"-"
 |	"*"
-|	"/"
+|	"/" 
 |   ";"
 |	","
 |	":="
@@ -158,13 +159,19 @@ TOKEN :{    "("
 |	"."
 |   "@"
 }
+TOKEN :{
+  < PRIME : "'" | "\u02B9">
+}
 
 TOKEN :{
 	"accept"
+| 	"acc"
 | 	"as"
 |   "assert" 
 |	"assume" 
-| 	"borrows"|	"class"
+| 	"borrows"
+| 	"canRead"
+| 	"canWrite"|	"class"
 |	"claim"
 |	"co"
 |   "const"
@@ -184,6 +191,7 @@ TOKEN :{
 |	"new"
 |   "obj"
 |	"out"
+|  	"permission"
 |	"pre" 
 |	"post"
 |   "private"
@@ -195,10 +203,10 @@ TOKEN :{
 |   "type"
 |	"when"
 |	"while"
-|	"with" 
+|	"with"
+| "pr"
 }
 
-// TODO extend the set of letters.
 TOKEN :
 {
 	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9","'"])* >
@@ -221,7 +229,6 @@ TOKEN :
 	>
 |   < #EXP: ["e","E"]("-"|"+")?<DEC_LITERAL> >
 }
-
 
 TOKEN : {
 	<UNEXPECTED_CHARACTER: ~[] >
@@ -267,7 +274,6 @@ ClassDeclNd ClassDecl() : {
 	["class" [tk=<NAME>  { p.checkName( tk.image, getCoord(tk) ) ; }] ] ")"
 	{ return p ;}
 }
-
 
 DeclNd ClassMember() :
 {
@@ -419,9 +425,8 @@ PreCndNd PreCond() : {
  Token tk;
 }
 {
-{tk=getToken(1);}
 
-"pre" x=Exp()
+tk = "pre" x=Exp()
 
 {return builder.makePre(x, getCoord(tk)) ;}
 }
@@ -431,8 +436,9 @@ PostCndNd PostCond() : {
  Token tk;
 }
 {
-{tk=getToken(1);}
-"post" x=Exp()
+  
+tk="post" x=Exp()
+
 {return builder.makePost(x, getCoord(tk)) ;}
 }
 
@@ -441,8 +447,9 @@ GivesPerNd GivesPer() : {
  Token tk;
 }
 {
-{tk=getToken(1);}
-"gives" permMapNd=PermissionMap()
+
+tk="gives" permMapNd=PermissionMap()
+
 {return builder.makeGives(permMapNd, getCoord(tk)) ;}
 }
 
@@ -451,8 +458,9 @@ TakesPerNd TakesPer() : {
  Token tk;
 }
 {
-{tk=getToken(1);}
-"takes" permMapNd=PermissionMap()
+
+tk="takes" permMapNd=PermissionMap()
+
 {return builder.makeTakes(permMapNd, getCoord(tk)) ;}
 }
 
@@ -461,8 +469,8 @@ BorrowsPerNd BorrowsPer() : {
  Token tk;
 }
 {
-{tk=getToken(1);}
-"borrows" permMapNd=PermissionMap()
+tk="borrows" permMapNd=PermissionMap()
+
 {return builder.makeBorrows(permMapNd, getCoord(tk)) ;}
 }
 
@@ -471,7 +479,7 @@ ThreadDeclNd Thread() : {
 	CommandNd bl ;
 	ClaimNd claim;
     ClaimList claimList = builder.claimList();
-	Token tk ;
+	Token tk = getToken(1);
 }
 {
 	(	  tk="(" "thread"
@@ -504,10 +512,10 @@ ParamDeclNd MParam() : {
   (    
     LOOKAHEAD ( [Ghost()] ("out"))
 	param=OutParam() {return param;}
-|
+  |
 	LOOKAHEAD ( [Ghost()] ("in"))
 	param=InParam() {return param ; }
-)
+  )
 }
 
 ParamDeclNd InParam() : {
@@ -565,6 +573,7 @@ ClaimNd Claim() : {
    tk= "claim" (permMapNd = PermissionMap())
 	  { return builder.makeClaimNd(permMapNd,getCoord(tk));}
 }
+
 PermissionMapNd PermissionMap() : {
   String name;
   String defaultPer;
@@ -575,11 +584,12 @@ PermissionMapNd PermissionMap() : {
   LocSetNd locSet;
   LocSetList lsl = builder.locSetList() ;
 }
+
 {
   // Supply default permission if not given "1.0"
       locSet = LocSet() {builder.add(lsl,locSet);}
      	  (("@" exp = Exp() { builder.add(explst,exp);}) | (exp = DefaultPermission(){ builder.add(explst,exp);}))
-     ([","]  locSet = LocSet() {builder.add(lsl,locSet);}
+     (LOOKAHEAD("," LocSet()) [","]  locSet = LocSet() {builder.add(lsl,locSet);}
      	  (("@" exp = Exp() { builder.add(explst,exp);}) | (exp = DefaultPermission(){ builder.add(explst,exp);}))
      )*
      	
@@ -593,8 +603,8 @@ LocSetNd LocSet(): {
 }
 {
   	 objId = ObjectId()
-  	 { ls = builder.makeObjectIdLSN(objId,getCoord(tk)); }
-	{return ls;}
+  { ls = builder.makeObjectIdLSN(objId,getCoord(tk)); }
+  {return ls;}
 }
 
 ExpNd DefaultPermission() : {
@@ -602,35 +612,33 @@ ExpNd defPerVal;
 Token tk;
 }
 {
-  {tk = getToken(1); }
+ {tk = getToken(1); }
  {defPerVal = builder.makeDefaultPermissionValue(getCoord(tk));
  return defPerVal;
 }
 }
 
 ClassInvNd ClassInvariant(): {
-  ExpNd x;
+  ConditionExpNd x;
   Token tk;
  }
 {
   	{ tk=getToken(1);}
-  	(  	  "invariant" x=Exp()
-  	  
+  	(  	  tk = "invariant" x = ConditionExp()
   	)
     {return builder.makeClassInvariant(x, getCoord(tk)) ;}
 }
 
 LoopInvNd LoopInvariant(): {
-ExpNd x;
+ConditionExpNd x;
 Token tk;
 }
 {
    	{ tk=getToken(1);}
   	(
-  	  "invariant" x=Exp()
+  	  tk = "invariant" x=ConditionExp()
   	)
     {return builder.makeLoopInvariant(x, getCoord(tk)) ;}
-
 }
 
 
@@ -706,12 +714,12 @@ CommandNd LocalDeclaration() : {
 }
 {
   (isGhost= Ghost())?
-	 ("obj"   {isConst=false;}
+	 (tk = "obj"   {isConst=false;}
 	| 
-	 "const" {isConst=true;})
+	 tk = "const" {isConst=true;})
 	name=Name()
 
-	( ":" ty = Type() 
+	( tk = ":" ty = Type() 
 	| {ty = builder.noTypeNd(getCoord(tk));} )
 	":=" x = Exp()
 	p = Block()
@@ -740,26 +748,30 @@ CommandNd Command() : {
     TakesPerList tpl = builder.takesPerList();
 }
 {
-	"assert" x=Exp()
-    {return builder.makeAssert(x, getCoord(tk)) ;}
+	tk = "assert" x=Exp()
+    {return builder.makeAssertCmd(x, getCoord(tk)) ;}
 | 
-    "assume" x=Exp()
-    {return builder.makeAssume(x, getCoord(tk)) ;}
-| 
+    tk = "assume" x=Exp()
+    {return builder.makeAssumeCmd(x, getCoord(tk)) ;}
+|  
 	LOOKAHEAD(ObjectId() (":=" | ",") )
-	// Assignment
 	vl=NonemptyVarList() tk=":=" el=NonemptyExpList() 
 	{ return builder.assignment( vl, el, getCoord(tk) ) ; }
-//|
-//	LOOKAHEAD( ObjectId() ":=" )
-//	x=ObjectId() tk=":=" y=Exp()
-//	{ return builder.assignment( builder.expList(x), builder.expList(y), getCoord(tk) ) ; }
+|
+	LOOKAHEAD( ObjectId() ":=" )
+	x=ObjectId() tk=":=" y=Exp()
+	{ return builder.assignment( builder.expList(x), builder.expList(y), getCoord(tk) ) ; }
 |
 	LOOKAHEAD( ObjectId() "(" )
 	// The object id needs to end with a name. The builder will check this.
 	lhs=ObjectId() "(" el=ExpList() ")"
 	{ return builder.call( lhs, el, getCoord(tk) ) ; }
 |
+	//Method Call
+//	LOOKAHEAD(ObjectId(), "(")
+//	methname = ObjectId() "(" ( param=MCallParam() { builder.add( argList, param ) ; } [","])+ ")"
+//	{ return builder.makeMethCallCmd(name,argList, getToken(tk)); } 
+//|
 	"(" 
 	(	"if" p=MoreIf( )
     	{return p ;}
@@ -786,8 +798,7 @@ CommandNd Command() : {
 		"do" p=Block() ["co"] ")"
 		{ return builder.makeCo( name, x,cl1, p, getCoord(tk)) ; }
 	|
-		"co"
-		
+		"co"		
 		(claim = Claim() { builder.add(cl2,claim); })*
 
 		 p=Block() ( "||" q=Block() {p=builder.makeCo(cl2,p,q, getCoord(tk));} )+ ["co"] ")"
@@ -807,14 +818,12 @@ CommandNd Command() : {
 		y=OptGuard() "do" p=Block()
 
 		(givesPer = GivesPer() { builder.add(gpl,givesPer);})*
-
-
-		 ["with"] ")"
-		{return builder.makeWith( x,tpl, y, p,gpl, getCoord(tk)) ;}
 		
-	
+		 ["with"] ")"
+		 
+		{return builder.makeWith( x,tpl, y, p,gpl, getCoord(tk)) ;}	
+		// Add method call syntax
 	)
-
 }
 
 ExpList NonemptyVarList() : {
@@ -928,6 +937,60 @@ InitExpNd MoreIfInitExp() : {
 	)
 	{return builder.ifInitExp(x, a, b, x.coord());}
 }
+
+ConditionExpNd ConditionExp(): {
+	Token tk;
+	Token cndtk = getToken(0);
+	ExpNd x;
+	ObjectIdList objIdList = builder.objectIdList();
+	CanReadOpList canReadOpList = builder.canReadOpList();
+	CanWriteOpList canWriteOpList = builder.canWriteOpList();
+	PermissionOpList permissionOpList = builder.permissionOpList();
+	ExpList expList = builder.expList();
+	CanReadOp canRead;
+	CanWriteOp canWrite;
+	PermissionOp permissionOp;
+	ConditionExpNd conditionExp;
+}
+{
+  
+  (
+ 	 LOOKAHEAD("canRead" "(") 
+  	 tk = "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
+  	 builder.add(canReadOpList, canRead); }
+ |
+	 LOOKAHEAD("canWrite" "(")
+	 tk = "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
+  	 builder.add(canWriteOpList, canWrite); }
+ |
+	 LOOKAHEAD ("permission" "(")
+	 tk = "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
+  	 builder.add(permissionOpList, permissionOp); }
+ |
+   	  x = Exp() { builder.add(expList, x); }
+   )
+ (
+ 	 LOOKAHEAD("," "canRead" "(") 
+  	 tk = "," "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
+  	 builder.add(canReadOpList, canRead); }
+
+ |
+	 LOOKAHEAD("," "canWrite" "(")
+	 tk = "," "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
+  	 builder.add(canWriteOpList, canWrite); }
+  	
+ |
+	 LOOKAHEAD ("," "permission" "(")
+	 tk = "," "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
+  	 builder.add(permissionOpList, permissionOp); }
+ |
+   	 x = Exp() { builder.add(expList, x); } 
+)*
+ {return builder.makeConditionExpNd(expList, canReadOpList, canWriteOpList,permissionOpList, getCoord(cndtk)); }
+}
+
+
+
 
 /******************/
 /** Expressions **/
@@ -1058,6 +1121,26 @@ ExpNd Exp5() :
 
 ExpNd Exp6() :
 {
+	ExpNd x = null;
+	Token tk ;
+}
+{
+	tk = "-" x=Exp6()   { return builder.unaryOp("-",x, getCoord(tk)) ; }
+|
+	x = Exp7() { return x;  }
+}
+
+ExpNd Exp7() :
+{
+	ExpNd x = null;
+	Token tk = getToken(1) ;
+}
+{
+	Exp8() ["pr"] { return builder.unaryOp("pr",x, getCoord(tk)) ; } 
+}
+
+ExpNd Exp8() :
+{
 	ExpNd x=null;
 	Token tk ;
 } {
@@ -1072,20 +1155,9 @@ ExpNd Exp6() :
  	tk = <HEX_LITERAL>  { return builder.intLiteralExp(16, tk.image.substring(3), getCoord(tk) ) ;}
 |
     tk = <REAL_LITERAL> { return builder.realLiteralExp( tk.image, getCoord(tk) ) ;}
-|
+| 
 	"(" x=Exp() ")"  { return x ; }
-|
-	tk = "-" x=Exp6()     { return builder.unaryOp("-",x, getCoord(tk)) ; }
 }
-
-// Exp6 - > objID , paranthesized exp, unary operators, post fixed highest priority
-// Exp6 - > -Exp6 | Exp7
-// Exp7 - > Exp8[']
-//Exp8 - > ObjId |  ... | ("")
-// New kind of expression node that is prime,
-// Primes should appear in post conditions
-// Add boolean field pc
-// use unaryopexp nd
 
 ExpNd OptGuard() :
 {

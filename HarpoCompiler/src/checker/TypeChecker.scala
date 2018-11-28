@@ -1,5 +1,7 @@
 package checker
 
+import scala.collection.mutable.ArrayBuffer
+
 import contracts.Contracts
 import frontEnd.AST._
 import frontEnd.QN
@@ -51,7 +53,7 @@ extends Contracts {
                     case _ => {
                         errorRecorder.reportFatal(name + " does not represent an object or location.", exp.coord ) ;
                         None } }
-  
+
             case exp@BinaryOpExpNd(op, x, y) =>
                 binaryOpType( exp ) ;
                 
@@ -293,16 +295,13 @@ extends Contracts {
     def typeCheck(pmn: PermissionMapNd) {
             for(lsn <- pmn.locSet)
               typeCheck(lsn) 
-            for(len <- pmn.locExp) {
-              val pTy = typeCheck(len)
-              val result = valueConvert(len)
-              check( result.tipe.isDefined ) 
-              for (ty <- result.tipe) {
-                 if(!(isRealType(ty)))
-                  {println(result.tipe)
-                  typeConvert(len, Some(real64))}
-              }
-            }
+              
+            val newAmounts =
+              for( permissionAmount <- pmn.locExp) 
+              yield { val pTy = typeCheck(permissionAmount)
+                      val permissionAmount0 = valueConvert(permissionAmount) ;
+                      typeConvert(permissionAmount0, Some(real64) ) }
+            pmn.setAmounts( newAmounts.toList )// tEST THE TREE
     }
     
     def typeCheck(lsn: LocSetNd) {
@@ -361,6 +360,32 @@ extends Contracts {
       }
       
     }
+    
+    def typeCheck(condExp : ConditionExpNd) {
+       for (exp <- condExp.el){
+           typeCheck(exp)
+         }
+         for (canRead <- condExp.crl){
+           typeCheck(canRead)
+         }
+         for (canWrite <- condExp.cwl){
+           typeCheck(canWrite)
+         }
+         for (permissionOp <- condExp.pol){
+           typeCheck(permissionOp)
+         }
+    }
+    
+    def typeCheck (condOperation : ConditionNd ) {
+         condOperation match {
+            case CanReadOp( id ) => {typeCheck(id)}
+            case CanWriteOp ( id ) => {typeCheck(id)}
+            case PermissionOp ( id ) => {typeCheck(id)}
+          }
+    }
+    
+    
+    
 
      //Permission Nodes
      private def convertId( id : ExpNd ) = {
@@ -682,13 +707,20 @@ extends Contracts {
                         errorRecorder.reportFatal( s"The ${exp.op} operation applies only to values of arithmetic type", exp.coord )
                         None }
                     else exp.x.tipe
-                    
                 case NotOp =>
                     exp.x = valueConvert(exp.x) ;
                     if( exp.x.tipe == None ) 
                         None
                     else if( exp.x.tipe.get != bool ) {
                         errorRecorder.reportFatal( s"The  ${exp.op} operation applies only to boolean values", exp.coord )
+                        None }
+                    else exp.x.tipe     
+                case PrimeOp =>
+                    exp.x = valueConvert(exp.x) ;
+                    if( exp.x.tipe == None ) 
+                        None
+                    else if( ! isPrimitiveType(exp.x.tipe.get) ) {
+                        errorRecorder.reportFatal( s"The  ${exp.op} operation applies only to primitive type values", exp.coord )
                         None }
                     else exp.x.tipe
                 } }
@@ -815,6 +847,14 @@ extends Contracts {
             case _ => false ;
         }
     }
+    
+    private def isPrimitiveType( ty : Type ) : Boolean = {
+      ty match {
+            case `int8` | `int16` | `int32` | `int64` 
+                | `real16` | `real32` | `real64`| `bool` => true
+            case _ => false }
+    }
+    
     
     private val lubTable : Array[Array[Option[PrimitiveType]]] = 
         Array(         //  Int8          Int16         Int32        Int64        Real16        Real32        Real64        Bool

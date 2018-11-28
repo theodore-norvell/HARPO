@@ -15,39 +15,41 @@ import frontEnd.ErrorRecorder
 import frontEnd.AST
 
 @RunWith(classOf[JUnitRunner])
-class ParserTests extends BoogieTestsBase {
+class CheckerTests extends BoogieTestsBase {
 
-  "The parser" should "parse an empty file" in {
+  "The Checker" should "check an empty file" in {
     val str = ""
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
-  it should "parse a 'ghost' object" in {
+  it should "check a 'ghost' object" in {
     val str = """ 
                   (class Test() 
                     ghost obj c: Int32:=0; 
                   class) 
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
-  it should "parse an invariant " in {
+  it should "check an invariant " in {
     val str = """
                   (class Test()
 	                  invariant 5>0
                   class)
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
-  it should "parse a 'claim' specification of class Test" in {
+  
+  // Should fail on resolver pass
+  it should "check a 'claim' specification of class Test" in {
     val str = """
                  (class Test()
 	                  claim x@0.9-0.6,y@0.4
                   class)
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
-  it should "parse an 'assert' command" in {
+  it should "check an 'assert' command" in {
     val str = """ 
                   (class Test()
 	                    obj c: Int32:=0;
@@ -57,10 +59,10 @@ class ParserTests extends BoogieTestsBase {
 	                    thread) 
                   class) 
              """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
-  it should "parse an 'assume' command" in {
+  it should "check an 'assume' command" in {
     val str = """  
                   (class Test()
 	                    obj c: Int32:=0;
@@ -70,32 +72,32 @@ class ParserTests extends BoogieTestsBase {
 	                    thread) 
                    class)
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
   // Constructor Arguments of "in" object category
 
-  it should "parse a class with 'ghost' constructor args" in {
+  it should "check a class with 'ghost' constructor args" in {
     val str = """
                   (class Test(ghost obj par1: Int16)
                   class)
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
   // Class with ghost variable declarations
   
-  it should "parse 'ghost const' declarations" in {
+  it should "check 'ghost const' declarations" in {
     val str = """
                 (class Test(ghost obj par1: Int16)
 	                ghost obj c: Int32 := 0;
 	                ghost const x: Int32 := 1;
                 class)
                """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
-  it should "parse a class with 'ghost' local declarations/initialization" in {
+  it should "check a class with 'ghost' local declarations/initialization" in {
     val str = """
                   (class Test()
 	                  (thread(*t0*)
@@ -105,11 +107,11 @@ class ParserTests extends BoogieTestsBase {
 	                  thread) 
                   class)
               """
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 
 
-  it should "parse thread(*t0*) with claim specification" in {
+  it should "check thread(*t0*) with claim specification" in {
     val str = """ 
                 (class Test()
 	                ghost obj c: Int32:=0;
@@ -117,28 +119,7 @@ class ParserTests extends BoogieTestsBase {
 	                (thread(*t0*) claim c@0.5 claim x
 	                thread) 
                 class)"""
-    tryWithParser(str)
-  }  
-  
-  it should "parse Method Declaration with specifications" in {
-    val str = """ 
-                (class Test()
-	                ghost obj c: Int32:=0;
-	                ghost const x: Int32:=9;
-                  public proc add(ghost in par: Int32, ghost in par2: Int32,in par3: Int64, out par4: Int16)
-                	pre c>8
-                  post c'>10
-                  post x'<1
-                	takes x
-                	gives c
-                	(thread(*t0*) claim c@0.5 claim c@0.6,x
-                		ghost const a: Int32:=9;
-                		c:=2+2
-                		assume c>9 
-                		assert a+2<20
-                	thread) 
-                class)"""
-    tryWithParser(str)
+    tryWithChecker(str)
   }
 }
 

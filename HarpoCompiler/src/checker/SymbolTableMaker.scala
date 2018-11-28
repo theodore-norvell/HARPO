@@ -1,5 +1,4 @@
 package checker
-
 import frontEnd.AST._
 import frontEnd.{ RQN, FQN }
 import frontEnd.ErrorRecorder
@@ -100,14 +99,12 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         case PrimitiveTypeDeclNd(fqn: FQN) => ()
       }
     }
-
     def buildSTFromClassLike(d: ClassLike, containingFQN: FQN) {
       for (gp <- d.genericParameters)
         buildSTFromDecl(gp, containingFQN)
 
       for (p <- d.constructorParams)
         buildSTFromDecl(p, containingFQN)
-
       buildSTFromDeclSet(d.directMembers, containingFQN.append(d.name))
 
       val members: mutable.HashMap[String, DeclNd] = new mutable.HashMap[String, DeclNd]
@@ -115,9 +112,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         members += ((memberDecl.name, memberDecl))
       }
       directMembersMap += ((d.fqn, members.toMap[String, DeclNd]))
-
     }
-
     def buildSTFromInitExp(d: InitExpNd, fqn: FQN) {
       d match {
         case ValueInitExpNd(exp: ExpNd) => ()
@@ -127,38 +122,33 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromInitExp(a, forDecl.fvd.fqn)
         }
         case IfInitExpNd(guard: ExpNd, a: InitExpNd, b: InitExpNd) => {
-          buildSTFromInitExp(a, fqn)
+          buildSTFromInitExp(a, fqn) 
           buildSTFromInitExp(b, fqn)
         }
         case WidenInitExpNd(a: InitExpNd) => // What is this widenInitExpNd
           unreachable()
       }
     }
-
     def buildSTFromClaimNdList(claimNds: List[ClaimNd], containingFQN: FQN) {
       for (claim <- claimNds) {
         buildSTFromClaimNd(claim.pmn, containingFQN)
       }
     }
-
     def buildSTFromClaimNd(perMapNd: PermissionMapNd, containingFQN: FQN) {
       ()
     }
-
-    def buildSTFromClassInv(exp: ExpNd, containingFQN: FQN) {
+    def buildSTFromClassInv(exp: ConditionExpNd, containingFQN: FQN) {
       ()
     }
-    def buildSTFromLoopInv(exp: ExpNd, containingFQN: FQN) {
+    def buildSTFromLoopInv(exp: ConditionExpNd, containingFQN: FQN) {
       ()
     }
-
     def buildSTfromMethodSpecList(msn: MethodSpecNd, containingFQN: FQN) {
       msn match {
         case PreCndNd(condition) => ()
         case PostCndNd(condition) => ()
       }
     }
-
     def buildSTfromMethodPerList(mpn: PermissionNd, containingFQN: FQN) {
       mpn match {
         case GivesPerNd(pmn) => ()
@@ -166,14 +156,12 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         case BorrowsPerNd(pmn) => ()
       }
     }
-    
     def buildSTfromWithPerList(mpn: PermissionNd, containingFQN: FQN) {
       mpn match {
         case GivesPerNd(pmn) => ()
         case TakesPerNd(pmn) => ()
       }
     }
-
     def buildSTfromCommand(command: CommandNd, containingFQN: FQN) {
       command match {
         case SkipCmdNd() =>
@@ -207,12 +195,12 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         case CoForCmdNd(forDecl, repetitions, cl, body) => {
           buildSTFromDecl(forDecl, containingFQN)
           buildSTfromCommand(body, forDecl.fvd.fqn)
-          for(cn <- cl) buildSTFromClaimNd(cn.pmn,containingFQN)
+          for (cn <- cl) buildSTFromClaimNd(cn.pmn, containingFQN)
         }
         case CoCmdNd(cl, fstCmd, sndCmd) => {
           buildSTfromCommand(fstCmd, containingFQN)
           buildSTfromCommand(sndCmd, containingFQN)
-          for(cn <- cl) buildSTFromClaimNd(cn.pmn,containingFQN)
+          for (cn <- cl) buildSTFromClaimNd(cn.pmn, containingFQN)
         }
         case AcceptCmdNd(methodImplementationList) =>
           for (methImpl <- methodImplementationList) {
@@ -220,9 +208,9 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           }
         case WithCmdNd(lock, tpl, guard, command, gpl) =>
           buildSTfromCommand(command, containingFQN)
-          for(pmn <- tpl) buildSTfromWithPerList(pmn,containingFQN)
-          for(pmn <- gpl) buildSTfromWithPerList(pmn,containingFQN)
-          
+          for (pmn <- tpl) buildSTfromWithPerList(pmn, containingFQN)
+          for (pmn <- gpl) buildSTfromWithPerList(pmn, containingFQN)
+
       }
     }
 
