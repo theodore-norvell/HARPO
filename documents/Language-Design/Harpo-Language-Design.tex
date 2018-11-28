@@ -1,0 +1,1466 @@
+%
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.50.0.2960}
+%TCIDATA{CSTFile=Literate Programming Article.cst}
+%TCIDATA{Created=Monday, March 27, 2006 10:55:29}
+%TCIDATA{LastRevised=Tuesday, July 07, 2015 17:31:58}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="3">}
+%TCIDATA{BibliographyScheme=Manual}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Articles\Literate Programming Article">}
+%TCIDATA{Language=American English}
+%BeginMSIPreambleData
+\providecommand{\U}[1]{\protect\rule{.1in}{.1in}}
+%EndMSIPreambleData
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\input{litprog.sty}
+%BeginMSIPreambleData
+\ifx\pdfoutput\relax\let\pdfoutput=\undefined\fi
+\newcount\msipdfoutput
+\ifx\pdfoutput\undefined\else
+\ifcase\pdfoutput\else
+\msipdfoutput=1
+\ifx\paperwidth\undefined\else
+\ifdim\paperheight=0pt\relax\else\pdfpageheight\paperheight\fi
+\ifdim\paperwidth=0pt\relax\else\pdfpagewidth\paperwidth\fi
+\fi\fi\fi
+%EndMSIPreambleData
+\begin{document}
+
+\title{Language Design for CGRA\ project. Design 10 [Draft 20].}
+\author{Theodore S\ Norvell\\Electrical and Computer Engineering\\Memorial University}
+\maketitle
+
+\begin{abstract}
+Abstract to be done.
+
+\end{abstract}
+
+Change History
+
+\begin{itemize}
+\item 2006 Sept 18 Version 3
+
+\item 2007 August. Version 4.
+
+\item 2007 November. Version 5. Added constants
+
+\item Changed syntax of elseif
+
+\item Allowed name at the end of a class or interface
+
+\item 2008 Nov 3. Version 6
+
+\begin{itemize}
+\item Replaced atomic command with \textquotedblleft with
+command\textquotedblright
+
+\item Added section on parallel access to locations
+\end{itemize}
+
+\item 2011. July. Added information on expressions
+
+\item 2013 Summer. Changes related to implementation. Including
+
+\begin{itemize}
+\item More detail on expressions
+
+\item Minor changes to syntax
+
+\item Moved constructor parameters
+\end{itemize}
+
+\item 2015
+
+\begin{itemize}
+\item More information on expressions
+\end{itemize}
+\end{itemize}
+
+Meta notation%
+\[%
+\begin{tabular}
+[c]{ll}%
+$N\rightarrow E$ & An $N$ can be $E$\\
+$\underline{(}E\underline{)}$ & Grouping\\
+$E\;F$ & An $E$ followed by an $F$\\
+$E^{\ast}$ & Zero or more $E$s\\
+$E^{\ast F}$ & Zero or more $E$s separated by $F$s\\
+$E^{+}$ & One or more $E$s\\
+$E^{+F}$ & One or more $E$s separated by $F$s\\
+$E^{?}$ & Zero or one $E$s\\
+$\underline{\lbrack}E\underline{]}$ & Zero or one $E$s\\
+$E\mid F$ & Either an $E$ or a $F$%
+\end{tabular}
+\
+\]
+
+
+\section{Classes and Objects}
+
+\subsection{Programs}
+
+A program is a sequence of classes, interfaces, and objects.%
+\[
+\mathit{Program}\rightarrow\underline{(}\mathit{ClassDecl}\mid
+\mathit{IntfDecl}\mid\mathit{ObjectDecl}\mid\mathbf{;}\underline{)}^{\ast
+}\;\mathbf{eof}%
+\]
+
+
+If multiple files are compiled together the sequence is simply the
+concatenation of the sequences in the individual files.
+
+\subsection{Types}
+
+Types come in several categories.
+
+\begin{itemize}
+\item Primitive types:\ Primitive types represent sets of value. As such they
+have no mutators. However objects of primitive types may be assigned to to
+change their values. Primitive types represent such things as numbers. They include
+
+\begin{itemize}
+\item Int8, Int16, Int32, Int64
+
+\item Real16, Real32, Real64
+
+\item Bool
+\end{itemize}
+\end{itemize}
+
+The names of the types specify the minimum number of bits. However they do not
+specify the exact number of bits. E.g. int16 might be represented by 32 bit
+locations.\ The names of the primitive types are not reserved words.
+
+\begin{itemize}
+\item Classes:\ Classes represent sets of objects. As such they support
+methods that may change the object's state.
+
+\item Interfaces. Interfaces are like classes, but without the implementation.
+
+\item Arrays:\ Arrays may be arrays of primitives or arrays of objects.
+
+\item Generic types. Generic types are not really types at all, but rather
+functions from types to types. In order to be used, generic types must be instantiated.
+\end{itemize}
+
+Types are either names of classes, names of interfaces, array types or
+specializations of generic types%
+\[
+\mathit{Type}\rightarrow\mathit{Name}\mid\mathit{Type}\;\mathit{GArgs}%
+\mid\mathit{Type\ }\mathbf{[\ }\mathit{Bounds}\ \mathbf{]}%
+\]
+
+
+Arrays are 1 dimensional and indexed from $0$, so the bounds are simply one
+number%
+\[
+\mathit{Bounds}\rightarrow\mathit{ConstExp}%
+\]
+
+
+\subsubsection{Restrictions}
+
+The bounds of an array must be an integral expression greater than or equal to zero.
+
+For a type of the form $\mathit{Type}\;\mathit{GArgs},$the name must refer to
+a generic type and the generic arguments must be the same in number as the
+type's parameters. Each argument must not be generic.
+
+TODO More to say?
+
+\subsection{Objects}
+
+Objects are named instances of types.%
+\[
+\mathit{ObjectDecl}\rightarrow(\mathbf{const}\mid\mathbf{obj})\;\mathit{Name}%
+\;\underline{[}:\mathit{Type}\underline{]}:=\mathit{InitExp}%
+\]
+
+
+\subsubsection{Restrictions}
+
+If the type is missing it is considered to be the same as that of the
+$\mathit{InitExp}$. If the type is not missing, it must be a supertype of the
+type of the $\mathit{InitExp}$. It follows that the type may not be generic.
+
+If the type (or inferred type) is primitive, the declaration creates a named
+location. If the type is an array type, the declaration names an array of
+locations. If the type is a class, the declaration names an object.
+
+If the declaration is \textbf{const}, the type must be primitive and the named
+location is a constant location that may not be changed.
+
+\subsection{Initialization expressions}
+
+\subsubsection{Constant initialization expression}%
+
+\[
+\mathit{InitExp}\rightarrow\mathit{ConstExp}%
+\]
+The type of the $\mathit{InitExp}$ is the same as the $\mathit{ConstExp}$ in
+the first case.
+
+\subsubsection{Array Initialization Expressions}%
+
+\[
+\mathit{InitExp}\rightarrow\left(  \mathbf{for}\;\mathit{Name}:\mathit{Bounds}%
+\;\mathbf{do}\;\mathit{InitExp}\;\underline{[}\mathbf{for}\underline{]}%
+\right)
+\]
+The type of an $\mathit{ArrayInit}$ is array $k$ of $t$ where $k$ is the value
+of the bounds and $t$ is the value of the $\mathit{InitExp}$.
+
+\subsubsection{New Initialization Expressions}%
+
+\[
+\mathit{InitExp}\rightarrow\mathbf{new}\;\mathit{Type}(\mathit{ConstExp}%
+^{\ast,})
+\]
+In this case the $\mathit{Type}$ must be a nongeneric class type, the number
+of arguments must match the number of parameters for the class's constructor.
+For each parameter (whether \textbf{in} or \textbf{obj}), the argument's type
+must be a subtype of the parameter's type.
+
+\subsubsection{Choice Initialization Expressions}%
+
+\[
+\mathit{InitExp}\rightarrow\left(  \mathbf{if}~\mathit{ConstExp}%
+\;\mathbf{then}\;\mathit{InitExp}\;\underline{(}\mathbf{else\;if}%
+\;\mathit{ConstExp}\;\mathbf{then}\;\mathit{InitExp}\underline{)}^{\ast
+}\;\mathbf{else}\;\mathit{InitExp}\;\underline{[}\mathbf{if}\underline{]}%
+\right)
+\]
+
+
+The type of the expression is the least supertype of all the \textit{InitExp}s.
+
+\paragraph{Restrictions}
+
+The type of each $\mathit{ConstExp}$ must be Bool.
+
+If no such supertype exists, then there is an error.
+
+\subsection{Classes and interfaces}
+
+Each class declaration defines a family of types. Classes may be generic or
+nongeneric. A generic class has one or more generic parameters%
+
+\begin{align*}
+ClassDecl  &  \rightarrow(\mathbf{class}\;Name\;GParams^{?}\;(CParam^{\ast
+,})\;\underline{(}\mathbf{implements}\;Type^{+,}\underline{)}^{?}\mathbf{\;}\\
+&  \underline{(}ClassMember\underline{)}^{\ast}\;\underline{[}\mathbf{class~}%
+\underline{[}Name\underline{]}\underline{])}%
+\end{align*}
+
+
+\begin{itemize}
+\item The $Name$ is the name of the class.
+
+\item The $GParams$ is only present for generic classes, which will be
+presented in a later section.
+
+\item The $Type$s are the interfaces that the class implements.
+\end{itemize}
+
+An interface defines a type. Interfaces may be generic or nongeneric. A
+generic interfaces has one or more generic parameters%
+
+\[
+IntfDecl\rightarrow\left(  \mathbf{interface}\;Name\;GParams^{?}%
+\;\underline{(}\mathbf{extends}\;Type^{+,}\underline{)}^{?}\;\underline{(}%
+IntfMember\underline{)}^{\ast}\;\underline{[}\mathbf{interface~}%
+\underline{[}Name\underline{]}\underline{]}\right)
+\]
+
+
+\begin{itemize}
+\item The $Name$ is the name of the class.
+
+\item The $GParams$ will be presented in a later section.
+
+\item The $Type$s are the interfaces that the interface extends.
+\end{itemize}
+
+Constructor parameters represent objects to which this object is connected.%
+\[
+CParam\rightarrow\mathbf{obj}\;Name:Type\mid\mathbf{in}\;Name:Type
+\]
+
+
+\begin{itemize}
+\item $_{{}}$Object parameters represent named connections to other objects.
+So for example if we have
+
+\begin{code}
+(class B(\ obj x :\ A\ )\ ... )
+
+obj a := (for i\ :\ 10 do new A() )
+
+obj b := (for i :\ 10 do new B(a(i) )
+\end{code}
+
+Then object \textsf{b[0]} knows object \textsf{a[0]} by the name of \textsf{x}.
+
+\item In parameters are compile time constants and the corresponding argument
+must be such.
+\end{itemize}
+
+\subsection{Class Members}
+
+Class members can be fields, methods, and threads. [Nested classes and
+interfaces are a possibility for the future.]%
+\[
+ClassMember\rightarrow Field\mid Method\mid Thread\mid{};
+\]
+
+
+Fields are objects, arrays, or locations that are within objects. Field
+declarations therefore define the part/whole hierarchy.
+\begin{align*}
+Field  &  \rightarrow Access^{?}\;ObjectDecl\\
+Access  &  \rightarrow\mathbf{private}\mid\mathbf{public}%
+\end{align*}
+
+
+Method declarations declare the method, but not its implementation. The
+implementation of each must be embedded within a thread.%
+\begin{align*}
+Method  &  \rightarrow Access\;\mathbf{proc}\;Name(\underline{(}%
+Direction\;Name:\;Type\underline{)}^{\ast,})\underline{]}\\
+Direction  &  \rightarrow\mathbf{in}\mid\mathbf{out}%
+\end{align*}
+The types of method parameters must be primitive.
+
+Recommended order of declarations is
+
+\begin{itemize}
+\item public methods and fields, followed by
+
+\item private methods and fields, followed by
+
+\item threads.
+\end{itemize}
+
+There is no `declaration before use rule'. Name lookup works from inside out.
+
+\subsection{Interface Members}
+
+Interface's members can be fields and methods. [Nested classes and interfaces
+are a possibility for the future.]%
+\[
+IntfMember\rightarrow Field\mid Method\mid{};
+\]
+
+
+\section{Threads}
+
+Threads are blocks executed in response to object creation.
+\[
+Thread\rightarrow(\mathbf{thread}\;Block\;\underline{[}\mathbf{thread}%
+\underline{]})
+\]
+
+
+Each object contains within it zero or more threads. Coordination between the
+threads within the same object are the responsibility of the programmer. All
+concurrency within an object arises from the existence of multiple threads in
+its class. Thus you can write a monitor (essentially) by having only one
+thread in a class.
+
+\subsection{Statements and Blocks}
+
+A block is simply a sequence of statements and semicolons%
+\[
+Block\rightarrow Command\;Block\mid LocalDeclaration\mid;\;Block\mid
+\]
+
+
+Statements as follow
+
+\begin{itemize}
+\item Assignment statements%
+\begin{align*}
+Command  &  \rightarrow(ObjectIds):=(Expressions)\\
+Command  &  \rightarrow ObjectId:=Expression\\
+ObjectIds  &  \rightarrow\underline{(}ObjectId\underline{)}^{+,}\\
+Expressions  &  \rightarrow\underline{(}Expression\underline{)}^{+,}\\
+ObjectId  &  \rightarrow Name\mid ObjectId[Expression]\mid ObjectId.Name
+\end{align*}
+The type of the ObjectId must admit assignment, which means it should be a
+primitive type, like \textbf{int32} or \textbf{real64}.
+
+\item Local variable declaration%
+\[
+LocalDeclaration\rightarrow(\mathbf{obj}\mid\mathbf{const})\;Name\underline{[}%
+:Type\underline{]}:=Exp\;Block
+\]
+Note that the initialization expression is a regular expression, not an
+initExp. The initialization is performed each time the declaration is
+encountered. The type may be omitted, in which case it is inferred from the
+initialization expression. In either case, the type must be primitive. The
+scope of a local variable name is the block that follows it. Local variables
+marked \textbf{const} may not be assigned to. Names must be unique within the thread.
+
+\item Method call statements%
+\begin{align*}
+Command  &  \rightarrow ObjectId.Name(Args)\\
+&  \mid Name(Args)\\
+Args  &  \rightarrow\underline{[}Expressions\underline{]}%
+\end{align*}
+
+
+Restrictions:
+
+\begin{itemize}
+\item For the first syntax, the type of the $ObjectId$ must be of class or
+interface type and the $Name$ must name a public method of that type
+(including inherited methods).
+
+\item For the second syntax, the $Name$ must be the name of a (public or
+private) method of the class or interface type currently being defined.
+
+\item The number of argument must equal the number of parameters declared for
+the method.
+
+\item For each \textbf{in} parameter of the method, the corresponding argument
+must have either the same type as the parameter's type or a type that can be
+widened to the parameter's type.
+
+\item For each \textbf{out} parameter of the method, the argument must refer
+to a location and the type of that location must be the same as the type of
+the argument, or type that can be widened to the argument type.
+\end{itemize}
+
+\item Sequential control flow%
+\begin{align*}
+Command &  \rightarrow\left(  \mathbf{if}~Expression\;\mathbf{then}%
+\;Block\;\underline{(}\mathbf{else\;if}~Expression\;\mathbf{then}%
+\;Block\underline{)}^{\ast}\underline{(}\mathbf{else}\;Block\underline{)}%
+^{?}~\underline{[}\mathbf{if}\underline{]}\right)  \\
+&  \mid\left(  \mathbf{while}~Expression\;\mathbf{do}\;Block\;\underline{[}%
+\mathbf{while}\underline{]}\right)  \\
+&  \mid\left(  \mathbf{for}\;Name:Bounds\;\mathbf{do}\;Block\;\underline{[}%
+\mathbf{for}\underline{]}\right)
+\end{align*}
+
+
+\item Parallelism (note that the 2 vertical bars here is a terminal)%
+\begin{align*}
+Command &  \rightarrow\left(  \mathbf{co}\;Block\;\underline{(}%
+||\;Block\underline{)}^{+}\;\underline{[}\mathbf{co}\underline{]}\right)  \\
+&  \mid\left(  \mathbf{co}\;Name:Bounds\;\mathbf{do}\;Block\;\underline{[}%
+\mathbf{co}\underline{]}\right)
+\end{align*}
+In the second case, the \textit{Bounds} must be compile-time constant.
+
+\item Method implementation (note that the vertical bar here is a terminal)%
+\begin{align*}
+Command  &  \rightarrow\left(  \mathbf{accept}\;MethodImp\;\underline{(}%
+|\;MethodImp\underline{)}^{\ast}\;\underline{[}\mathbf{accept}\underline{]}%
+\right) \\
+MethodImp  &  \rightarrow Name(\;\underline{(}%
+Direction\;Name:Type\underline{)}^{\ast,}\;)\;\underline{[}Guard\underline{]}%
+\;Block_{0}\;\underline{[}\mathbf{then\;}Block_{1}\underline{]}\\
+Guard  &  \rightarrow\mathbf{when}\;Expression
+\end{align*}
+
+
+\begin{itemize}
+\item Restrictions
+
+\begin{itemize}
+\item The names, directions and types must match the declaration.
+
+\item The guard expression must be boolean.
+
+\item Each method may only be implemented once per class
+\end{itemize}
+
+\item Possible restrictions:
+
+\begin{itemize}
+\item The guard may not refer to any parameters.
+
+\item The guard may refer only to the in parameters.
+\end{itemize}
+
+\item Semantics:\ A thread that reaches an accept command must wait until
+there is a call to one of the methods it implements and the corresponding
+guard is true. Once there is at least one method the accept can execute, one
+is selected. Input parameters are passed in, $Block_{0}$ is executed and
+finally the output parameters are copied back to the calling thread. If there
+is a $Block_{1}$ it is executed next.
+\end{itemize}
+
+\item Locking%
+\[
+Command\rightarrow\left(  \mathbf{with}\;Exp\;\underline{[}Guard\underline{]}%
+\;\mathbf{do}\;Block\;\underline{[}\mathbf{with}\underline{]}\right)
+\]
+
+
+\begin{itemize}
+\item Restrictions:
+
+\begin{itemize}
+\item The \textit{Exp} must refer to an object of type Lock.
+
+\item The guard expression must be boolean
+\end{itemize}
+
+\item Semantics:\ 
+
+\begin{itemize}
+\item The block (including the guard) is executed as if atomically with
+respect to other with commands sharing the same lock
+
+\item If there is no guard, it defaults to true.
+
+\item If the guard is false, then the lock is unlocked and then everything
+starts again.
+
+\item In summary the sematics is like this
+
+\begin{code}
+lock(\textit{Exp})
+
+(\textbf{while} \textbf{not} \textit{Guard} \textbf{do} unlock(\textit{Exp})
+lock(\textit{Exp})\ )
+
+\textit{Block}
+
+unlock(\textit{Exp})
+\end{code}
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\section{Parallel access to data locations}
+
+Each object of a primitive type, including array items, is a separate
+location. Access to a location is either a read access or a write access.
+Accesses are not considered to be atomic, but rather to take a span of time.
+As such two accesses that could overlap in time must not be to the same
+location --- except that we will allow read accesses to overlap. If two
+accesses could overlap in time, we say that they \textquotedblleft could
+happen at the same time\textquotedblright. Suppose that $a$ and $b$ are two
+accesses from separate threads that could happen at the same time
+
+\begin{itemize}
+\item Parallel read accesses are allowed. If $a$ and $b$ are both reads,
+behaviour is well defined.
+
+\item Parallel write accesses are not allowed. If $a$ and $b$ are both writes,
+then behaviour is undefined.
+
+\item Parallel read and write accesses are not allowed. If $a$ is a read and
+$b$ is a write (or the other way around), then behaviour is undefined.
+\end{itemize}
+
+The compiler may or may not diagnose undefined behaviour. The reason is that
+aliasing makes it impossible to tell for sure whether the behaviour of a
+program is well defined or undefined. Consider
+
+\begin{code}
+(\textbf{co} $a[i]:=0\;||\;a[j]:=0$ \textbf{co})
+\end{code}
+
+\noindent In states where $i=j$, behavour is undefined. In states where
+$\not i  \neq j$, but where $i$ and $j$ are in bounds, behaviour is well
+defined. Since the values of $i$ and $j$ are (in general) unknowable at
+compile time, the compiler is not in a position to diagnose undefined
+behaviour, although a good compiler may warn that it can not rule out
+undefined behaviour. Note that the fact that both statements are writing the
+same value makes no difference to whether the parallel accesses are well-defined.
+
+The programmer may prevent accesses from occuring at the same time using locks:
+
+\begin{code}
+(\textbf{co} (\textbf{with} $l$ $a[i]:=0$ )$\;||\;$(\textbf{with} $l$
+$a[i]:=1$ ) )
+\end{code}
+
+\noindent In this example, the parallel accesses are well defined because they
+can not take place at the same time.
+
+Accesses may also be protected via other synchronization mechanisms. For example
+
+\begin{code}
+(\textbf{co} $s.p()\;a[i]:=0\;s.v()\;||\;s.p()\;a[i]:=1\;s.v()$ \textbf{co})
+\end{code}
+
+\noindent Is well defined if the $p$ and $v$ methods of object $s$ somehow
+prevent the accesses from occurring at the same time. Method calls serve as
+\textquotedblleft synchonization points\textquotedblright.
+
+Here is one more example.
+
+\begin{code}
+\textbf{obj} $l:\mathit{Lock}:=\mathbf{new}$ $\mathit{Lock()}$
+
+\textbf{obj} $s:=1$
+
+(\textbf{co}
+
+\begin{indent}
+\item (\textbf{with} $l$ \textbf{when} $s=1\;s:=0$\ )
+
+\item $a[i]:=0$
+
+\item (\textbf{with} $l$ $s:=1$)
+\end{indent}
+
+%
+
+%TCIMACRO{\TEXTsymbol{\vert}}%
+%BeginExpansion
+$\vert$%
+%EndExpansion%
+%TCIMACRO{\TEXTsymbol{\vert}}%
+%BeginExpansion
+$\vert$%
+%EndExpansion
+
+
+\begin{indent}
+\item (\textbf{with} $l$ \textbf{when} $s=1\;s:=0$\ )
+
+\item $a[i]:=1$
+
+\item (\textbf{with} $l$ $s:=1$)
+\end{indent}
+
+\textbf{co})
+\end{code}
+
+\noindent In this case, the assignments to $a[i]$ can not happen at the same
+time and so the result is well defined (though nondeterministic). In
+particular the compiler can not move the assignment to $a[i]$ any earlier or
+later in the threads. This means that with statements, like method calls,
+serve as \textquotedblleft synchronization points.\textquotedblright
+
+One might at first think that there is no need to protect the assignments
+$s:=1$, in the previous example, with \textbf{with} statements. This is not
+so; there is a read access in the other process that could happen at the same
+time. The following program's behaviour is undefined.
+
+\begin{code}
+\textbf{obj} $l:\mathit{Lock}$
+
+\textbf{obj} $s:=1$
+
+(\textbf{co}
+
+\begin{indent}
+\item (\textbf{with} $l$ \textbf{when} $s=1\;s:=0$\ )
+
+\item $a[i]:=0$
+
+\item $s:=1$ // Wrong. Access is unprotected.
+\end{indent}
+
+%
+
+%TCIMACRO{\TEXTsymbol{\vert}}%
+%BeginExpansion
+$\vert$%
+%EndExpansion%
+%TCIMACRO{\TEXTsymbol{\vert}}%
+%BeginExpansion
+$\vert$%
+%EndExpansion
+
+
+\begin{indent}
+\item (\textbf{with} $l$ \textbf{when} $s=1\;s:=0$\ )
+
+\item $a[i]:=1$
+
+\item $s:=1$ // Wrong! Access is unprotected.
+\end{indent}
+
+\textbf{co})
+\end{code}
+
+\noindent A compiler optimizing this program, might look at the sequence
+$a[i]:=1\,s:=1$ and decide to reorder the statements to $s:=1\,a[i]:=1$ and
+that would be legitimate in the sense that any change to an undefined program
+can not make it more wrong.
+
+While sequential programming constructs impose an nominal order on execution,
+a compiler is welcome to reorder accesses that are to different locations (or
+that are both read accesses). For example the program $a:=1\,b:=1$ says that
+$a$ should be written first, nominally. However as $a$ and $b$ are different
+locations, the command can be rewritten to $b:=1\,a:=1$. The compiler can
+assume that there are no parallel accesses to $a$ or $b$ that could happen at
+the same time, as such accesses would make the program undefined and there is
+nothing the compiler can do to an undefined program to make it more wrong.
+Thus the compiler is welcome to make any sequential optimizations to code that
+appears between synchronization points. The following are synchronization points:
+
+\begin{itemize}
+\item The start of a with command.
+
+\item The end of a with command
+
+\item The start of an accept command
+
+\item The return from an accept command
+
+\item Any method call (after argument evaluation)
+\end{itemize}
+
+\section{Expressions}
+
+\subsection{Syntax}
+
+Expressions%
+\begin{align*}
+Exp  &  \rightarrow Exp0~\underline{\underline{(}}\underline{(}\text{=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+}\mid\text{%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=}\mid\text{%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+}\underline{)}~Exp0\underline{)}^{\ast}\;\underline{[}\mathbf{as}%
+\mathit{\;Id}\underline{]}\\
+Exp0  &  \rightarrow Exp1~\underline{\underline{(}}\underline{(}\text{%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+/}\mid\text{or}\underline{)}~Exp1\underline{)}^{\ast}\\
+Exp1  &  \rightarrow Exp2~\underline{\underline{(}}\underline{(}\text{/%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+}\mid\text{and}\underline{)}~Exp2\underline{)}^{\ast}\\
+Exp2  &  \rightarrow Exp3\mid\mathrm{not}\;Exp2\mid\mathrm{\symbol{126}%
+}\;Exp2\\
+Exp3  &  \rightarrow Exp4~\underline{\underline{(}}\underline{(}\text{=}%
+\mid\text{\symbol{126}=}\mid\text{not=}\mid\text{%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+}\mid\text{\_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+}\mid\text{%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\_}\mid\text{%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+}\underline{)}~Exp4\underline{)}^{\ast}\\
+Exp4  &  \rightarrow Exp5~\underline{(}\underline{(}+\mid-\underline{)}%
+~Exp5\underline{)}\ast\\
+Exp5  &  \rightarrow Primary~\underline{(}\underline{(}\ast\mid/\mid
+\operatorname{div}\mid\operatorname{mod}\underline{)}~Primary\underline{)}%
+^{\ast}\\
+Exp6  &  \rightarrow -Exp6\mid Exp7\\
+Exp7  &  \rightarrow Primary\\
+Primary  &  \rightarrow(Exp) \mid ObjectId \mid Literal
+\end{align*}
+
+
+Operator precedence is as above. Binary operators%
+\[
+\text{\textrm{=%
+%TCIMACRO{\TEXTsymbol{>} }%
+%BeginExpansion
+$>$
+%EndExpansion
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=%
+%TCIMACRO{\TEXTsymbol{>} }%
+%BeginExpansion
+$>$
+%EndExpansion
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+/ or /%
+%TCIMACRO{\TEXTsymbol{\backslash} }%
+%BeginExpansion
+$\backslash$
+%EndExpansion
+and + - * / div mod}}%
+\]
+are left associative. The following are synonymous (see also
+%TCIMACRO{\hyperref{Lexical Issues}{section}{}{sec:LexicalIssues}}%
+%BeginExpansion
+section\ref{sec:LexicalIssues}
+%EndExpansion
+).%
+\[%
+\begin{tabular}
+[c]{llll}%
+=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+&  & $\Rightarrow$ & \\%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+= &  & $\Leftarrow$ & \\%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+&  & $\Leftrightarrow$ & \\%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+/ & or & $\vee$ & \\
+/%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+& and & $\wedge$ & \\
+\symbol{126}= & not= & $\neq$ & $\lnot=$\\
+\symbol{126} & not & $\lnot$ & \\
+\_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+&  & $\leq$ & $\leqslant$\\%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\_ &  & $\geq$ & $\geqslant$%
+\end{tabular}
+\]
+
+
+Binary operators%
+\[
+\text{\texttt{=\quad\symbol{126}=\quad%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\quad\_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\quad%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\quad%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\_}}%
+\]
+are \textquotedblleft chaining\textquotedblright, meaning that any sequence of
+these operators is `anded' together. For example expression%
+\[
+\text{a \_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\ b
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\ c = d \symbol{126}= e}%
+\]
+is logically equivalent to
+\[
+\text{a \_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\ b and b
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\ c and c = d and d \symbol{126}= e}%
+\]
+except that for the former, all operands are first converted to a common type.
+
+Expressions are not necessarily evaluated from left to right or in any
+particular order. Associativity of associative operators may or may not be
+respected. Logical operators are not (necessarily)\ short-circuiting.
+
+A constant expression is the same as an expression except it must be evaluable
+at elaboration time. Thus a constant expression can depend on \textbf{in}
+parameters of the constructor.%
+\[
+ConstExp\rightarrow Exp
+\]
+
+
+\subsection{Literals}
+
+Decimal integer literals are written as a series of decimal digits with any
+number of internal underlines. For example \textquotedblleft%
+0\textquotedblright, \textquotedblleft123\textquotedblright, \textquotedblleft%
+123\_456\textquotedblright.
+
+Integer literals in bases 2, 8, and 16 are also allowed. These are written
+with the base first, followed by a \# symbol, followed by the digits that make
+up the literal. Again underscores can appear internally to provide spacing.
+Here is the lexical syntax of integer literals%
+\begin{align*}
+\mathit{DecimalLiteral}  &  \rightarrow D\mid D\underline{(}D\mid
+\text{\texttt{\_}}\underline{)}^{\ast}D\\
+\mathit{HexLiteral}  &  \rightarrow\text{\texttt{16\#}}\underline{(}H\mid
+H(H\mid\text{\texttt{\_}}\underline{)}^{\ast}H\\
+\mathit{OctLiteral}  &  \rightarrow\text{\texttt{8\#}}\underline{(}O\mid
+O(o\mid\text{\texttt{\_}}\underline{)}^{\ast}O\\
+\mathit{BinLiteral}  &  \rightarrow\text{\texttt{2\#}}\underline{(}B\mid
+B(B\mid\text{\texttt{\_}}\underline{)}^{\ast}B\\
+D  &  \rightarrow0\mid1\mid\cdots\mid9\\
+H  &  \rightarrow0\mid1\mid\cdots\mid9\mid a\mid\cdots\mid f\mid A\mid
+\cdots\mid F\\
+O  &  \rightarrow0\mid1\mid\cdots\mid7\\
+B  &  \rightarrow0\mid1
+\end{align*}
+
+
+Floating point (or real) literals are defined by the following lexical rules%
+\begin{align*}
+\mathit{RealLiteral}  &  \rightarrow\text{\texttt{.}}\;\mathit{DecimalLiteral}%
+\;\underline{[}\mathit{Exp}\underline{]}\\
+&  \mid\mathit{DecimalLiteral}\;\mathtt{.}\;\underline{[}\mathit{Exp}%
+\underline{]}\\
+&  \mid\mathit{DecimalLiteral}\;\mathtt{.}\;\mathit{DecimalLiteral\;}%
+\underline{[}\mathit{Exp}\underline{]}\\
+&  \mid\mathit{DecimalLiteral}\;\mathit{Exp}\\
+\mathit{Exp}  &  \rightarrow\underline{(}\mathtt{e}\mid\mathtt{E}%
+\underline{)}\;\underline{[}\mathtt{+}\mid\mathtt{-}\underline{]}%
+\;\mathit{DecimalLiteral}%
+\end{align*}
+
+
+\subsubsection{Restrictions}
+
+Decimal, binary, octal, and hex, literals must be repesentable in 63 bits,
+i.e. they must be less than $2^{63}.=\allowbreak9,223,372,036,854,775,808$.
+Real literals must be representable in 64 bits on both the compiling and the
+target machines.
+
+\subsection{Types}
+
+The arithmetic primitive types include
+
+\begin{itemize}
+\item Int8, Int16, Int32, Int64
+
+\item Real16, Real32, Real64
+\end{itemize}
+
+\noindent and have the following one step widening relationships
+
+\begin{itemize}
+\item Int8 $\rightarrow$ Int16 $\rightarrow$ Int32 $\rightarrow$ Int64
+
+\item Real16 $\rightarrow$ Real32 $\rightarrow$ Real64
+
+\item Int8 $\rightarrow$ Real16
+
+\item Int16 $\rightarrow$ Real32
+
+\item Int32 $\rightarrow$ Real64
+\end{itemize}
+
+\subsubsection{Object\ IDs}
+
+The type of an ObjectID is the discussed in [[section on objectIDs above]]
+
+\subsubsection{Literals}
+
+The type of any real literal is of type Real64. However, when an
+initialization of an object consists soley of a real literal, and the object
+is explicitly typed, the literal is typed as the type of the object, provided
+that type is Real16 or Real32. Effectively there is an implicit `as'. For example
+
+\begin{code}
+\textbf{obj} a :\ Real32 := 1.0
+\end{code}
+
+\noindent is equivalent to
+
+\begin{code}
+\textbf{obj} a :\ Real32 := 1.0 \textbf{as} Real32
+\end{code}
+
+The type of any integer literal\ (i.e. decimal, binary, octal, or hex literal)
+is Int32 unless its value is over $2^{31}=2,147,483,648$, in which case it is
+of type Int64. However, when an initialization of an object consists soley of
+an integer literal, and the object is explicitly typed, the literal is typed
+as the type of the object, provided that type is Int8, Int16, or Real16 or
+Real32. Effectively there is an implicit `as'. For example
+
+\begin{code}
+\textbf{obj} a :\ Real32 := 1 \textbf{obj} b :\ Int8 := 0
+\end{code}
+
+\noindent is equivalent to
+
+\begin{code}
+\textbf{obj} a :\ Real32 := 1 \textbf{as} Real32 \textbf{obj} b :\ Int8 := 0
+\textbf{as} Int8
+\end{code}
+
+\subsubsection{Binary and chaining operators}
+
+When applying binary operations, operands are generally widened to the
+narrowest common widening (ncw). For example if a Real32 is compared to an
+Int32, the narrowest common widening is Real64, so both operands are converted
+to Real64 and are compared at that type. Note that the ncr is not always
+defined. In particular $\mathrm{ncw}(\mathrm{Int64},t)$ is not defined for any
+$t\in\left\{  \mathrm{Real16},\mathrm{Real32},\mathrm{Real64}\right\}  $.
+
+An integral type is any of the types Int8, Int16, Int32, Int64.
+
+Binary operators behave according to this table in which B stands for Boolean,
+A for arithmetic, I\ for integral, ncw for narrowest common widening, and ncrw
+stands for narrowest common real widening.%
+
+\[%
+\begin{tabular}
+[c]{lllll}%
+Operator & Left & Right & Operation Type & Result Type\\%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+= =%
+%TCIMACRO{\TEXTsymbol{>} }%
+%BeginExpansion
+$>$
+%EndExpansion
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=%
+%TCIMACRO{\TEXTsymbol{>} }%
+%BeginExpansion
+$>$
+%EndExpansion
+/%
+%TCIMACRO{\TEXTsymbol{\backslash} }%
+%BeginExpansion
+$\backslash$
+%EndExpansion
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+/ & B & B & B & B\\
+= \symbol{126}=
+%TCIMACRO{\TEXTsymbol{>} }%
+%BeginExpansion
+$>$
+%EndExpansion
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\_ \_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+& A & A & ncw & B\\
++ - * & A & A & ncw & ncw\\
+/ & A & A & ncrw & ncrw\\
+div mod & I & I & ncw & ncw
+\end{tabular}
+\
+\]
+For the comparison operations, when multiple operations are chained together,
+as in $a\leq b<c$, all operands are widened to the narrowest common type
+before any comparisons are made. If that narrowest common widening does not
+exist, then it is an error.
+
+For division with /, if both operands are integral, then the result is the
+narrowest real type that is wider than both operands.
+
+\textbf{Restrictions}:
+
+\begin{itemize}
+\item A binary operation is not allowed if the types of the operands are not
+as shown in the above table.
+
+\item A binary operation is not allowed if the ncw or ncrw is not defined for
+the operand types.
+\end{itemize}
+
+\subsubsection{Unary operators}
+
+Unary operators do not force conversions. The result type is the same as the
+operand type.%
+\[%
+\begin{tabular}
+[c]{lll}%
+Operator & Left & Result\\
+\symbol{126} & B & B\\
+$-$ & A & A
+\end{tabular}
+\]
+
+
+\textbf{Restriction}:
+
+\begin{itemize}
+\item A unary operation is not allowed if the type of the operand is not as
+shown in the above table.
+\end{itemize}
+
+\subsubsection{`As' expressions}
+
+The `as' construct forces a value to be reinterpreted as another type. The
+identifier must be one of the primitive types. Any expression of an arithmetic
+type can be reinterpreted as a value of any other arithemetic type.
+
+\textbf{Restrictions}:
+
+\begin{itemize}
+\item The `as' construct is not allowed if the operand is not of arithmetic type.
+
+\item The `as'construct is not allowed if the identifier on the right is does
+not resolve to one of the arithmetic types.
+\end{itemize}
+
+\subsection{Semantics}
+
+Each integral type is associated with a particular range of values. These are
+
+\begin{itemize}
+\item Int8 $\left\{  -128,..,127\right\}  $
+
+\item Int16 $\left\{  -32\_768,..,32\_767\right\}  $
+
+\item Int32 $\left\{  -2\_147\_483\_648,..,2\_147\_483\_647\right\}  $
+
+\item Int64 $\left\{
+-9\_223\_372\_036\_854\_775\_808,..,9\_223\_372\_036\_854\_775\_807\right\}  $
+\end{itemize}
+
+The semantics of operations on intergral types is simply that the result is
+the mathematical answer if representable in the ncw type and is not defined
+otherwise. For example%
+\[
+\left(  1\;\text{as Int8}\right)  +\left(  127\;\text{as Int8}\right)
+\]
+is not defined since the ncw type is Int8 and 128 lies outside its range.
+
+Real types similarly have ranges (sets of representable values) associated
+with them, but these ranges are implementation dependent. We do insist that
+widening conversions from integral types can be made without loss of
+information. For example every integer in Int16 must be exactly representable
+in type Real32, because there is a widening conversion from Int16 to Real32.
+These ranges have a minimum and maximum value. We say that a type has a value
+that approximates the real value $x$ if $x$ is between the minimum and maximum
+values for the type. Arithmetic operations on reals are defined as long as the
+ncw type has a value that approximates the mathematical value.
+
+The `as' construct is evaluated as follows.
+
+\begin{itemize}
+\item Conversions from integral types to integral types is defined only if the
+value of the operand can be represented in the new type.
+
+\item Conversions from real to real types are defined only if the value of the
+operand can be approximated by a value in the new type.
+
+\item Conversions from real types to integral types involve rounding the value
+of the operand down to the closest integer that is less than or equal to the
+value of the operand. The conversion is defined only if that integer is
+representable in the new type.
+\end{itemize}
+
+\section{Genericity}
+
+Classes and interfaces can be parameterized by \textquotedblleft generic
+parameters\textquotedblright. The effect is a little like that of Java's
+generic classes or C++'s template classes. Classes and interfaces may be
+parameterized, in general, by other classes and interfaces, values of
+primitive types, for example integers, and objects.
+
+Programs using generics can be expanded to programs that do not use generics
+at all. For example a program
+
+\begin{code}
+(class K ... class)
+
+(class G\{ type T\ \} ...T... class)
+
+obj g :\ G\{K\} := ...
+\end{code}
+
+Expands to
+
+\begin{code}
+(class K\ ... class)
+
+obj k :\ K
+
+(class G0 ...T... class)
+
+obj g :\ G0 := ...
+\end{code}
+
+Generic parameters may be one of the following
+
+\begin{itemize}
+\item Nongeneric Types
+
+\item Nongeneric Classes
+\end{itemize}
+
+%
+
+\begin{align*}
+\mathit{GParams}  &  \rightarrow\left\{  \;\mathit{GParam}^{+,}\;\right\} \\
+\mathit{GParam}  &  \rightarrow\mathbf{type}\;\mathit{Name}\;\underline{[}%
+\mathbf{extends}\;\mathit{Type}\underline{]}%
+\end{align*}
+%
+
+\[
+\mathit{GArgs}\rightarrow\{\;\mathit{Type}^{+,}\;\}
+\]
+
+
+\section{Examples}
+
+\begin{code}
+(\textbf{class} FIFO \{\textbf{type} T \textbf{extends} primitive\}
+(\textbf{in} capacity :\ int16)
+
+\begin{indent}
+\item ~
+
+\item \textbf{public} \textbf{proc} deposit(\textbf{in} value : T)
+
+\item \textbf{public} \textbf{proc} fetch(\textbf{out} value : T)
+
+\item \ 
+
+\item \textbf{private} \textbf{obj} a :\ T(capacity)
+
+\item \textbf{private} \textbf{obj} front := 0
+
+\item \textbf{private} \textbf{obj} size := 0
+
+\item \ 
+
+\item (\textbf{thread}
+
+\begin{indent}
+\item (\textbf{wh} \textbf{true}
+
+\begin{indent}
+\item (\textbf{accept}
+
+\item \qquad deposit(\ \textbf{in} value :\ T\ ) \textbf{when} size\
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+\ capacity
+
+\item \qquad\qquad a[\ (front +\ size]\ \%\ capacity )\ := value
+
+\item \qquad\qquad size := size + 1
+
+\item
+%TCIMACRO{\TEXTsymbol{\vert}}%
+%BeginExpansion
+$\vert$%
+%EndExpansion
+
+
+\item \qquad fetch(\ \textbf{out} value :\ T\ )\ \textbf{when} size
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\ 0
+
+\item \qquad\qquad value := a[front]
+
+\item \qquad\qquad front := (front + 1) \% capacity
+
+\item \qquad\qquad size := size - 1
+
+\item \textbf{accept})
+\end{indent}
+
+\item \textbf{wh})
+\end{indent}
+
+\item \textbf{thread})
+\end{indent}
+
+\textbf{class})
+\end{code}
+
+\section{Lexical issues\label{sec:LexicalIssues}}
+
+Comments are either single-line, C++\ style
+
+\begin{code}
+//This is a comment
+\end{code}
+
+\noindent or nesting multiline Pascal style
+
+\begin{code}
+(* this (* is also
+
+a *) comment\ *)
+\end{code}
+
+\noindent The former can be ended by the end of the file. The latter can not.
+
+Some operators have unicode or keyword equivalents.%
+\[%
+\begin{tabular}
+[c]{llll}%
+\textbf{Ascii} & \textbf{Keyword} & \textbf{Unicode glyph} & \textbf{Unicode
+code point (hexadecimal)}\\
+\texttt{/%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+} & \texttt{and} & $\wedge$ & 2227\\
+\texttt{%
+%TCIMACRO{\TEXTsymbol{\backslash}}%
+%BeginExpansion
+$\backslash$%
+%EndExpansion
+/} & \texttt{or} & $\vee$ & 2228\\
+\texttt{\symbol{126}} & \texttt{not} & $\lnot$ & 00ac\\
+\texttt{\symbol{126}=} & \texttt{not=} & $\neq$ & 2260\\
+\texttt{\_%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+} &  & $\leq$ or $\leqslant$ & 2264 or 2a7d\\
+\texttt{%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+\_} &  & $\geq$ or $\geqslant$ & 2265 or 2a7e\\
+\texttt{=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+} &  & $\Rightarrow$ & 21d2\\
+\texttt{%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=} &  & $\Leftarrow$ & 21d0\\
+\texttt{%
+%TCIMACRO{\TEXTsymbol{<}}%
+%BeginExpansion
+$<$%
+%EndExpansion
+=%
+%TCIMACRO{\TEXTsymbol{>}}%
+%BeginExpansion
+$>$%
+%EndExpansion
+} &  & $\Leftrightarrow$ & 21d4\\
+\texttt{'} &  & $'$ & 0027, 02B9, 02BC, 2019, 2032, or FF07\end{tabular}
+\ \
+\]
+
+\end{document}

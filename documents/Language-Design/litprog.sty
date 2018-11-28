@@ -1,0 +1,60 @@
+%{
+\makeatletter
+\typeout{litprog.sty Copyright T.S.Norvell 1997-1998.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% The code environment %
+%%%%%%%%%%%%%%%%%%%%%%%%
+\def\code{%
+\bgroup%
+\parsep 0pt%
+\parskip 0pt%
+\itemsep 0pt%
+\topsep 0pt%
+\parindent 0pt%
+\def\descriptionlabel##1{\hspace\labelsep \bf ##1}%
+\def\description{\list{}{\parsep 0pt \parskip 0pt \itemsep 0pt \topsep 0pt%
+       \parindent 0pt \labelwidth\z@ \itemindent\z@ \leftmargin 2em%
+       \let\makelabel\descriptionlabel}}%
+\let\enddescription\endlist%
+	\par\noindent\hrulefill\par\sf}%
+\def\endcode{\par\noindent\hrulefill\par\egroup}
+
+\def\hyperref#1#2#3#4{{\em #1 (\S\ref{#4})}}
+
+\def\lpfile#1\lpendfile{{\bf File: \tt #1}}
+\def\lpexpand#1\lpendexpand{{\bf $\langle$\rm(\S#1)$\rangle$}}
+\def\lpaddsto#1\lpendaddsto{{\bf Adds to: \rm (\S#1)}}
+\def\lpdefines#1\lpenddefines{{\bf defines: \sf #1}}
+\def\lpreplace#1\lpwith#2\lpendreplace{{\bf Replace:} #1 {\bf with} #2}
+
+\def\lptab{$\rightarrow $\quad\quad}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% The indent environment %
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\indent{\description}
+\def\endindent{\enddescription}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Framed environement %
+%%%%%%%%%%%%%%%%%%%%%%%
+\newlength{\frameWidth}
+\newlength{\frameTopExtra}
+\newlength{\frameBottomExtra}
+\newsavebox{\chuck}
+
+\newenvironment{framed}
+{\setlength{\frameWidth}{\linewidth}%
+ \addtolength{\frameWidth}{-2\fboxsep}%
+ \addtolength{\frameWidth}{-2\fboxrule}%
+ \setlength{\frameTopExtra}{1.0ex}%
+ \setlength{\frameBottomExtra}{0ex}%
+ \setlength{\frameTopExtra}{\baselinestretch \frameTopExtra}%
+ \global\setbox\chuck\vbox\bgroup\hsize\frameWidth \@parboxrestore}%
+{\par\vskip\z@\egroup\shortstack{{}\\[\frameTopExtra]\fbox{\usebox\chuck}%
+\\[\frameBottomExtra]{}}}
+
+\makeatother
+%}
