@@ -158,9 +158,13 @@ TOKEN :{    "("
 |	"||"
 |	"."
 |   "@"
-}
-TOKEN :{
-  < PRIME : "'" | "\u02B9">
+|   < PRIME : "'"         // Apostrophe u0027
+            | "\u02B9"    // MODIFIER LETTER PRIME
+            | "\u02BC"    // MODIFIER LETTER APOSTROPHE
+            | "\u2019"    // RIGHT SINGLE QUOTATION MARK
+            | "\u2032"    // PRIME
+            | "\uFF07"    // FULLWIDTH APOSTROPHE
+  >
 }
 
 TOKEN :{
@@ -204,7 +208,6 @@ TOKEN :{
 |	"when"
 |	"while"
 |	"with"
-| "pr"
 }
 
 TOKEN :
