@@ -1,6 +1,6 @@
 package verifierTests
 
-import org.scalatest.FlatSpec
+import org.scalatest.FlatSpec 
 import org.scalatest.TestData
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner

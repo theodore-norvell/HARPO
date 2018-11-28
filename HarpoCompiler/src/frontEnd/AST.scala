@@ -170,12 +170,12 @@ class AST{
     
     // Class Invariant 
     
-    case class ClassInvNd(exp:ExpNd)( name: String, coord: AST.Coord )
+    case class ClassInvNd(exp:ConditionExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
     override def pp = Pretty.func( "ClassInvNd["::name::"]", exp )
     }
      
-    case class LoopInvNd(exp:ExpNd)( name: String, coord: AST.Coord )
+    case class LoopInvNd(exp:ConditionExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
     override def pp = Pretty.func( "LoopInvNd["::name::"]", exp )
     }
@@ -188,10 +188,11 @@ class AST{
     }
     
     // Work in progress
-    case class PermissionMapNd (lsn: List[LocSetNd], len: List[ExpNd], name: String, coord: AST.Coord) extends Pretty {
-        override def pp =  Pretty.func("PermissionMapNd[" :: name :: "]", lsn,len)
+    case class PermissionMapNd (lsn: List[LocSetNd],var amounts : List[ExpNd], name: String, coord: AST.Coord) extends Pretty {
+        override def pp =  Pretty.func("PermissionMapNd[" :: name :: "]", lsn,amounts)
         def locSet = lsn.toList;
-        def locExp = len.toList;
+        def locExp = amounts.toList;
+        def setAmounts(newAmounts: List[ExpNd]) { amounts = newAmounts }
    }
        
     abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty
@@ -201,9 +202,6 @@ class AST{
     }
     
     // Add LocSet
-    
-    
-
     
     case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
@@ -342,6 +340,11 @@ class AST{
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "AssumeCmdNd", assumption )
     }
+    
+   case class MethodCallCmdNd(name: String, argumentList: List[MethArgNd])(coord: AST.Coord)
+        extends CommandNd(coord) {
+        override def pp = Pretty.func("MethodCallCmdNd", name, argumentList)
+  }
         
     /************/
     /** Types **/
@@ -415,15 +418,15 @@ class AST{
     }
 
     case class BinaryOpExpNd( op: BinaryOperator, var x: ExpNd, var y: ExpNd )( coord: AST.Coord ) extends ExpNd( coord ) {
-        override def ppp = Pretty.func( "BinaryOpExpNd", op.toString, x, y )
+        override def ppp = Pretty.func( "BinaryOpExpNd" , op.toString, x, y )
     }
 
     case class UnaryOpExpNd( op: UnaryOperator, var x: ExpNd )( coord: AST.Coord ) extends ExpNd( coord ) {
-        override def ppp = Pretty.func( "UnaryOpExpNd", op.toString, x )
+        override def ppp = Pretty.func( "UnaryOpExpNd" , op.toString(), x )
     }
 
     case class AsExpNd( x: ExpNd, ty: TypeNd )( coord: AST.Coord ) extends ExpNd( coord ) {
-        override def ppp = Pretty.func( "AsExpNd", x, ty )
+        override def ppp = Pretty.func( "AsExpNd" , x, ty )
     }
 
     case class MemberExpNd( x: ExpNd, name: String )( coord: AST.Coord ) extends ExpNd( coord ) {
@@ -447,6 +450,33 @@ class AST{
     case class ObjIdNd( x: ExpNd) (coord: AST. Coord) extends ExpNd(coord) {
         override def ppp = Pretty.func("ObjIdNd", x)
     }
+    
+    
+ /**************************/
+ /** Condition Operations**/
+ /************************/
+
+  case class ConditionExpNd(el: List[ExpNd], crl: List[CanReadOp], cwl: List[CanWriteOp], pol: List[PermissionOp], coord: AST.Coord) extends Pretty {
+    override def pp = Pretty.func("ConditionExpNd", el, crl, cwl, pol)
+    def expList() = el.toList;
+    def canReadList() = crl.toList;
+    def canWriteList() = cwl.toList;
+    def permissionOpList() = pol.toList;
+  }
+
+  abstract sealed class ConditionNd(val coord: AST.Coord) extends Pretty
+
+  case class CanReadOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
+    override def pp = Pretty.func("CanReadOp", x)
+  }
+
+  case class CanWriteOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
+    override def pp = Pretty.func("CanWriteOp", x)
+  }
+
+  case class PermissionOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
+    override def pp = Pretty.func("PermissionOp", x)
+  }
 
     /*******************/
     /** Operators    **/
@@ -476,7 +506,7 @@ class AST{
     sealed abstract class UnaryOperator
     case object NegativeOp extends UnaryOperator
     case object NotOp extends UnaryOperator
-    // add primed
+    case object PrimeOp extends UnaryOperator
 
     /*********************************/
     /** Initialization Expressions  **/
@@ -540,6 +570,15 @@ class AST{
         var decl: Option[ DeclNd ] = None // Set during the resolution phase.
         override def toString = qn.toString
     }
+    
+    /***********************/
+    /*** Method Argument **/
+    /*********************/
+  case class MethArgNd(var arg: ExpNd)(coord: AST.Coord)
+    extends Pretty {
+    override def pp = Pretty.func("MethArgNd", arg)
+  }
+    
 }
 
 object AST extends AST 

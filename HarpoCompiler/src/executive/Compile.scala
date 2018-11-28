@@ -14,7 +14,7 @@ object Compile extends App {
   val writer = new PrintWriter(new File("BoogieOutputScript.txt"))
   writer.write(boogieScript)
   writer.close()
-  println("\n\n\nVerifier end")
+  println("\n\n\nVerifier end") 
   
   def getHarpoSource():String = {      
         	val sourceUrl : URL = this.getClass().getResource("/ioSourceFiles/mathClass-harpo.text")
@@ -24,6 +24,5 @@ object Compile extends App {
           return sourceString
 }
 }
-
 
 

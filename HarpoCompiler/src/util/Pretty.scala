@@ -9,18 +9,18 @@ trait Pretty {
     
 	def format(width: Int, writer: Writer) { this.pp.format( width, writer) }
     
-    def format( width : Int ) : String = {
+  def format( width : Int ) : String = {
         val writer = new StringWriter() 
         this.format( width, writer )
         writer.toString
     }
-   
-    implicit protected def toDocument( seq : Seq[Pretty]) = 
+  
+  implicit protected def toDocument( seq : Seq[Pretty]) = 
         Pretty.prettyList( seq )
     
-    implicit protected def toDocument( str : String ) = Document.text(str)
+  implicit protected def toDocument( str : String ) = Document.text(str)
   
-    implicit protected def toDocument( p : Pretty ) = p.pp
+  implicit protected def toDocument( p : Pretty ) = p.pp
 }
 
 object Pretty {

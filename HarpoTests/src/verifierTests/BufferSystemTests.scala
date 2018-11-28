@@ -33,17 +33,18 @@ class BufferSystemTests extends BufferSystemTestsBase {
             	const size : int32 := 10
             	(thread (*t0*) claim front, rear, full
                 		(while true
-                			invariant acc front, rear, full, {i:{0,..size}.buf[i]}
-                			invariant(0_<front ^ front < size) ^ (0_<rear ^ rear < size) ^ (0 _<full ^ full < size)
+                			invariant canRead(front)
+                			invariant(0_<front /\ front < size) /\ (0_<rear /\ rear < size) /\ (0 _<full /\ full < size)
                 			invariant ((front+full) mod size = rear)
+                      do
                   				(accept deposite (in value : real) when (full<size)
                       				buf[rear] := value
-                      				rear := (rear+1)%size
+                      				rear := (rear+1) mod size
                       				full := full+1
                       				|
                       				fetch(out ovalue:real) when (0<full)
                       				ovalue := buf[front]
-                      				front := (front+1)%size
+                      				front := (front+1) mod size
                       				full := full-1
                   				accept)
                 		while)

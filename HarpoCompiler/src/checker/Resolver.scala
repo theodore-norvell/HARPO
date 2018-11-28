@@ -51,7 +51,7 @@ extends Contracts {
                   }
                 }
                 case ClassInvNd(exp) =>
-                  resolveExp(exp,containingFQN,containingDecl)
+                  resolveConditionExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
@@ -190,7 +190,7 @@ extends Contracts {
         {
           lsn match { 
             case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
-            // Add other Cases
+            //TODO Add other Cases
         }
         }
 
@@ -224,14 +224,14 @@ extends Contracts {
                 case WhileCmdNd( guard, lil, body ) => {
                     resolveExp( guard, containingFQN, containingDecl )
                     resolveCommand( body, containingFQN, containingDecl )
-                    for (li <- lil) resolveExp(li.exp, containingFQN, containingDecl)
+                    resolveLoopInvariantList(lil, containingFQN, containingDecl)
                 }  
                 case ForCmdNd( decl, repetitions,lil, body ) => {
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )
                     resolveExp(repetitions, containingFQN, containingDecl )
                     resolveCommand( body, forsFQN, Some( decl ) )
-                    for (li <- lil) resolveExp(li.exp, containingFQN, containingDecl)
+                    resolveLoopInvariantList(lil, containingFQN, containingDecl)
                 }   
                 case CoForCmdNd( decl, repetitions,cl, body ) => {
                     val forsFQN = decl.fqn
@@ -263,11 +263,9 @@ extends Contracts {
                     for (pn <- gpl )
                       resolvePermissionNd(pn, containingFQN, containingDecl)
                 }  
-                // --- case for AssertCmdNd
                 case AssertCmdNd (assertion) =>
                     resolveExp(assertion,containingFQN, containingDecl)
                 
-                // --- case for AssumeCmdNd
                 case AssumeCmdNd (assumption) =>
                     resolveExp(assumption,containingFQN, containingDecl)
             }
@@ -299,6 +297,41 @@ extends Contracts {
                     unreachable("FetchExpNd in resolver)")
             }
         }
+        
+        def resolveClassInvariantList(classInvList : List[ClassInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
+          for(classInv <- classInvList)
+            resolveConditionExp(classInv.exp, containingFQN, containingDecl)
+        }        
+        
+        
+        def resolveLoopInvariantList(loopInvList : List[LoopInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
+          for(loopInv <- loopInvList)
+            resolveConditionExp(loopInv.exp, containingFQN, containingDecl)
+        }
+        def resolveConditionExp(conditionExp : ConditionExpNd, containingFQN: FQN, containingDecl : Option[DeclNd]){
+         
+         for (exp <- conditionExp.el){
+           resolveExp(exp, containingFQN, containingDecl)
+         }
+         for (canRead <- conditionExp.crl){
+           resolveCondition(canRead,containingFQN,containingDecl)
+         }
+         for (canWrite <- conditionExp.cwl){
+           resolveCondition(canWrite, containingFQN, containingDecl)
+         }
+         for (permissionOp <- conditionExp.pol){
+           resolveCondition(permissionOp, containingFQN, containingDecl)
+         }
+        }
+
+        def resolveCondition(exp : ConditionNd, containingFQN: FQN, containingDecl : Option[DeclNd] ){
+          exp match {
+            case CanReadOp( id ) => {resolveExp(id, containingFQN, containingDecl )}
+            case CanWriteOp ( id ) => {resolveExp(id, containingFQN, containingDecl )}
+            case PermissionOp ( id ) => {resolveExp(id, containingFQN, containingDecl )}
+          }
+        }
+        
         
         def resolveObjId( exp : ExpNd, containingFQN: FQN, containingDecl : Option[DeclNd] ) {
             exp match {
