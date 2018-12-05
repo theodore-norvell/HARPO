@@ -158,9 +158,7 @@ TOKEN :{    "("
 |	"||"
 |	"."
 |   "@"
-}
-TOKEN :{
-  < PRIME : "'" | "\u02B9">
+|   "^"
 }
 
 TOKEN :{
@@ -204,7 +202,6 @@ TOKEN :{
 |	"when"
 |	"while"
 |	"with"
-| "pr"
 }
 
 TOKEN :
@@ -619,24 +616,24 @@ Token tk;
 }
 
 ClassInvNd ClassInvariant(): {
-  ConditionExpNd x;
+  ExpNd x;
   Token tk;
  }
 {
   	{ tk=getToken(1);}
-  	(  	  tk = "invariant" x = ConditionExp()
+  	(  	  tk = "invariant" x = Exp()
   	)
     {return builder.makeClassInvariant(x, getCoord(tk)) ;}
 }
 
 LoopInvNd LoopInvariant(): {
-ConditionExpNd x;
+ExpNd x;
 Token tk;
 }
 {
    	{ tk=getToken(1);}
   	(
-  	  tk = "invariant" x=ConditionExp()
+  	  tk = "invariant" x = Exp()
   	)
     {return builder.makeLoopInvariant(x, getCoord(tk)) ;}
 }
@@ -822,7 +819,6 @@ CommandNd Command() : {
 		 ["with"] ")"
 		 
 		{return builder.makeWith( x,tpl, y, p,gpl, getCoord(tk)) ;}	
-		// Add method call syntax
 	)
 }
 
@@ -937,59 +933,6 @@ InitExpNd MoreIfInitExp() : {
 	)
 	{return builder.ifInitExp(x, a, b, x.coord());}
 }
-
-ConditionExpNd ConditionExp(): {
-	Token tk;
-	Token cndtk = getToken(0);
-	ExpNd x;
-	ObjectIdList objIdList = builder.objectIdList();
-	CanReadOpList canReadOpList = builder.canReadOpList();
-	CanWriteOpList canWriteOpList = builder.canWriteOpList();
-	PermissionOpList permissionOpList = builder.permissionOpList();
-	ExpList expList = builder.expList();
-	CanReadOp canRead;
-	CanWriteOp canWrite;
-	PermissionOp permissionOp;
-	ConditionExpNd conditionExp;
-}
-{
-  
-  (
- 	 LOOKAHEAD("canRead" "(") 
-  	 tk = "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
-  	 builder.add(canReadOpList, canRead); }
- |
-	 LOOKAHEAD("canWrite" "(")
-	 tk = "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
-  	 builder.add(canWriteOpList, canWrite); }
- |
-	 LOOKAHEAD ("permission" "(")
-	 tk = "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
-  	 builder.add(permissionOpList, permissionOp); }
- |
-   	  x = Exp() { builder.add(expList, x); }
-   )
- (
- 	 LOOKAHEAD("," "canRead" "(") 
-  	 tk = "," "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
-  	 builder.add(canReadOpList, canRead); }
-
- |
-	 LOOKAHEAD("," "canWrite" "(")
-	 tk = "," "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
-  	 builder.add(canWriteOpList, canWrite); }
-  	
- |
-	 LOOKAHEAD ("," "permission" "(")
-	 tk = "," "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
-  	 builder.add(permissionOpList, permissionOp); }
- |
-   	 x = Exp() { builder.add(expList, x); } 
-)*
- {return builder.makeConditionExpNd(expList, canReadOpList, canWriteOpList,permissionOpList, getCoord(cndtk)); }
-}
-
-
 
 
 /******************/
@@ -1135,15 +1078,20 @@ ExpNd Exp7() :
 	ExpNd x = null;
 	Token tk = getToken(1) ;
 }
-{
-	Exp8() ["pr"] { return builder.unaryOp("pr",x, getCoord(tk)) ; } 
+{      x = Exp8() ["'"] { return builder.unaryOp("'",x, getCoord(tk)) ; }
 }
 
 ExpNd Exp8() :
 {
+  	CanReadOp canRead;
+	CanWriteOp canWrite;
+	PermissionOp permissionOp;
+	LocSetNd locSet;
 	ExpNd x=null;
 	Token tk ;
-} {
+}
+
+{
 	x=ObjectId()     { return x ; }
 |
 	tk = <DEC_LITERAL> { return builder.intLiteralExp(10, tk.image, getCoord(tk) ) ;}
@@ -1155,8 +1103,15 @@ ExpNd Exp8() :
  	tk = <HEX_LITERAL>  { return builder.intLiteralExp(16, tk.image.substring(3), getCoord(tk) ) ;}
 |
     tk = <REAL_LITERAL> { return builder.realLiteralExp( tk.image, getCoord(tk) ) ;}
-| 
+|
+  	 tk = "canRead" "(" locSet = LocSet() ")" { return builder.makeCanReadOp(locSet,getCoord(tk));}
+|
+	 tk = "canWrite" "(" locSet = LocSet() ")"  { return builder.makeCanWriteOp(locSet,getCoord(tk));}
+|
+	 tk = "permission" "(" locSet = LocSet() ")"  { return builder.makePermissionOp(locSet,getCoord(tk));}
+|  
 	"(" x=Exp() ")"  { return x ; }
+
 }
 
 ExpNd OptGuard() :

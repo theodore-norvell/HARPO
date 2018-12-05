@@ -137,10 +137,10 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
     def buildSTFromClaimNd(perMapNd: PermissionMapNd, containingFQN: FQN) {
       ()
     }
-    def buildSTFromClassInv(exp: ConditionExpNd, containingFQN: FQN) {
+    def buildSTFromClassInv(exp: ExpNd, containingFQN: FQN) {
       ()
     }
-    def buildSTFromLoopInv(exp: ConditionExpNd, containingFQN: FQN) {
+    def buildSTFromLoopInv(exp: ExpNd, containingFQN: FQN) {
       ()
     }
     def buildSTfromMethodSpecList(msn: MethodSpecNd, containingFQN: FQN) {

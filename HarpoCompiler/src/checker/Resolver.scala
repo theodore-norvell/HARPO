@@ -51,7 +51,7 @@ extends Contracts {
                   }
                 }
                 case ClassInvNd(exp) =>
-                  resolveConditionExp(exp,containingFQN,containingDecl)
+                  resolveExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
@@ -67,11 +67,10 @@ extends Contracts {
                 case ThreadDeclNd(claimList: List[ClaimNd], block : CommandNd) =>
                     {
                       resolveCommand( block, fqn, Some(decl))
-                     for(clmnd <- claimList){
-                      // TODO Compare Length - toDo("LocSetNd list and ExpNd list's lengths varies")
+                     for(clmnd <- claimList){ 
                        if (clmnd.pmn.locExp.length == clmnd.pmn.locSet.length){
-                      for(len <- clmnd.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
-                      for(lsn <- clmnd.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                       for(len <- clmnd.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                       for(lsn <- clmnd.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
                       }
                      }
                 }
@@ -190,7 +189,7 @@ extends Contracts {
         {
           lsn match { 
             case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
-            //TODO Add other Cases
+            //TODO Add other Cases later
         }
         }
 
@@ -281,6 +280,9 @@ extends Contracts {
                 case FloatLiteralExpNd(x) => {}
                 case NameExpNd( name ) => 
                     name.decl = symTab.lookUp( containingFQN, name )
+                case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case PermissionOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )
@@ -300,39 +302,15 @@ extends Contracts {
         
         def resolveClassInvariantList(classInvList : List[ClassInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
           for(classInv <- classInvList)
-            resolveConditionExp(classInv.exp, containingFQN, containingDecl)
+            resolveExp(classInv.exp, containingFQN, containingDecl)
         }        
         
         
         def resolveLoopInvariantList(loopInvList : List[LoopInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
           for(loopInv <- loopInvList)
-            resolveConditionExp(loopInv.exp, containingFQN, containingDecl)
-        }
-        def resolveConditionExp(conditionExp : ConditionExpNd, containingFQN: FQN, containingDecl : Option[DeclNd]){
-         
-         for (exp <- conditionExp.el){
-           resolveExp(exp, containingFQN, containingDecl)
-         }
-         for (canRead <- conditionExp.crl){
-           resolveCondition(canRead,containingFQN,containingDecl)
-         }
-         for (canWrite <- conditionExp.cwl){
-           resolveCondition(canWrite, containingFQN, containingDecl)
-         }
-         for (permissionOp <- conditionExp.pol){
-           resolveCondition(permissionOp, containingFQN, containingDecl)
-         }
+            resolveExp(loopInv.exp, containingFQN, containingDecl)
         }
 
-        def resolveCondition(exp : ConditionNd, containingFQN: FQN, containingDecl : Option[DeclNd] ){
-          exp match {
-            case CanReadOp( id ) => {resolveExp(id, containingFQN, containingDecl )}
-            case CanWriteOp ( id ) => {resolveExp(id, containingFQN, containingDecl )}
-            case PermissionOp ( id ) => {resolveExp(id, containingFQN, containingDecl )}
-          }
-        }
-        
-        
         def resolveObjId( exp : ExpNd, containingFQN: FQN, containingDecl : Option[DeclNd] ) {
             exp match {
                 case NameExpNd( name ) => name.decl = symTab.lookUp( containingFQN, name )

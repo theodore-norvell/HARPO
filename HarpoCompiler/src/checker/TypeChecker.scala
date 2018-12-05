@@ -53,7 +53,6 @@ extends Contracts {
                     case _ => {
                         errorRecorder.reportFatal(name + " does not represent an object or location.", exp.coord ) ;
                         None } }
-
             case exp@BinaryOpExpNd(op, x, y) =>
                 binaryOpType( exp ) ;
                 
@@ -143,7 +142,7 @@ extends Contracts {
     
     def typeCheck( decl : DeclNd ) {
         decl match {
-            
+          
             case decl@ClassDeclNd() => 
                 typeCheck( decl.directMembers )
             
@@ -185,8 +184,13 @@ extends Contracts {
               typeCheck( pmn )
             }
             case decl@ClassInvNd(exp) => {
-              typeCheck( exp )
-            } 
+              exp match {
+              case CanReadOp( lsn ) => typeCheck(lsn)
+              case CanWriteOp ( lsn ) => typeCheck(lsn)
+              case PermissionOp ( lsn ) => typeCheck(lsn)
+              case _ => typeCheck( exp )
+              } 
+            }
             case decl@ParamDeclNd( isGhost, ty, cat ) =>
                 // Promotions and checks were done in TypeCreator's pass.
                 check( ty.tipe != None ) 
@@ -306,12 +310,13 @@ extends Contracts {
     
     def typeCheck(lsn: LocSetNd) {
        lsn match {
-        case ObjectIdLSN(i) => typeCheck(i) // need to check that it actually represent a location, 
-        // Convert from location to set of location, insert a cast
+        case ObjectIdLSN(i) => typeCheck(i) 
+        case _ => println("Type Not Allowed")
+        //TODO need to check that it actually represent a location, 
+        // Convert from location to set of location, insert a cast, if necessary
         // location holding int to set of int
         // Need new type
-        // add other cases,
-        case _ => println("Type Not Allowed")
+        // add other cases
       }
     }
 
@@ -360,33 +365,6 @@ extends Contracts {
       }
       
     }
-    
-    def typeCheck(condExp : ConditionExpNd) {
-       for (exp <- condExp.el){
-           typeCheck(exp)
-         }
-         for (canRead <- condExp.crl){
-           typeCheck(canRead)
-         }
-         for (canWrite <- condExp.cwl){
-           typeCheck(canWrite)
-         }
-         for (permissionOp <- condExp.pol){
-           typeCheck(permissionOp)
-         }
-    }
-    
-    def typeCheck (condOperation : ConditionNd ) {
-         condOperation match {
-            case CanReadOp( id ) => {typeCheck(id)}
-            case CanWriteOp ( id ) => {typeCheck(id)}
-            case PermissionOp ( id ) => {typeCheck(id)}
-          }
-    }
-    
-    
-    
-
      //Permission Nodes
      private def convertId( id : ExpNd ) = {
         val gTy = typeCheck(id)
@@ -436,12 +414,17 @@ extends Contracts {
                 typeCheck( thenCmd )
                 typeCheck( elseCmd )
                 
-            case cmd@WhileCmdNd( guard,lil, body ) => {
+            case cmd@WhileCmdNd( guard,loopInvList, body ) => 
                 cmd.guard = convertGuard( guard )
                 typeCheck( body )
-                for (li <- lil) typeCheck(li)
-            }
-            // make new case of assert command
+                for (li <- loopInvList) {
+                  li.exp match {
+                    case CanReadOp( lsn ) => typeCheck(lsn)
+                    case CanWriteOp ( lsn ) => typeCheck(lsn) 
+                    case PermissionOp ( lsn ) => typeCheck(lsn)
+                    case _ => typeCheck( li.exp )
+                  }
+                }
                 
             case cmd@AssertCmdNd(assertion) =>
                 cmd.assertion = convertAssertion(assertion)
