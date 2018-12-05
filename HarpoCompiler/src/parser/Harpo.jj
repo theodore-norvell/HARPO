@@ -159,6 +159,7 @@ TOKEN :{    "("
 |	"."
 |   "@"
 |   "^"
+|   "'"
 }
 
 TOKEN :{
@@ -206,7 +207,7 @@ TOKEN :{
 
 TOKEN :
 {
-	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9","'"])* >
+	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9"])* >
 }
 
 TOKEN :
@@ -228,14 +229,14 @@ TOKEN :
 }
 
 TOKEN : {
-	<UNEXPECTED_CHARACTER: ~[] >
-}
+	<UNEXPECTED_CHARACTER: ~[ ] >
+} 
 
 DeclList Start() : {
 	DeclList p=builder.declList() ; // for interface and class declaration
 	DeclNd q ; // for global object declaration
 }
-{
+{ 
 	(   (  LOOKAHEAD("(" "class") q=ClassDecl()
 	     | LOOKAHEAD("(" "interface") q=IntfDecl()
 	     | q=ObjDecl( builder.publicAccess() )
@@ -1078,7 +1079,9 @@ ExpNd Exp7() :
 	ExpNd x = null;
 	Token tk = getToken(1) ;
 }
-{      x = Exp8() ["'"] { return builder.unaryOp("'",x, getCoord(tk)) ; }
+{      x = Exp8()
+      [ "'" { x = builder.unaryOp("'",x, getCoord(tk)) ; } ]
+      {  return x ; }
 }
 
 ExpNd Exp8() :
