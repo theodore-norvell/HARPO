@@ -186,7 +186,7 @@
 						}
 */
 package boogieBackEnd
-import java.net.URL 
+import java.net.URL  
 import scala.io.Source
 import java.io.OutputStreamWriter
 import scala.collection.mutable.ArrayBuffer
@@ -197,9 +197,11 @@ import frontEnd.AST._
 import scala.io.Source
 import checker.CheckerTypes.PrimitiveType;
 import java.io.File
+import util.Pretty
+import scala.text.Document
 
 class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
-
+  
 	def getBoogieCode():String = {
 			println(masterDeclList.toString());
 			val boogieCode = getBoogiePrelude() + genDeclCode( masterDeclList )
@@ -216,19 +218,17 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
 	private def genDeclCode( dl : DeclList):String = {
 			    var globalObjCode = ""
 					var initializeCode = ""
-					var nameTbl = HashMap[String, HashMap[String, String]]()
 					var boogieCode = ""
+					var nameTbl = HashMap[String, HashMap[String, String]]()
 						for(dlNd : DeclNd <- dl.decls) {
 						dlNd match{          
 						case ClassDeclNd() => {
-						  val classCode=new ClassCodeGen(dlNd);
-						  boogieCode += classCode.getClassCode()
+						  val classCode=new ClassCodeGen(dlNd)
 						}
 						case IntfDeclNd() => {
 						  val intfCode=new IntfCodeGen(dlNd);
 						  boogieCode += intfCode.getIntfCode()
-						}
-						
+						}				
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
 						  val objCode = new ObjCodeGen(dlNd)
 						  val fqn = dlNd.fqn;

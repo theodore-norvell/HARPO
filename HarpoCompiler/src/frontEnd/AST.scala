@@ -1,6 +1,6 @@
 package frontEnd;
 
-import contracts.Contracts
+import contracts.Contracts 
 import contracts.Contracts._
 import util.Pretty
 import scala.collection.mutable.ArrayBuffer
@@ -190,15 +190,20 @@ class AST{
     // Work in progress
     case class PermissionMapNd (lsn: List[LocSetNd],var amounts : List[ExpNd], name: String, coord: AST.Coord) extends Pretty {
         override def pp =  Pretty.func("PermissionMapNd[" :: name :: "]", lsn,amounts)
+        def pml = lsn.toList zip amounts.toList
         def locSet = lsn.toList;
         def locExp = amounts.toList;
         def setAmounts(newAmounts: List[ExpNd]) { amounts = newAmounts }
    }
        
     abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty
-
+    {
+     def exp() : ExpNd; 
+    }
+   
     case class ObjectIdLSN(en: ExpNd)(coord: AST.Coord) extends LocSetNd(coord){
        override def pp = Pretty.func( "LocSetNd", en )
+       override def exp() = en;
     }
     
     // Add LocSet

@@ -158,7 +158,7 @@ TOKEN :{    "("
 |	"||"
 |	"."
 |   "@"
-|   "^"
+|   "'"
 }
 
 TOKEN :{
@@ -206,7 +206,7 @@ TOKEN :{
 
 TOKEN :
 {
-	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9","'"])* >
+	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9"])* >
 }
 
 TOKEN :
@@ -1078,7 +1078,8 @@ ExpNd Exp7() :
 	ExpNd x = null;
 	Token tk = getToken(1) ;
 }
-{      x = Exp8() ["'"] { return builder.unaryOp("'",x, getCoord(tk)) ; }
+{      x = Exp8() ["'" { x = builder.unaryOp("'",x, getCoord(tk)) ; } ]
+      { return x; }
 }
 
 ExpNd Exp8() :

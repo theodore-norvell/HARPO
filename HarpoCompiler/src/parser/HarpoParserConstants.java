@@ -31,23 +31,23 @@ public interface HarpoParserConstants {
   /** RegularExpression Id. */
   int GE = 28;
   /** RegularExpression Id. */
-  int NAME = 78;
+  int NAME = 83;
   /** RegularExpression Id. */
-  int DEC_LITERAL = 79;
+  int DEC_LITERAL = 84;
   /** RegularExpression Id. */
-  int BIN_LITERAL = 80;
+  int BIN_LITERAL = 85;
   /** RegularExpression Id. */
-  int OCT_LITERAL = 81;
+  int OCT_LITERAL = 86;
   /** RegularExpression Id. */
-  int HEX_LITERAL = 82;
+  int HEX_LITERAL = 87;
   /** RegularExpression Id. */
-  int HEX_CHAR = 83;
+  int HEX_CHAR = 88;
   /** RegularExpression Id. */
-  int REAL_LITERAL = 84;
+  int REAL_LITERAL = 89;
   /** RegularExpression Id. */
-  int EXP = 85;
+  int EXP = 90;
   /** RegularExpression Id. */
-  int UNEXPECTED_CHARACTER = 86;
+  int UNEXPECTED_CHARACTER = 91;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -99,11 +99,15 @@ public interface HarpoParserConstants {
     "\"||\"",
     "\".\"",
     "\"@\"",
+    "\"\\\'\"",
     "\"accept\"",
+    "\"acc\"",
     "\"as\"",
     "\"assert\"",
     "\"assume\"",
     "\"borrows\"",
+    "\"canRead\"",
+    "\"canWrite\"",
     "\"class\"",
     "\"claim\"",
     "\"co\"",
@@ -124,6 +128,7 @@ public interface HarpoParserConstants {
     "\"new\"",
     "\"obj\"",
     "\"out\"",
+    "\"permission\"",
     "\"pre\"",
     "\"post\"",
     "\"private\"",
