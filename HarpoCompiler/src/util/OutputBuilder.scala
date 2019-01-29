@@ -25,6 +25,8 @@ class OutputBuilder extends Contracts {
      *  
      *  Strings at the start of a line will be indented with spaces
      *  to the current indentation level.
+     *  
+     *  Strings must not contain any linefeed or formfeed characters.
      */
     def put( string : String ) {
         var str = string 
@@ -38,11 +40,12 @@ class OutputBuilder extends Contracts {
         addToLine( str ) ;
     }
     
-    protected def addToLine( str : String ) {
+    protected def addToLine( str : String ) : Unit =
+    pre( str.indexOf( '\n' ) == -1 )
+    .pre( str.indexOf( '\r' ) == -1 )
+    .pre( str.indexOf( '\f' ) == -1 )
+    .in {
         if( str.length() == 0 ) return 
-        check( str.indexOf( '\n' ) == -1 )
-        check( str.indexOf( '\r' ) == -1 )
-        check( str.indexOf( '\f' ) == -1 )
         if( atNewLine ) { 
             for( i <- 0 until indentationLevel ) 
                 builder.append( indentationString ) 
@@ -73,23 +76,24 @@ class OutputBuilder extends Contracts {
      *  use it for at least one line.
      *  
      *  Examples: These examples assume no newlines are embedded in the puts.
-     *  <ul><li> <code>setError, put(a), newLine put(b) newLine</code>
+     *  <ul><li> <code>setError(m, c), put(a), newLine put(b) newLine</code>
      *           Both lines will be associated with the same error message.
-     *      <li> <code>setError, put(a), newLine setError put(b) newLine</code>
+     *      <li> <code>setError(ma, ca), put(a), newLine, setError(mb, cb), put(b), newLine</code>
      *           Each line will have a separate error message.
-     *      <li> <code>setError, put(a), newLine, clearError, put(b), newLine, setError, put(c), newLine</code>
+     *      <li> <code>setError(ma, ca), put(a), newLine, clearError, put(b), newLine, setError(mc, cc), put(c), newLine</code>
      *           The first line is associated with the first message, the second line
      *           with no error message, and the third line with another error message.
-     *      <li> <code>put(a), setError, newLine, put(b), clearError, newLine, put(c), setError, newLine</code>
+     *      <li> <code>put(a), setError(ma, ca), newLine, put(b), clearError, newLine, put(c), setError(mc, cc), newLine</code>
      *           Same as previous example.
-     *      <li> <code>setError, put(a), setError</code>
+     *      <li> <code>setError(ma, ca), put(a), setError(mb, cb)</code>
      *           Forbidden. First error is not used.
-     *      <li> <code>setError, put(a), clearError</code>
+     *      <li> <code>setError(ma, ca), put(a), clearError</code>
      *           Forbidden. Error is not used.
      */
-    def setError( mess : String, coord : Coord ) {
-        check( coord != null && mess != null )
-        check( ! messageHasBeenSetOnThisLine, "Two errors on one line" )
+    def setError( mess : String, coord : Coord ) : Unit = 
+    pre( coord != null && mess != null)
+    .pre(! messageHasBeenSetOnThisLine, "Two errors on one line" )
+    .in {
         currentPair = ( mess, coord ) 
         messageHasBeenSetOnThisLine = true
     }
@@ -99,8 +103,9 @@ class OutputBuilder extends Contracts {
      *  It is forbidden to clear an error message that has been set
      *  and not associated with at least one line.
      */
-    def clearError {
-        check( ! messageHasBeenSetOnThisLine ) ;
+    def clearError : Unit = 
+    pre(! messageHasBeenSetOnThisLine)
+    .in {
         currentPair = null
     }
     
