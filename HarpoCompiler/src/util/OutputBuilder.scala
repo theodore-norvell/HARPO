@@ -28,23 +28,22 @@ class OutputBuilder extends Contracts {
      *  
      *  Strings must not contain any linefeed or formfeed characters.
      */
-    def put( string : String ) {
+    def put( string : String ) : Unit =
+    pre( string.indexOf( '\r' ) == -1 )
+    .pre( string.indexOf( '\f' ) == -1 )
+    .in {
         var str = string 
-        var i = str.indexOf( '\n' ) ; 
+        var i = str.indexOf( '\n' )
         while( i != -1  ) {
             addToLine( str.substring(0, i) )
             str = str.substring( i+1 )
             i = str.indexOf( '\n' )
             newLine
         }
-        addToLine( str ) ;
+        addToLine( str ) 
     }
     
-    protected def addToLine( str : String ) : Unit =
-    pre( str.indexOf( '\n' ) == -1 )
-    .pre( str.indexOf( '\r' ) == -1 )
-    .pre( str.indexOf( '\f' ) == -1 )
-    .in {
+    protected def addToLine( str : String ) : Unit = {
         if( str.length() == 0 ) return 
         if( atNewLine ) { 
             for( i <- 0 until indentationLevel ) 
