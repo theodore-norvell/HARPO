@@ -108,11 +108,15 @@ class OutputBuilder extends Contracts {
         currentPair = null
     }
     
-    /** Get the error (if any) associated with a given line of output */
+    /** Get the error (if any) associated with a given line of output
+     *  @param outputLineNumber The line number of the output counted from 1
+     *  @result The error message and coordinate (wrapped in a Some) associated
+     *          with the line number if any. Otherwise None.
+     *   */
     def getError( outputLineNumber : Int ) : Option[Tuple2[String, Coord]] = {
-        if( outputLineNumber < 0 ) return None
-        if( outputLineNumber >= sourceMap.length ) return None
-        val pair = sourceMap( outputLineNumber ) 
+        if( outputLineNumber < 1 ) return None
+        if( outputLineNumber > sourceMap.length ) return None
+        val pair = sourceMap( outputLineNumber-1 ) 
         if( pair == null ) None else Some( pair ) 
     }
     
