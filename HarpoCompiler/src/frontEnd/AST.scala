@@ -190,7 +190,7 @@ class AST{
     // Work in progress
     case class PermissionMapNd (lsn: List[LocSetNd],var amounts : List[ExpNd], name: String, coord: AST.Coord) extends Pretty {
         override def pp =  Pretty.func("PermissionMapNd[" :: name :: "]", lsn,amounts)
-        def pml = lsn.toList zip amounts.toList
+        def pm = lsn.toList zip amounts.toList
         def locSet = lsn.toList;
         def locExp = amounts.toList;
         def setAmounts(newAmounts: List[ExpNd]) { amounts = newAmounts }
@@ -198,13 +198,14 @@ class AST{
        
     abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty
     {
-     def exp() : ExpNd; 
+     def getName() : NameNd; 
     }
    
-    case class ObjectIdLSN(en: ExpNd)(coord: AST.Coord) extends LocSetNd(coord){
-       override def pp = Pretty.func( "LocSetNd", en )
-       override def exp() = en;
+    case class ObjectIdLSN(nameExp: NameExpNd)(coord: AST.Coord) extends LocSetNd(coord){
+       override def pp = Pretty.func( "LocSetNd", nameExp )
+       override def getName() = nameExp.name;
     }
+    
     
     // Add LocSet
     
@@ -398,8 +399,8 @@ class AST{
         // The tipe field is set during checking.
         var tipe: Option[ Type ] = None;
 
-        def ppp: Document
-
+        def ppp: Document 
+        
         override def pp = tipe match {
             case None => Document.group( ppp :/: ": NONE" )
             case Some( ty ) => Document.group( ppp :/: ": " :: ty.pp )
@@ -415,7 +416,7 @@ class AST{
     }
 
     case class FloatLiteralExpNd( x: Double )( coord: AST.Coord ) extends ExpNd( coord ) {
-        override def ppp = Pretty.func( "FloatLiteralExpNd", x.toString ) 
+        override def ppp = Pretty.func( "FloatLiteralExpNd", x.toString )
     }
 
     case class NameExpNd( name: NameNd )( coord: AST.Coord ) extends ExpNd( coord ) {

@@ -314,7 +314,8 @@ void GParam(ClassLike p):{
 }
 
 DeclNd IntfMember() :{
-	DeclNd d ;}{    ( LOOKAHEAD( [Access()] ("obj" | "const") ) d=Field()
+  	boolean isGhost;
+	DeclNd d ;}{    ( LOOKAHEAD( [Access()] [Ghost()] ("obj" | "const") ) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method() )
     {return d;}
     }
@@ -594,12 +595,12 @@ PermissionMapNd PermissionMap() : {
 }
 
 LocSetNd LocSet(): {
-  ExpNd objId;
+  NameExpNd objId;
   Token tk = getToken(1);
   LocSetNd ls; 
 }
 {
-  	 objId = ObjectId()
+  objId = ObjectName()
   { ls = builder.makeObjectIdLSN(objId,getCoord(tk)); }
   {return ls;}
 }
@@ -1140,6 +1141,17 @@ ExpNd ObjectId() : {
 	{return r; }
 }
 
+NameExpNd ObjectName() : { 
+	String str ;
+	NameNd name ;
+	NameExpNd r;
+	Token tk = getToken(1) ;
+} {
+	str=Name()
+	{ name = builder.simpleName( str, getCoord(tk) ) ; }
+	{ r = builder.nameExp(name, getCoord(tk)); }
+	{return r; }
+}
 String Name() : {
 	Token t ;	
 } {

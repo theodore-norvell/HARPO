@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 
 @RunWith(classOf[JUnitRunner])
 class AllTests extends Suites(
-  new BufferSystemTests,
+  new CounterTest,
   new BackendTests) {
 
 }

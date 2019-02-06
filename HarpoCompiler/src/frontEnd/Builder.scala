@@ -41,7 +41,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def add(lsl: LocSetList, lsn: LocSetNd) { lsl += lsn; }
 
-  def makeObjectIdLSN(objId: ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+  def makeObjectIdLSN(objId: NameExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
 
   // Sequence
 

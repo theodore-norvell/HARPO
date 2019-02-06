@@ -250,7 +250,6 @@ class TypeChecker(
 
         // Convert the initialization expression to match the expected type
         decl.init = typeConvert(initExp$, expectedType)
-
         typeCheck(cmd)
 
       case decl @ GenericParamDeclNd(ty) =>
@@ -482,8 +481,9 @@ class TypeChecker(
       case withCmd @ WithCmdNd(lock, tpl, guard, command, gpl) =>
         withCmd.guard = convertGuard(guard)
         for (pn <- tpl) typeCheck(pn)
+        typeCheck(command)
         for (pn <- gpl) typeCheck(pn)
-        toDo("With commands in type checker")
+        //toDo("With commands in type checker")
     }
   }
 
@@ -576,51 +576,59 @@ class TypeChecker(
   }
 
   private def typeCheckLocSet(lsn: LocSetNd) : Option[Type] = {
-   val resultType: Option[Type] = lsn match {
-      case ObjectIdLSN(exp) =>
-        exp match {
-          case CanReadOp(x) =>
-            {
-              typeCheck(x.exp())
-              val result = valueConvert(x.exp())
-              result.tipe match {
-                case Some(tipe @ PrimitiveType(_)) =>
-                  result.tipe = Some(LocationType(tipe))
-                case _ => {}
-                //TODO Add case for reference types
-              }
-              result.tipe
-            }
-          case CanWriteOp(x) => 
-            {
-            typeCheck(x.exp())
-            val result = valueConvert(x.exp())
-            result.tipe match {
-              case Some(tipe @ PrimitiveType(_)) =>
-                result.tipe = Some(LocationType(tipe))
-              case _ => {}
-              //TODO Add case for reference types
-            }
-            result.tipe
-          }
-          case PermissionOp(x) =>  
-            {
-            typeCheck(x.exp())
-            val result = valueConvert(x.exp())
-            result.tipe match {
-              case Some(tipe @ PrimitiveType(_)) =>
-                result.tipe = Some(LocationType(tipe))
-              case _ => {}
-              //TODO Add case for reference types
-            }
-            result.tipe
-          }
-         case _ => typeCheck(exp) 
-        }
-      //TODO add more case array location sets
-    }
+    val resultType: Option[Type] = lsn match {
+      case ObjectIdLSN(name) => {
+        typeCheck(name) 
+//        val result = valueConvert(exp)
+//       result.tipe
+      }
+   }
    resultType
   }
+
+//        exp match {
+//          case CanReadOp(x) =>
+//            {
+//              typeCheck(x.exp())
+//              val result = valueConvert(x.exp())
+//              result.tipe match {
+//                case Some(tipe @ PrimitiveType(_)) =>
+//                  result.tipe = Some(LocationType(tipe))
+//                case _ => {}
+//                //TODO Add case for reference types
+//              }
+//              result.tipe
+//            }
+//          case CanWriteOp(x) => 
+//            {
+//            typeCheck(x.exp())
+//            val result = valueConvert(x.exp())
+//            result.tipe match {
+//              case Some(tipe @ PrimitiveType(_)) =>
+//                result.tipe = Some(LocationType(tipe))
+//              case _ => {}
+//              //TODO Add case for reference types
+//            }
+//            result.tipe
+//          }
+//          case PermissionOp(x) =>  
+//            {
+//            typeCheck(x.exp())
+//            val result = valueConvert(x.exp())
+//            result.tipe match {
+//              case Some(tipe @ PrimitiveType(_)) =>
+//                result.tipe = Some(LocationType(tipe))
+//              case _ => {}
+//              //TODO Add case for reference types
+//            }
+//            result.tipe
+//          }
+//         case _ => typeCheck(exp) 
+//        }
+//      //TODO add more case array location sets
+//    }
+//   resultType
+//   }
 
   private def typeCheckAnArgument(a: ExpNd, p: Parameter): ExpNd = {
     val LocationType(paramBaseType) = p.ty
