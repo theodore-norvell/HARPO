@@ -8,7 +8,8 @@ import scala.collection.mutable.ArrayBuffer ;
 /** Create an output text to be sent to a verifier (for example)
  */
 class OutputBuilder extends Contracts {
-    protected val builder = new StringBuilder
+    protected val builder = new ArrayBuffer[String]
+    protected val currentLine = new StringBuilder
     
     protected var indentationLevel = 0 ;
     protected val indentationString = "    " ;
@@ -20,25 +21,26 @@ class OutputBuilder extends Contracts {
     
     /** Adds a string to the output.
      *  
-     *  If the string contains embedded newlines, these are treated
+     *  If the string contains embedded newlines, returns
+     *  return-newline pairs, these are treated
      *  as calls to <code>.newLine</code>.
      *  
      *  Strings at the start of a line will be indented with spaces
      *  to the current indentation level.
      *  
-     *  Strings must not contain any linefeed or formfeed characters.
      */
     def put( string : String ) : Unit =
-    pre( string.indexOf( '\r' ) == -1 )
-    .pre( string.indexOf( '\f' ) == -1 )
-    .in {
+    {
         var str = string 
-        var i = str.indexOf( '\n' )
-        while( i != -1  ) {
-            addToLine( str.substring(0, i) )
-            str = str.substring( i+1 )
-            i = str.indexOf( '\n' )
+        val endOfLineRE = """\r\n|\n|\r""".r
+        var m = endOfLineRE.findFirstMatchIn( str )
+        while( !m.isEmpty  ) {
+            val matchData = m.get
+            
+            addToLine( matchData.before.toString )
             newLine
+            str = matchData.after.toString
+            m = endOfLineRE.findFirstMatchIn( str )
         }
         addToLine( str ) 
     }
@@ -47,10 +49,10 @@ class OutputBuilder extends Contracts {
         if( str.length() == 0 ) return 
         if( atNewLine ) { 
             for( i <- 0 until indentationLevel ) 
-                builder.append( indentationString ) 
+                currentLine.append( indentationString ) 
             atNewLine = false ;
         }
-        builder.append( str ) 
+        currentLine.append( str ) 
     }
     
     /** Add a newLine to the output.
@@ -58,7 +60,8 @@ class OutputBuilder extends Contracts {
     def newLine {
         sourceMap += currentPair 
         messageHasBeenSetOnThisLine = false
-        builder.append( "\n" )
+        builder.append( currentLine.result() )
+        currentLine.clear() 
         atNewLine = true ;
     }
     
@@ -137,5 +140,7 @@ class OutputBuilder extends Contracts {
     }
     
     /** Obtain the string built so far. */
-    def result() : String = builder.result() 
+    def result() : Iterator[String] =
+        pre( atNewLine )
+        .in{ builder.iterator }
 }

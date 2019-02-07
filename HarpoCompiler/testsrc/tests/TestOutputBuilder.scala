@@ -14,16 +14,28 @@ class TestOutputBuilder  extends FlatSpec {
   "putting a single line" should "put the line" in {
       val out = new OutputBuilder
       out.put( "abc" ) 
-      assertResult( "abc")( out.result() )
       out.newLine
-      out.put( "def" ) 
-      assertResult( "abc\ndef" ) ( out.result() )
+      var result = ""
+      var lines = 0 
+      for( line <- out.result() ) { result += line + "\n" ; lines += 1 }
+      assertResult( 1 )( lines )
+      assertResult( "abc\n")( result )
+  }
+    
+  "embedded EOL sequences" should "be treated as newlines" in {
+      val out = new OutputBuilder
+      out.put( "abc\r\ndef" ) 
+      out.put( "\n\n\r\rxyz\r\n" ) 
+      var result = ""
+      var lines = 0 
+      for( line <- out.result() ) { result += line + "\n" ; lines += 1 }
+      assertResult( 6 )( lines )
+      assertResult( "abc\ndef\n\n\n\nxyz\n")( result )
   }
     
   "indenting" should "work" in {
       val out = new OutputBuilder
       out.put( "abc" ) 
-      assertResult( "abc")( out.result() )
       out.newLine
       out.indent
       out.put( "def" ) 
@@ -38,13 +50,17 @@ class TestOutputBuilder  extends FlatSpec {
       out.newLine
       out.dedent 
       out.put( "pqr" )
+      out.newLine 
+      var result = ""
+      for( line <- out.result() ) result += line + "\n" 
       assertResult(
 """abc
     def
         ghi
         jkl
     mno
-pqr""" ) ( out.result() )
+pqr
+""" ) ( result )
     }
     
     private val coord1 = new Coord( "Fred", 1, 1 )
@@ -153,23 +169,26 @@ pqr""" ) ( out.result() )
     
     "recording errors" should "not fail if we clear and then set error" in {
       val out = new OutputBuilder
-      out.put( "abc" )
+      out.put( "123" )
+      out.newLine   // Line 1. No error.
+      out.put( "abc" ) 
       out.setError( error1, coord1 )
-      out.newLine
+      out.newLine  // Line 2, error 1
       out.clearError
       out.put( "def" )
       out.setError( error2, coord2 )
-      out.newLine
+      out.newLine  // Line 3 error 2
       out.setError( error2, coord2 )
-      out.newLine
+      out.newLine  // Line 4 error 2
       
       assertResult( None )( out.getError( -1 ) ) 
       assertResult( None )( out.getError( 0 ) ) 
-      assertResult( Some(error1, coord1) )( out.getError( 1 ) )
-      assertResult( Some(error2, coord2 )) ( out.getError( 2 ) )
-      assertResult( Some(error2, coord2) )( out.getError( 3 ) ) 
-      assertResult( None )( out.getError(4) ) 
+      assertResult( None )( out.getError( 1 ) ) 
+      assertResult( Some(error1, coord1) )( out.getError( 2 ) )
+      assertResult( Some(error2, coord2 )) ( out.getError( 3 ) )
+      assertResult( Some(error2, coord2) )( out.getError( 4 ) ) 
       assertResult( None )( out.getError(5) ) 
+      assertResult( None )( out.getError(6) ) 
     }
     
     "recording errors" should "fail if we set and then clear error" in {
