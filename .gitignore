@@ -10,9 +10,5 @@ RemoteSystemsTempFiles/*
 *.cache-main
 /.recommenders/
 bin/
-<<<<<<< HEAD
-=======
 .DS_Store
->>>>>>> 7f855682a47e4309683d81769b860cceb2950b9c
-
 *.tex.Backup-*
