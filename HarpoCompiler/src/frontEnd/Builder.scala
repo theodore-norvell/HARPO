@@ -17,7 +17,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
   def classDeclNd(name: String, coord: Coord) = ClassDeclNd()(name, coord, errorRecorder)
 
   var invariantId = 0;
-  def makeClassInvariant(exp: ConditionExpNd, coord: Coord) = {
+  def makeClassInvariant(exp: ExpNd, coord: Coord) = {
     val name = "*inv*" + invariantId; invariantId += 1;
     new ClassInvNd(exp)(name, coord)
   }
@@ -41,7 +41,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def add(lsl: LocSetList, lsn: LocSetNd) { lsl += lsn; }
 
-  def makeObjectIdLSN(objId: ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+  def makeObjectIdLSN(objId: NameExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
 
   // Sequence
 
@@ -62,14 +62,6 @@ class Builder(val errorRecorder: ErrorRecorder) {
     val oldId = PermMapId;
     val name = "PermMapNd#" + (PermMapId + 1);
     PermMapId += 1;
-    //    val realPermList = expList();
-    // Under implementation in Checker phase.
-    //    for(e <- el)
-    //      e match {
-    //      case IntLiteralExpNd(i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
-    //      case FloatLiteralExpNd (i) => add(realPermList, FloatLiteralExpNd(i.toDouble)(coord))
-    //      case _ => ()
-    //      }
     new PermissionMapNd(lsl.toList, el.toList, name, coord);
   }
 
@@ -88,6 +80,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
   def add(l: ParamList, d: ParamDeclNd) { l += d }
 
   // Method Specification annotations
+  
   // Pre Condition Specification
   class PreCndList extends ArrayBuffer[PreCndNd]
 
@@ -133,17 +126,6 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makeBorrows(pmn: PermissionMapNd, coord: Coord) = new BorrowsPerNd(pmn)(coord)
 
-  // Method Call Parameters
-  class ArgList extends ArrayBuffer[MethArgNd]
-
-  def argList() = new ArgList();
-
-  def add(l: ArgList, d: MethArgNd) { l += d }
-
-  def makeMethArgNd(x: ExpNd, coord: AST.Coord) = {
-    new MethArgNd(x)(coord)
-  }
-
   //Building Claim Specification
 
   class ClaimList extends ArrayBuffer[ClaimNd]
@@ -167,40 +149,18 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def add(l: ObjectIdList, x: ExpNd) { l += x }
 
-  //'CanRead' Operation List
+  //'CanRead' Operation
 
-  class CanReadOpList extends ArrayBuffer[CanReadOp]
+  def makeCanReadOp(x: LocSetNd, coord: AST.Coord) = new CanReadOp(x)(coord)
 
-  def canReadOpList() = new CanReadOpList()
+  //'CanWrite' Operation
 
-  def add(l: CanReadOpList, x: CanReadOp) { l += x }
+  def makeCanWriteOp(x: LocSetNd, coord: AST.Coord) = new CanWriteOp(x)(coord)
 
-  def makeCanReadOp(x: ExpNd, coord: AST.Coord) = new CanReadOp(x)(coord)
+  //'Permission' Operation
 
-  //'CanWrite' Operation List
-
-  class CanWriteOpList extends ArrayBuffer[CanWriteOp]
-
-  def canWriteOpList() = new CanWriteOpList()
-
-  def add(l: CanWriteOpList, x: CanWriteOp) { l += x }
-
-  def makeCanWriteOp(x: ExpNd, coord: AST.Coord) = new CanWriteOp(x)(coord)
-
-  //'Permission' Operation List
-
-  class PermissionOpList extends ArrayBuffer[PermissionOp]
-
-  def permissionOpList() = new PermissionOpList()
-
-  def add(l: PermissionOpList, x: PermissionOp) { l += x }
-
-  def makePermissionOp(x: ExpNd, coord: AST.Coord) = new PermissionOp(x)(coord)
-
-  def makeConditionExpNd(expList: ExpList, canReadOpList: CanReadOpList, canWriteOpList: CanWriteOpList, permissionOpList: PermissionOpList, coord: AST.Coord) = {
-    new ConditionExpNd(expList.toList, canReadOpList.toList, canWriteOpList.toList, permissionOpList.toList, coord)
-  }
-
+  def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
+  
   var next = 0
 
   def threadDeclNd(claimList: ClaimList, bl: CommandNd, coord: Coord) = {
@@ -264,10 +224,6 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   }
 
-  def makeMethCallCmd(name: String, args: List[MethArgNd], coord: Coord) = {
-    new MethodCallCmdNd(name, args)(coord)
-  }
-
   def makeIf(guard: ExpNd, p: CommandNd, q: CommandNd, coord: Coord) = new IfCmdNd(guard, p, q)(coord)
 
   def makeWhile(guard: ExpNd, wlil: LoopInvList, p: CommandNd, coord: Coord) = new WhileCmdNd(guard, wlil.toList, p)(coord)
@@ -279,7 +235,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
   }
 
   var loopInvId = 0;
-  def makeLoopInvariant(exp: ConditionExpNd, coord: Coord) = {
+  def makeLoopInvariant(exp: ExpNd, coord: Coord) = {
     val name = "*inv*" + loopInvId; loopInvId += 1;
     new LoopInvNd(exp)(name, coord)
   }
@@ -381,8 +337,8 @@ class Builder(val errorRecorder: ErrorRecorder) {
   def unaryOp(op: String, x: ExpNd, coord: AST.Coord) = {
     op match {
       case "not" => UnaryOpExpNd(NotOp, x)(coord)
-      case "-" => UnaryOpExpNd(NegativeOp, x)(coord)
-      case "pr" => UnaryOpExpNd(PrimeOp, x)(coord)
+      case "-" => UnaryOpExpNd(NegativeOp, x)(coord) 
+      case "'" => UnaryOpExpNd(PrimeOp, x)(coord)
     }
   }
 

@@ -1,5 +1,5 @@
 /*
-						case ConstDeclNd()=>{ // To Do
+						case ConstDeclNd()=>{ // To Do 
 						  
 						}
 
@@ -186,7 +186,7 @@
 						}
 */
 package boogieBackEnd
-import java.net.URL
+import java.net.URL  
 import scala.io.Source
 import java.io.OutputStreamWriter
 import scala.collection.mutable.ArrayBuffer
@@ -197,12 +197,13 @@ import frontEnd.AST._
 import scala.io.Source
 import checker.CheckerTypes.PrimitiveType;
 import java.io.File
+import util.Format
+import scala.text.Document
 
-class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
-
+class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) extends Format {
+  
 	def getBoogieCode():String = {
-			println(masterDeclList.toString());
-			val boogieCode = getBoogiePrelude() + genDeclCode( masterDeclList )
+			val boogieCode = getBoogiePrelude() + genTransCode( masterDeclList )
 			return boogieCode.toString();
 	}   
 	private def getBoogiePrelude():String = {       
@@ -213,31 +214,40 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
           return boogiePrelude
 }
 
-	private def genDeclCode( dl : DeclList):String = {
-			    var globalObjCode = ""
+	private def genTransCode( dl : DeclList):String = {
+			    
+	        var globalObjCode = ""
 					var initializeCode = ""
-					var nameTbl = HashMap[String, HashMap[String, String]]()
 					var boogieCode = ""
-						for(dlNd : DeclNd <- dl.decls) {
-						dlNd match{          
-						case ClassDeclNd() => {
-						  val classCode=new ClassCodeGen(dlNd);
-						  boogieCode += classCode.getClassCode()
-						}
-						case IntfDeclNd() => {
-						  val intfCode=new IntfCodeGen(dlNd);
-						  boogieCode += intfCode.getIntfCode()
-						}
+					
+					var globalObjects = ""
+					var interfaces = ""
+					var classes = ""
+					
+					
+					var nameTbl = HashMap[String, HashMap[String, String]]()
+					
+				  for(dlNd : DeclNd <- dl.decls) {
+						dlNd match{ 
 						
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
-						  val objCode = new ObjCodeGen(dlNd)
-						  val fqn = dlNd.fqn;
-						  objCode.getObjInitCode(isConst, acc, ty, initExp, fqn.toString())
+						  val objType: String = TypeCodeGen(ty)
+						  val objInit: String = new ExpCodeGen().getExpCode(initExp, dlNd.fqn.toString())
+						  val objCode = "\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";"
 						}
-						
-						case _ => val code = "No declarations were found"
+						case IntfDeclNd() => {
+						  interfaces += "\nconst unique " + dlNd.name + ": className;"  
+						}	
+						case ClassDeclNd() => {
+						  val classCode=new ClassCodeGen(dlNd)
+						  classes += classCode.getClassCode()
 						}
-					} 
+						case _ => {
+						  val code = "Not main declarations were found"
+						}
+					}
+				}
+	    boogieCode =  globalObjects + interfaces + classes ;
 			return boogieCode;
   }
 }

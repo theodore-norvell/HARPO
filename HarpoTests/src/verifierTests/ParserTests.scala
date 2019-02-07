@@ -99,7 +99,7 @@ class ParserTests extends BoogieTestsBase {
     val str = """
                   (class Test()
 	                  (thread(*t0*)
-		                  ghost const a: Int32 := 9;
+                      ghost const a: Int32 := 9;
 	                    ghost obj c: Int32:=0;
 	                    ghost const x: Int32:=9;
 	                  thread) 

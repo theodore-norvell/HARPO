@@ -1,6 +1,6 @@
 package frontEnd;
 
-import contracts.Contracts
+import contracts.Contracts 
 import contracts.Contracts._
 import util.Pretty
 import scala.collection.mutable.ArrayBuffer
@@ -170,16 +170,16 @@ class AST{
     
     // Class Invariant 
     
-    case class ClassInvNd(exp:ConditionExpNd)( name: String, coord: AST.Coord )
+    case class ClassInvNd(exp: ExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
     override def pp = Pretty.func( "ClassInvNd["::name::"]", exp )
     }
      
-    case class LoopInvNd(exp:ConditionExpNd)( name: String, coord: AST.Coord )
+    case class LoopInvNd(exp:ExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
     override def pp = Pretty.func( "LoopInvNd["::name::"]", exp )
     }
-
+ 
     //Claim Specification
     //permission map
     case class ClaimNd (pmn: PermissionMapNd)(name: String, coord: AST.Coord)
@@ -190,16 +190,22 @@ class AST{
     // Work in progress
     case class PermissionMapNd (lsn: List[LocSetNd],var amounts : List[ExpNd], name: String, coord: AST.Coord) extends Pretty {
         override def pp =  Pretty.func("PermissionMapNd[" :: name :: "]", lsn,amounts)
+        def pm = lsn.toList zip amounts.toList
         def locSet = lsn.toList;
         def locExp = amounts.toList;
         def setAmounts(newAmounts: List[ExpNd]) { amounts = newAmounts }
    }
        
     abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty
-
-    case class ObjectIdLSN(en: ExpNd)(coord: AST.Coord) extends LocSetNd(coord){
-       override def pp = Pretty.func( "LocSetNd", en )
+    {
+     def getName() : NameNd; 
     }
+   
+    case class ObjectIdLSN(nameExp: NameExpNd)(coord: AST.Coord) extends LocSetNd(coord){
+       override def pp = Pretty.func( "LocSetNd", nameExp )
+       override def getName() = nameExp.name;
+    }
+    
     
     // Add LocSet
     
@@ -340,11 +346,11 @@ class AST{
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "AssumeCmdNd", assumption )
     }
-    
-   case class MethodCallCmdNd(name: String, argumentList: List[MethArgNd])(coord: AST.Coord)
-        extends CommandNd(coord) {
-        override def pp = Pretty.func("MethodCallCmdNd", name, argumentList)
-  }
+// Can be used in case    
+//   case class MethodCallCmdNd(name: String, argumentList: List[MethArgNd])(coord: AST.Coord)
+//        extends CommandNd(coord) {
+//        override def pp = Pretty.func("MethodCallCmdNd", name, argumentList)
+//  }
         
     /************/
     /** Types **/
@@ -393,8 +399,8 @@ class AST{
         // The tipe field is set during checking.
         var tipe: Option[ Type ] = None;
 
-        def ppp: Document
-
+        def ppp: Document 
+        
         override def pp = tipe match {
             case None => Document.group( ppp :/: ": NONE" )
             case Some( ty ) => Document.group( ppp :/: ": " :: ty.pp )
@@ -410,7 +416,7 @@ class AST{
     }
 
     case class FloatLiteralExpNd( x: Double )( coord: AST.Coord ) extends ExpNd( coord ) {
-        override def ppp = Pretty.func( "FloatLiteralExpNd", x.toString ) 
+        override def ppp = Pretty.func( "FloatLiteralExpNd", x.toString )
     }
 
     case class NameExpNd( name: NameNd )( coord: AST.Coord ) extends ExpNd( coord ) {
@@ -452,31 +458,21 @@ class AST{
     }
     
     
- /**************************/
- /** Condition Operations**/
- /************************/
-
-  case class ConditionExpNd(el: List[ExpNd], crl: List[CanReadOp], cwl: List[CanWriteOp], pol: List[PermissionOp], coord: AST.Coord) extends Pretty {
-    override def pp = Pretty.func("ConditionExpNd", el, crl, cwl, pol)
-    def expList() = el.toList;
-    def canReadList() = crl.toList;
-    def canWriteList() = cwl.toList;
-    def permissionOpList() = pol.toList;
-  }
-
-  abstract sealed class ConditionNd(val coord: AST.Coord) extends Pretty
-
-  case class CanReadOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
-    override def pp = Pretty.func("CanReadOp", x)
-  }
-
-  case class CanWriteOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
-    override def pp = Pretty.func("CanWriteOp", x)
-  }
-
-  case class PermissionOp(x: ExpNd)(coord: AST.Coord) extends ConditionNd(coord) {
-    override def pp = Pretty.func("PermissionOp", x)
-  }
+   /**************************/
+   /** Condition Operations**/
+   /************************/
+  
+    case class CanReadOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("CanReadOp", x)
+    }
+  
+    case class CanWriteOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("CanWriteOp", x)
+    }
+  
+    case class PermissionOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("PermissionOp", x)
+    }
 
     /*******************/
     /** Operators    **/

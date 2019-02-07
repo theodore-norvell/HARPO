@@ -21,7 +21,7 @@ import checker.Checker
 import frontEnd.CompilerBailOutException
 import boogieBackEnd.BoogieBackEnd
 
-class BufferSystemTestsBase extends FlatSpec{
+class CounterTestBase extends FlatSpec{
  
   var tranSource: String = ""
   def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) : String = 

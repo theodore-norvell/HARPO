@@ -212,7 +212,7 @@ TOKEN :{
 
 TOKEN :
 {
-	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9","'"])* >
+	<NAME: ["a"-"z","A"-"Z","_","$"](["a"-"z","A"-"Z","_","$","0"-"9"])* >
 }
 
 TOKEN :
@@ -320,7 +320,8 @@ void GParam(ClassLike p):{
 }
 
 DeclNd IntfMember() :{
-	DeclNd d ;}{    ( LOOKAHEAD( [Access()] ("obj" | "const") ) d=Field()
+  	boolean isGhost;
+	DeclNd d ;}{    ( LOOKAHEAD( [Access()] [Ghost()] ("obj" | "const") ) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method() )
     {return d;}
     }
@@ -600,12 +601,12 @@ PermissionMapNd PermissionMap() : {
 }
 
 LocSetNd LocSet(): {
-  ExpNd objId;
+  NameExpNd objId;
   Token tk = getToken(1);
   LocSetNd ls; 
 }
 {
-  	 objId = ObjectId()
+  objId = ObjectName()
   { ls = builder.makeObjectIdLSN(objId,getCoord(tk)); }
   {return ls;}
 }
@@ -622,24 +623,24 @@ Token tk;
 }
 
 ClassInvNd ClassInvariant(): {
-  ConditionExpNd x;
+  ExpNd x;
   Token tk;
  }
 {
   	{ tk=getToken(1);}
-  	(  	  tk = "invariant" x = ConditionExp()
+  	(  	  tk = "invariant" x = Exp()
   	)
     {return builder.makeClassInvariant(x, getCoord(tk)) ;}
 }
 
 LoopInvNd LoopInvariant(): {
-ConditionExpNd x;
+ExpNd x;
 Token tk;
 }
 {
    	{ tk=getToken(1);}
   	(
-  	  tk = "invariant" x=ConditionExp()
+  	  tk = "invariant" x = Exp()
   	)
     {return builder.makeLoopInvariant(x, getCoord(tk)) ;}
 }
@@ -825,7 +826,6 @@ CommandNd Command() : {
 		 ["with"] ")"
 		 
 		{return builder.makeWith( x,tpl, y, p,gpl, getCoord(tk)) ;}	
-		// Add method call syntax
 	)
 }
 
@@ -940,59 +940,6 @@ InitExpNd MoreIfInitExp() : {
 	)
 	{return builder.ifInitExp(x, a, b, x.coord());}
 }
-
-ConditionExpNd ConditionExp(): {
-	Token tk;
-	Token cndtk = getToken(0);
-	ExpNd x;
-	ObjectIdList objIdList = builder.objectIdList();
-	CanReadOpList canReadOpList = builder.canReadOpList();
-	CanWriteOpList canWriteOpList = builder.canWriteOpList();
-	PermissionOpList permissionOpList = builder.permissionOpList();
-	ExpList expList = builder.expList();
-	CanReadOp canRead;
-	CanWriteOp canWrite;
-	PermissionOp permissionOp;
-	ConditionExpNd conditionExp;
-}
-{
-  
-  (
- 	 LOOKAHEAD("canRead" "(") 
-  	 tk = "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
-  	 builder.add(canReadOpList, canRead); }
- |
-	 LOOKAHEAD("canWrite" "(")
-	 tk = "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
-  	 builder.add(canWriteOpList, canWrite); }
- |
-	 LOOKAHEAD ("permission" "(")
-	 tk = "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
-  	 builder.add(permissionOpList, permissionOp); }
- |
-   	  x = Exp() { builder.add(expList, x); }
-   )
- (
- 	 LOOKAHEAD("," "canRead" "(") 
-  	 tk = "," "canRead" "(" x = ObjectId() ")" { canRead = builder.makeCanReadOp(x,getCoord(tk));
-  	 builder.add(canReadOpList, canRead); }
-
- |
-	 LOOKAHEAD("," "canWrite" "(")
-	 tk = "," "canWrite" "(" x = ObjectId() ")"  { canWrite = builder.makeCanWriteOp(x,getCoord(tk));
-  	 builder.add(canWriteOpList, canWrite); }
-  	
- |
-	 LOOKAHEAD ("," "permission" "(")
-	 tk = "," "permission" "(" x = ObjectId() ")"  { permissionOp = builder.makePermissionOp(x,getCoord(tk));
-  	 builder.add(permissionOpList, permissionOp); }
- |
-   	 x = Exp() { builder.add(expList, x); } 
-)*
- {return builder.makeConditionExpNd(expList, canReadOpList, canWriteOpList,permissionOpList, getCoord(cndtk)); }
-}
-
-
 
 
 /******************/
@@ -1138,15 +1085,21 @@ ExpNd Exp7() :
 	ExpNd x = null;
 	Token tk = getToken(1) ;
 }
-{
-	Exp8() ["pr"] { return builder.unaryOp("pr",x, getCoord(tk)) ; } 
+{      x = Exp8() [<PRIME> { x = builder.unaryOp("'",x, getCoord(tk)) ; } ]
+      { return x; }
 }
 
 ExpNd Exp8() :
 {
+  	CanReadOp canRead;
+	CanWriteOp canWrite;
+	PermissionOp permissionOp;
+	LocSetNd locSet;
 	ExpNd x=null;
 	Token tk ;
-} {
+}
+
+{
 	x=ObjectId()     { return x ; }
 |
 	tk = <DEC_LITERAL> { return builder.intLiteralExp(10, tk.image, getCoord(tk) ) ;}
@@ -1158,8 +1111,15 @@ ExpNd Exp8() :
  	tk = <HEX_LITERAL>  { return builder.intLiteralExp(16, tk.image.substring(3), getCoord(tk) ) ;}
 |
     tk = <REAL_LITERAL> { return builder.realLiteralExp( tk.image, getCoord(tk) ) ;}
-| 
+|
+  	 tk = "canRead" "(" locSet = LocSet() ")" { return builder.makeCanReadOp(locSet,getCoord(tk));}
+|
+	 tk = "canWrite" "(" locSet = LocSet() ")"  { return builder.makeCanWriteOp(locSet,getCoord(tk));}
+|
+	 tk = "permission" "(" locSet = LocSet() ")"  { return builder.makePermissionOp(locSet,getCoord(tk));}
+|  
 	"(" x=Exp() ")"  { return x ; }
+
 }
 
 ExpNd OptGuard() :
@@ -1187,6 +1147,17 @@ ExpNd ObjectId() : {
 	{return r; }
 }
 
+NameExpNd ObjectName() : { 
+	String str ;
+	NameNd name ;
+	NameExpNd r;
+	Token tk = getToken(1) ;
+} {
+	str=Name()
+	{ name = builder.simpleName( str, getCoord(tk) ) ; }
+	{ r = builder.nameExp(name, getCoord(tk)); }
+	{return r; }
+}
 String Name() : {
 	Token t ;	
 } {
