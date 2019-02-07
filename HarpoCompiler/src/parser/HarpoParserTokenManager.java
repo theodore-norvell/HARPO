@@ -7,7 +7,7 @@ import frontEnd.Builder.* ;
 /** Token Manager. */
 public class HarpoParserTokenManager implements HarpoParserConstants
 {
-   int commentNestingDepth  ;
+                   int commentNestingDepth  ;
 
   /** Debug output. */
   public  java.io.PrintStream debugStream = System.out;

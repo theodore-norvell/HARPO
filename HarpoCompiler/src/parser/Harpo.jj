@@ -86,28 +86,28 @@ This file is importing packages written in Scala
 				- Optional Guard
 				- ObjID ExpNd
 			- Name */
-			options{  JDK_VERSION = "1.7";
+			options{  JDK_VERSION = "1.7";
   DEBUG_TOKEN_MANAGER = false ;
-  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
+  DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
 	package parser;
 	import frontEnd.Builder ;
 	import frontEnd.AST.* ;
 	import frontEnd.Builder.* ;
 	
-	public class HarpoParser	{
+	public class HarpoParser	{
 		Builder builder ;
 		String fileName = "<unknown>" ;
 		
 		public void setBuilder( Builder b) { builder = b ; }
 	
-		public void setFileName( String fn ) { fileName = fn ; }		 
+		public void setFileName( String fn ) { fileName = fn ; }		 
 		Coord getCoord(int i) {
 			return getCoord( getToken(i) ) ; }
 		Coord getCoord( Token t) {
-			return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }	}PARSER_END(HarpoParser)
+			return builder.makeCoord(fileName, t.beginLine, t.beginColumn ) ; }	}PARSER_END(HarpoParser)
 
 
-TOKEN_MGR_DECLS:{  int commentNestingDepth  ; }
+TOKEN_MGR_DECLS:{  int commentNestingDepth  ; }
 
 SPECIAL_TOKEN : {
     < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? >
@@ -124,11 +124,11 @@ SPECIAL_TOKEN : {
   "*)" { commentNestingDepth -= 1;
          SwitchTo( commentNestingDepth==0 ? FINISH_MULTI_LINE_COMMENT : IN_MULTI_LINE_COMMENT ) ; }
 }
-< FINISH_MULTI_LINE_COMMENT > SPECIAL_TOKEN : {    "" : DEFAULT}
-SKIP :{  " "| "\r"
-| "\t"| "\n"}
+< FINISH_MULTI_LINE_COMMENT > SPECIAL_TOKEN : {    "" : DEFAULT}
+SKIP :{  " "| "\r"
+| "\t"| "\n"}
 
-TOKEN :{    "("
+TOKEN :{    "("
 |   ")"
 |   "["
 |   "]"
@@ -167,7 +167,7 @@ TOKEN :{    "("
   >
 }
 
-TOKEN :{
+TOKEN :{
 	"accept"
 | 	"acc"
 | 	"as"
@@ -175,7 +175,7 @@ TOKEN :{
 |	"assume" 
 | 	"borrows"
 | 	"canRead"
-| 	"canWrite"|	"class"
+| 	"canWrite"|	"class"
 |	"claim"
 |	"co"
 |   "const"
@@ -319,12 +319,12 @@ void GParam(ClassLike p):{
 	{p.addGeneric(name, ty, getCoord(tk));}
 }
 
-DeclNd IntfMember() :{
+DeclNd IntfMember() :{
   	boolean isGhost;
-	DeclNd d ;}{    ( LOOKAHEAD( [Access()] [Ghost()] ("obj" | "const") ) d=Field()
+	DeclNd d ;}{    ( LOOKAHEAD( [Access()] [Ghost()] ("obj" | "const") ) d=Field()
     | LOOKAHEAD( [Access()] "proc") d=Method() )
     {return d;}
-    }
+    }
 
 Access Access() : {} {
 	"private"
@@ -361,15 +361,15 @@ ObjDeclNd ObjDecl(Access acc) : {
     String name ;
     Token tk ;
 }
-{  (isGhost=Ghost())?
-  (          "obj" {isConst=false;}
+{  (isGhost=Ghost())?
+  (          "obj" {isConst=false;}
    | 
       "const" {isConst=true;}
   )
 
   { tk = getToken(1); }
 	name=Name() 
-	(	     ":" ty=Type()
+	(	     ":" ty=Type()
 	 |
 	     { ty = builder.noTypeNd(getCoord(tk)) ; }
 	)
@@ -486,7 +486,7 @@ ThreadDeclNd Thread() : {
 	Token tk = getToken(1);
 }
 {
-	(	  tk="(" "thread"
+	(	  tk="(" "thread"
 	  (claim = Claim() { builder.add(claimList,claim); })*
 	  bl=Block() ["thread"] ")"
 	  {return builder.threadDeclNd(claimList, bl, getCoord(tk)) ;}
@@ -503,7 +503,7 @@ ParamDeclNd CParam() : {
 }
 {
 	(
-	  LOOKAHEAD ( [Ghost()] ("obj"))	  param=ObjParam() {return param;}
+	  LOOKAHEAD ( [Ghost()] ("obj"))	  param=ObjParam() {return param;}
 	|
 	  LOOKAHEAD ( [Ghost()] ("in"))
 	  param=InParam() {return param ; }
@@ -552,7 +552,7 @@ ParamDeclNd ObjParam() : {
 	(
 	  (isGhost=Ghost())?
 	  "obj" param=Param( isGhost, builder.objParamCategory() )
-	  {return param ;}	)
+	  {return param ;}	)
 
 }
 
@@ -628,7 +628,7 @@ ClassInvNd ClassInvariant(): {
  }
 {
   	{ tk=getToken(1);}
-  	(  	  tk = "invariant" x = Exp()
+  	(  	  tk = "invariant" x = Exp()
   	)
     {return builder.makeClassInvariant(x, getCoord(tk)) ;}
 }
@@ -964,7 +964,7 @@ ExpNd Exp() :
 	  )
 	)*
 	(
-	  tk = "as" ty=Type() { x = builder.asExp(x, ty, getCoord(tk)) ; }	)?
+	  tk = "as" ty=Type() { x = builder.asExp(x, ty, getCoord(tk)) ; }	)?
 	{return x ;}
 }
 
@@ -1016,9 +1016,9 @@ ExpNd Exp3() :
 	Token tk = getToken(1) ;
 } {
     y=Exp4()  
-	(	    { x = builder.startComparison(y) ; }
-	    (	        "=" y=Exp4()   { x = builder.comparisonOp("=", x, y) ; }
-	    | 	        < NE > y=Exp4()  { x = builder.comparisonOp("~=", x, y) ; }
+	(	    { x = builder.startComparison(y) ; }
+	    (	        "=" y=Exp4()   { x = builder.comparisonOp("=", x, y) ; }
+	    | 	        < NE > y=Exp4()  { x = builder.comparisonOp("~=", x, y) ; }
 	    | 
 	        "<" y=Exp4()   { x = builder.comparisonOp("<", x, y) ; }
 	    | 
@@ -1030,7 +1030,7 @@ ExpNd Exp3() :
 	    )+
 	    {return builder.finishComparisonOp(x, getCoord(tk)) ;}
     |
-        { return y ; }	)	
+        { return y ; }	)	
 }
 
 ExpNd Exp4() :
@@ -1085,7 +1085,7 @@ ExpNd Exp7() :
 	ExpNd x = null;
 	Token tk = getToken(1) ;
 }
-{      x = Exp8() [<PRIME> { x = builder.unaryOp("'",x, getCoord(tk)) ; } ]
+{      x = Exp8() [<PRIME> { x = builder.unaryOp("'",x, getCoord(tk)) ; } ]
       { return x; }
 }
 
@@ -1126,7 +1126,7 @@ ExpNd OptGuard() :
 {
 	ExpNd x ;
 } {
-   "when" x= Exp() { return x ; } 
+   "when" x= Exp() { return x ; } 
 |
    /*empty*/ { return builder.noExp(getCoord(1)) ; } 
 }
@@ -1138,7 +1138,7 @@ ExpNd ObjectId() : {
 	ExpNd r, x ;
 	Token tk = getToken(1) ;
 } {
-	str=Name()           { name = builder.simpleName( str, getCoord(tk) ) ; }                         { r = builder.nameExp(name, getCoord(tk)); }
+	str=Name()           { name = builder.simpleName( str, getCoord(tk) ) ; }                         { r = builder.nameExp(name, getCoord(tk)); }
 	(
 		tk="[" x=Exp() "]"   { r = builder.indexExp(r, x, getCoord(tk)) ; }
 	|
