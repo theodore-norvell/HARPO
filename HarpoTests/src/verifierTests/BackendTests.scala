@@ -16,18 +16,21 @@ import frontEnd.AST.CommandNd
 import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
 import executive.HarpoToBoogieTranslator
+import util.OutputBuilder;
 
 @RunWith(classOf[JUnitRunner])
 class BackendTests extends FlatSpec with BeforeAndAfterEach {
+  
+  var outputBuffer : OutputBuilder = new OutputBuilder;
 
   var hb = new HarpoToBoogieTranslator()
   val out = new OutputStreamWriter(System.out)
 
   def getBoogie(fileName: String, fileContent: String) = {
     hb.addFile(fileName, fileContent)
-    hb.runTranslator()
-    var genBoogie: String = hb.getBoogieOutput()
-    genBoogie
+    hb.runHarpoToBoogieTrans(outputBuffer)
+    outputBuffer = hb.getBoogieOutput(outputBuffer)
+    outputBuffer
   }
 
   behavior of "The Boogie back end with Harpo 'Buffer' class";

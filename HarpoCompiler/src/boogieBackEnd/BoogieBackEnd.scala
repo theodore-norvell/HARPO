@@ -199,12 +199,17 @@ import checker.CheckerTypes.PrimitiveType;
 import java.io.File
 import util.Format
 import scala.text.Document
+import util.OutputBuilder;
 
-class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) extends Format {
+class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer: OutputBuilder) extends Format {
   
-	def getBoogieCode():String = {
-			val boogieCode = getBoogiePrelude() + genTransCode( masterDeclList )
-			return boogieCode.toString();
+	def getBoogieCode(): OutputBuilder = {
+			val boogiePrelude = getBoogiePrelude() 
+			outputBuffer.put(boogiePrelude)
+			outputBuffer.newLine
+			genTransCode( masterDeclList, outputBuffer)
+			outputBuffer
+			
 	}   
 	private def getBoogiePrelude():String = {       
         	val preludeUrl : URL = this.getClass().getResource("/boogieBackEnd/BoogiePrelude.txt")
@@ -214,7 +219,7 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) extends Format {
           return boogiePrelude
 }
 
-	private def genTransCode( dl : DeclList):String = {
+	private def genTransCode( dl : DeclList, outputBuffer: OutputBuilder):String = {
 			    
 	        var globalObjCode = ""
 					var initializeCode = ""
@@ -233,17 +238,20 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) extends Format {
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
 						  val objType: String = TypeCodeGen(ty)
 						  val objInit: String = new ExpCodeGen().getExpCode(initExp, dlNd.fqn.toString())
-						  val objCode = "\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";"
+						  outputBuffer.newLine
+						  outputBuffer.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
 						}
 						case IntfDeclNd() => {
-						  interfaces += "\nconst unique " + dlNd.name + ": className;"  
+						  interfaces += "\nconst unique " + dlNd.name + ": className;" 
+						  outputBuffer.newLine
+						  outputBuffer.put( "\nconst unique " + dlNd.name + ": className;")
 						}	
 						case ClassDeclNd() => {
-						  val classCode=new ClassCodeGen(dlNd)
+						  val classCode=new ClassCodeGen(dlNd, outputBuffer)
 						  classes += classCode.getClassCode()
 						}
 						case _ => {
-						  val code = "Not main declarations were found"
+						  val code = "No main declarations were found"
 						}
 					}
 				}

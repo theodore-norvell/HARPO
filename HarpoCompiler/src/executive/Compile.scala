@@ -4,27 +4,44 @@ import java.io.PrintWriter;
 import java.net.URL;
 import scala.io.Source;
 import sys.process._;
+import scala.sys.process.ProcessBuilder;
+import util.OutputBuilder;
 
 object Compile extends App {
   println("\n\n\nVerifier start")
   var verify = new HarpoToBoogieTranslator()
   verify.addFile("HarpoSourceCode.harpo",getHarpoSource())
-  verify.runTranslator()
-  var boogieScript:String = verify.getBoogieOutput()
-  println("Boogie Script\n\n\n"+boogieScript)
+  var outputBuffer : OutputBuilder = new OutputBuilder;
+  var transBuffer : OutputBuilder = new OutputBuilder;
+  transBuffer = verify.runHarpoToBoogieTrans(outputBuffer)
+  transBuffer.newLine
+  val text: String = transBuffer.result().mkString("\n")
+  println(text)
   val writer = new PrintWriter(new File("BoogieOutputScript.bpl"))
-  writer.write(boogieScript)
-  writer.close()
+		  writer.write(text)
+      writer.close()
   
-  val command = "cmd.exe /c Boogie \"BoogieOutputScript.bpl\"";
+ // println("Boogie Script\n\n\n"+ boogieScript)
+  val command = "cmd.exe /c boogie \"BoogieOutputScript.bpl\"";
   /*
    * without c process will hang
    * ! will give back result
    * !! gives back output in result
    */
-  val result = Process(command).!! 
+  var log : String = "";
+  
+  var result : String = "";
+  
+  val logger = ProcessLogger( (out) => result = out, (err) => log = err )
+  
+  val output = Process( command ).! ( logger ) 
+
+  val outputDes = Process(command).!!
+  
   println(" ================== Boogie Verifier Results Begin====================== \n\n")
+  println(output)
   println(result)
+  println(outputDes)
   println(" \n\n================== Boogie Verifier Results End======================")
   
  

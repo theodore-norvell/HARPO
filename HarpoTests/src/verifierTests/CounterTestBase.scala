@@ -20,10 +20,11 @@ import parser.TokenMgrError
 import checker.Checker 
 import frontEnd.CompilerBailOutException
 import boogieBackEnd.BoogieBackEnd
+import util.OutputBuilder;
 
 class CounterTestBase extends FlatSpec{
  
-  var tranSource: String = ""
+  var outputBuffer : OutputBuilder = new OutputBuilder;
   def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0, runChecker : Boolean = true) : String = 
     { 
     val boogieBuffer = tryWith( str, expectedFatalErrors, expectedWarningErrors, runChecker,true)
@@ -105,11 +106,11 @@ class CounterTestBase extends FlatSpec{
         assert(errorRecorder.getFatalCount() == 0, "Checking error prevents Boogie back end from running.")
         if( dl != null ) {
             println("-----------Boogie Code generated-------------\n")
-            val boogieCodeGen=new BoogieBackEnd(dl)
-            tranSource = boogieCodeGen.getBoogieCode()   // Comparsion
+            val boogieCodeGen=new BoogieBackEnd(dl,outputBuffer)
+            outputBuffer = boogieCodeGen.getBoogieCode()   // Comparsion
         }
     }
-    tranSource
+    outputBuffer.result.toString
   }
 
 }

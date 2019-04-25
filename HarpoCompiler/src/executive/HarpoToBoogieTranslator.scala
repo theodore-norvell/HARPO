@@ -8,16 +8,20 @@ import checker.Checker ;
 import scala.collection.mutable.ArrayBuffer 
 import java.io.StringReader 
 import boogieBackEnd.BoogieBackEnd
+import util.OutputBuilder;
 
 class HarpoToBoogieTranslator {
     
     private var errorRecorder = new StandardErrorRecorder()
     
     private var boogieOutput = "No Output"
+    
         
     def getErrorReport() : ErrorReport = errorRecorder 
     
-    def getBoogieOutput() : String = boogieOutput 
+    def getBoogieOutput(outputBuffer:OutputBuilder) : OutputBuilder = {
+      outputBuffer
+    }
     
     private var files = new ArrayBuffer[(String,String)] 
     
@@ -25,7 +29,9 @@ class HarpoToBoogieTranslator {
         files += ((fileName, fileText))
     }
     
-    def runTranslator( ) {
+    def runHarpoToBoogieTrans( outputBuffer: OutputBuilder) : OutputBuilder ={
+      
+        var transOutBuffer = new OutputBuilder 
         errorRecorder = new StandardErrorRecorder()
         println("Translator is running")
         boogieOutput = ""
@@ -75,8 +81,9 @@ class HarpoToBoogieTranslator {
            println(" ================== Begin: Master Declaration List after Checking ====================== \n\n")
            println( masterDeclList.format(80) )
            println(" ================== End: Master Declaration List after Checking ======================\n\n")
-           val boogieCodeGen=new BoogieBackEnd(masterDeclList)
-           boogieOutput= boogieCodeGen.getBoogieCode();
+           val boogieCodeGen=new BoogieBackEnd(masterDeclList, outputBuffer)
+           transOutBuffer = boogieCodeGen.getBoogieCode();
            }
+        transOutBuffer
     }
 }

@@ -19,10 +19,15 @@ import parser.ParseException
 import parser.TokenMgrError
 import checker.Checker
 import frontEnd.CompilerBailOutException
-import boogieBackEnd.BoogieBackEnd;
+import boogieBackEnd.BoogieBackEnd
+import util.OutputBuilder;
+
+
 class BoogieTestsBase extends FlatSpec with BeforeAndAfterEach {
   
-      
+    var outputBuffer : OutputBuilder = new OutputBuilder;
+    
+  
     override def beforeEach(td: TestData) {   
         println(">>>>>>>>>>>>>Starting " + td.name+" >>>>>>>>>>>>>>>>>>" )
     }
@@ -108,7 +113,7 @@ class BoogieTestsBase extends FlatSpec with BeforeAndAfterEach {
         assert(errorRecorder.getFatalCount() == 0, "Checking error prevents Boogie back end from running.")
         if( dl != null ) {
             println("-----------Boogie Code  generated-------------\n")
-            val boogieCodeGen=new BoogieBackEnd(dl)
+            val boogieCodeGen=new BoogieBackEnd(dl,outputBuffer)
             val boogieOutput= boogieCodeGen.getBoogieCode();
             println(boogieOutput)
         }
