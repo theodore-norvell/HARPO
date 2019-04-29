@@ -6,6 +6,7 @@ import scala.collection.mutable.StringBuilder
 import scala.collection.mutable.ArrayBuffer ;
 
 /** Create an output text to be sent to a verifier (for example)
+
  */
 class OutputBuilder extends Contracts {
     protected val builder = new ArrayBuffer[String]
