@@ -207,9 +207,8 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
 			val boogiePrelude = getBoogiePrelude() 
 			outputBuffer.put(boogiePrelude)
 			outputBuffer.newLine
-			genTransCode( masterDeclList, outputBuffer)
-			outputBuffer
-			
+			genBoogieCode( masterDeclList)
+			outputBuffer		
 	}   
 	private def getBoogiePrelude():String = {       
         	val preludeUrl : URL = this.getClass().getResource("/boogieBackEnd/BoogiePrelude.txt")
@@ -219,22 +218,17 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
           return boogiePrelude
 }
 
-	private def genTransCode( dl : DeclList, outputBuffer: OutputBuilder):String = {
+	private def genBoogieCode( dl : DeclList) : OutputBuilder = {
 			    
 	        var globalObjCode = ""
 					var initializeCode = ""
-					var boogieCode = ""
 					
 					var globalObjects = ""
 					var interfaces = ""
 					var classes = ""
 					
-					
-					var nameTbl = HashMap[String, HashMap[String, String]]()
-					
-				  for(dlNd : DeclNd <- dl.decls) {
-						dlNd match{ 
-						
+				 for(dlNd : DeclNd <- dl.decls) {
+						dlNd match{ 						
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
 						  val objType: String = TypeCodeGen(ty)
 						  val objInit: String = new ExpCodeGen().getExpCode(initExp, dlNd.fqn.toString())
@@ -248,14 +242,14 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
 						}	
 						case ClassDeclNd() => {
 						  val classCode=new ClassCodeGen(dlNd, outputBuffer)
-						  classes += classCode.getClassCode()
+						  outputBuffer = classCode.classCodeGen()
 						}
 						case _ => {
 						  val code = "No main declarations were found"
+						  outputBuffer
 						}
 					}
 				}
-	    boogieCode =  globalObjects + interfaces + classes ;
-			return boogieCode;
+			outputBuffer
   }
 }
