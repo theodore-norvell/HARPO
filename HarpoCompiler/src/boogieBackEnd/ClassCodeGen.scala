@@ -25,7 +25,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           //See FQN later dlNd.name is class name and mem.name is object name
           val objType: String = TypeCodeGen(ty)
           outputBuffer.newLine
-          outputBuffer.put("const unique" + dlNd.name + "." + mem.name + ": Field" + objType + ";")
+          outputBuffer.put("const unique " + dlNd.name + "." + mem.name + ": Field " + objType + ";")
           outputBuffer.newLine
         }
         case _ => {}
@@ -34,9 +34,9 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     // Constructor Procedure
 
     outputBuffer.newLine
-    outputBuffer.put("procedure" + dlNd.name + ".constructor" + "(this:Ref)") // dlNd.name is class name
+    outputBuffer.put("procedure " + dlNd.name + ".constructor" + "(this:Ref)") // dlNd.name is class name
     outputBuffer.newLine
-    outputBuffer.put("requires dtype(this) <:" + dlNd.name + ".constructor")
+    outputBuffer.put("requires dtype(this) <: " + dlNd.name)
     outputBuffer.newLine
     outputBuffer.put("modifies Heap;")
     outputBuffer.newLine
@@ -52,7 +52,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
     //Class Claim Code Generation
 
-    claimCodeGen()
+    classClaimCodeGen()
 
     //Objects initialization Code Generation, It Initializes the Heap
 
@@ -72,13 +72,11 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       mem match {
         case ThreadDeclNd(claimList: List[ClaimNd], block: CommandNd) => {
           outputBuffer.newLine
-          outputBuffer.setError("", mem.coord)
-          outputBuffer.put("procedure" + dlNd.name + "." + mem.name + "(this: Ref)")
+          outputBuffer.put("procedure " + dlNd.name + "." + mem.name + " (this: Ref)")
           outputBuffer.newLine
-          outputBuffer.put("dtype(this) <: " + mem.name)
+          outputBuffer.put("dtype(this) <: " + dlNd.name)
           outputBuffer.newLine
-          outputBuffer.put("modifies heap")
-          outputBuffer.clearError
+          outputBuffer.put("modifies heap;")
           outputBuffer.newLine
           outputBuffer.put("{")
           outputBuffer.newLine
@@ -86,9 +84,6 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           outputBuffer.newLine
           outputBuffer.put("var oldHeap, preHeap, tempHeap: HeapType;")
           outputBuffer.newLine
-          outputBuffer.put("var that: Ref;") // Eliminate 'that' generation from here later
-          outputBuffer.newLine
-          outputBuffer.put("that := this;")
 
           for (claim <- claimList) { //Thread Claim Code Generation
             claimCodeGen(claim)
@@ -104,7 +99,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
   def commandCodeGen(cmd: CommandNd) {
     cmd match {
-      case SkipCmdNd() => {
+      case SkipCmdNd() => { //Do Nothing
       }
 
       case SeqCommandNd(fstCmd, sndCmd) => {
@@ -153,6 +148,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         outputBuffer.newLine
         outputBuffer.put("{")
         commandCodeGen(body)
+        outputBuffer.newLine
         outputBuffer.put("}")
       }
 
@@ -174,9 +170,9 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           val methDecl = for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
             mem match {
               case MethodDeclNd(acc, paramList, preCndList, postCndList, givesPerList, takesPerList, borrowsPerList) => {
-                if (mem.name.equals(mi.nameNd)) {
-                  methPreCondCodeGen(acc, mem.name, paramList, preCndList)
+                if (mem.name.toString.equals(mi.nameNd.toString)) {
                   methTakesPerCodeGen(acc, mem.name, paramList, takesPerList)
+                  methPreCondCodeGen(acc, mem.name, paramList, preCndList)
                   methodImplementationCodeGen(mi)
                   methPostCondCodeGen(acc, mem.name, paramList, postCndList)
                   methGivesPerCodeGen(acc, mem.name, paramList, givesPerList)
@@ -243,6 +239,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     }
   }
 
+  // Method Implementation inside Thread, Code Generation
   def methodImplementationCodeGen(mi: MethodImplementationDeclNd) {
     outputBuffer.put("//Method Implementatiom")
     //Figure out the need of parameter list
@@ -250,8 +247,10 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     commandCodeGen(mi.sndCmd)
   }
 
+  //Method's 'pre' Condition Code Generation
   def methPreCondCodeGen(acc: Access, name: String, params: List[ParamDeclNd], preCnds: List[PreCndNd]) {
-
+    outputBuffer.newLine
+    outputBuffer.put("//Pre Condition(s)")
     outputBuffer.newLine
     outputBuffer.put("oldHeap := Heap;")
     outputBuffer.newLine
@@ -263,11 +262,16 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       outputBuffer.put("assume " + build(prc.condition, transContext)) // assume and assert
     }
   }
+  
+  //Method's 'takes' Specification Code Generation
   def methTakesPerCodeGen(acc: Access, name: String, params: List[ParamDeclNd], takesPers: List[TakesPerNd]) {
+    outputBuffer.newLine
+    outputBuffer.put("//Taking Permission(s)\n")
     for (tp <- takesPers)
-      for ((lsn, amnt) <- tp.pmn.pm)
+      for ((lsn, expNd) <- tp.pmn.pm)
         lsn match {
           case ObjectIdLSN(nameExp) => {
+            val amount: String = new ExpCodeGen().getExpCode(expNd)
             outputBuffer.newLine
             outputBuffer.put("oldPermission := Permission;")
             outputBuffer.newLine
@@ -279,13 +283,18 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
             outputBuffer.newLine
             outputBuffer.put("Heap[this," + lsn.getName() + "];")
             outputBuffer.newLine
-            outputBuffer.put("Permission[this," + lsn.getName() + "] := " + "Permission[this," + lsn.getName() + "] + " + amnt + ";")
+            outputBuffer.put("Permission[this," + lsn.getName() + "] := " + "Permission[this," + amount + ";")
+            outputBuffer.newLine
+            outputBuffer.put("}")
           }
           case _ => contracts.Contracts.toDo("Array Location Set Node")
         }
   }
 
+  //Method's 'post' Condition Code Generation
   def methPostCondCodeGen(acc: Access, name: String, params: List[ParamDeclNd], postCnds: List[PostCndNd]) {
+    outputBuffer.newLine
+    outputBuffer.put("//Post Condition(s)\n")
     outputBuffer.newLine
     for (poc <- postCnds) {
       val exp = poc.condition;
@@ -294,7 +303,11 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       outputBuffer.put("assert " + build(poc.condition, transContext)) // assume and assert
     }
   }
+  
+  //Method's 'gives' Specification Code Generation
   def methGivesPerCodeGen(acc: Access, name: String, params: List[ParamDeclNd], givesPers: List[GivesPerNd]) {
+    outputBuffer.newLine
+    outputBuffer.put("//Giving Permissions(s)\n")
     for (tp <- givesPers)
       for ((lsn, amnt) <- tp.pmn.pm)
         lsn match {
@@ -307,7 +320,9 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         }
   }
 
-  def claimCodeGen() {
+  //Class Claim Code Generation
+  
+  def classClaimCodeGen() {
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ClaimNd(pmn) =>
@@ -316,8 +331,8 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           for ((loc, amount) <- perm_pairs) {
             var name = "";
             loc match {
-              case ObjectIdLSN(nen) => {
-                name = dlNd.name + "." + nen.name.toString();
+              case ObjectIdLSN(nameExp) => {
+                name = dlNd.name + "." + nameExp.name.toString();
               }
               case _ => contracts.Contracts.toDo("Location Set Node with Array")
             }
@@ -330,16 +345,17 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
             outputBuffer.newLine
             outputBuffer.put("//Claim")
             outputBuffer.newLine
-            outputBuffer.put("Permission[this," + name + "] == " + amnt + ";")
-
+            outputBuffer.put("Permission[this," + name + "] := Permission[this," +name+ "] + "  + amnt + ";")
           }
         case _ =>
       }
     }
     outputBuffer.newLine
-    outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0)")
+    outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0);")
   }
 
+  //Thread Claim Code Generation
+  
   def claimCodeGen(claimNd: ClaimNd) {
     val perm_pairs = claimNd.pmn.pm;
     var result = "";
@@ -360,14 +376,14 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       outputBuffer.newLine
       outputBuffer.put("//Claim")
       outputBuffer.newLine
-      outputBuffer.put("Permission[this," + name + "] == " + amnt + ";")
+      outputBuffer.put("Permission[this," + name + "] := Permission[this," + name + "] + " + amnt + ";")
 
     }
-    outputBuffer.newLine
-    outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0)")
   }
 
   def classInvariantCodeGen() {
+    outputBuffer.newLine
+    outputBuffer.put("//Class Invariant")
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ClassInvNd(expNd) => {
@@ -416,7 +432,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       case FloatLiteralExpNd(x: Double) => x.toString()
 
       case NameExpNd(name: NameNd) => {
-        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.qn.toString() + "]"
+        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + dlNd.name +"."+name.qn.toString() + "]"
       }
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => List(build(x, buildFor), " ", resBiOp(op), " ", build(y, buildFor)) mkString
 
@@ -511,7 +527,9 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           val objType: String = TypeCodeGen(ty)
           val exp: String = new ExpCodeGen().getExpCode(init, objName.toString())
           outputBuffer.newLine
-          outputBuffer.put("Heap[this, " + objName + "] := " + exp + ";") // TODO When it will be that?
+          outputBuffer.put("Heap[this, " + objName + "] := " + exp + ";") 
+          // TODO When it will be that? 
+          // building the expression not required for this subroutine, This subroutine contains the initialization of objects
           outputBuffer.newLine
         }
         case _ => ""

@@ -14,11 +14,14 @@ class ExpCodeGen() {
     result
   }
 
-  def getExpCode(expNd: ExpNd): String = {
+  def getExpCode(expNd: ExpNd): String = { 
+    
     val result: String = expNd match {
 
       case NoExpNd() => ""
+        
       case IntLiteralExpNd(i: Long) => i.toString()
+      
       case FloatLiteralExpNd(x: Double) => x.toString()
 
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => List("(", getExpCode(x), resBiOp(op), getExpCode(y), ")") mkString ""
