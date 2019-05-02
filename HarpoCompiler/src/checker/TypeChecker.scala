@@ -1,7 +1,6 @@
 package checker
 
 import scala.collection.mutable.ArrayBuffer
-
 import contracts.Contracts
 import frontEnd.AST._
 import frontEnd.QN
@@ -480,9 +479,11 @@ class TypeChecker(
 
       case withCmd @ WithCmdNd(lock, tpl, guard, command, gpl) =>
         withCmd.guard = convertGuard(guard)
-        for (pn <- tpl) typeCheck(pn)
+        for (pn <- tpl)
+          typeCheck(pn)
         typeCheck(command)
-        for (pn <- gpl) typeCheck(pn)
+        for (pn <- gpl)
+          typeCheck(pn)
         //toDo("With commands in type checker")
     }
   }

@@ -815,7 +815,7 @@ CommandNd Command() : {
 		["accept"] ")"
 		{return builder.makeAccept(mis, getCoord(tk));}
 	|
-		"with" x=ObjectId()
+		"with" x=ObjectName()
 
 		(takesPer = TakesPer() { builder.add(tpl,takesPer);})*
 		
@@ -1138,7 +1138,7 @@ ExpNd ObjectId() : {
 	ExpNd r, x ;
 	Token tk = getToken(1) ;
 } {
-	str=Name()           { name = builder.simpleName( str, getCoord(tk) ) ; }                         { r = builder.nameExp(name, getCoord(tk)); }
+	str=Name() { name = builder.simpleName( str, getCoord(tk) ) ; } { r = builder.nameExp(name, getCoord(tk)); }
 	(
 		tk="[" x=Exp() "]"   { r = builder.indexExp(r, x, getCoord(tk)) ; }
 	|
