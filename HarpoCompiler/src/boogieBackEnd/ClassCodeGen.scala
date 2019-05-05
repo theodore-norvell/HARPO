@@ -7,8 +7,11 @@ import contracts.Contracts;
 
 private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
-  var transContext = new TransContext("Heap", "this")
+  //global translation context has most generic form of heap and object reference,
+  //local translation contexts are made while changing to particular Heap and object reference i.e preHeap, tempHeap, oldHeap, and *_this, *_that 
 
+  var transContext = new TransContext("Heap","this_"+dlNd.fqn.toString) 
+  
   val expObj = new ExpCodeGen;
 
   def classCodeGen(): OutputBuilder = {
@@ -17,17 +20,20 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
     val className = dlNd.name;
     outputBuffer.newLine
-    outputBuffer.put("const unique " + dlNd.name + ":className;")
+    outputBuffer.put("const unique " + dlNd.fqn.toString + ":className;")
 
     //Object Identifier
 
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
       mem match {
-        case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
-          //See FQN later dlNd.name is class name and mem.name is object name
+        case ObjDeclNd(isGhost: Boolean, 
+                        isConst: Boolean, 
+                        acc: Access, 
+                        ty: TypeNd, 
+                        init: InitExpNd) => {
           val objType: String = TypeCodeGen(ty)
           outputBuffer.newLine
-          outputBuffer.put("const unique " + dlNd.name + "." + mem.name + ": Field " + objType + ";")
+          outputBuffer.put("const unique " + mem.fqn.toString +": Field " + objType + ";")
           outputBuffer.newLine
         }
         case _ => {}
@@ -36,11 +42,11 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     // Constructor Procedure
 
     outputBuffer.newLine
-    outputBuffer.put("procedure " + dlNd.name + ".constructor" + "(this:Ref)") // dlNd.name is class name
+    outputBuffer.put("procedure " + dlNd.fqn.toString + ".constructor" + "("+transContext.getObjRef()+":Ref)") // dlNd.fqn is class name
     outputBuffer.newLine
-    outputBuffer.put("requires dtype(this) <: " + dlNd.name)
+    outputBuffer.put("requires dtype("+transContext.getObjRef()+") <: " + dlNd.fqn.toString)
     outputBuffer.newLine
-    outputBuffer.put("modifies Heap;")
+    outputBuffer.put("modifies "+ transContext.getHeap()+ ";")
     outputBuffer.newLine
     outputBuffer.put("modifies Permission;")
     outputBuffer.newLine
@@ -50,7 +56,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     outputBuffer.newLine
     outputBuffer.put("var oldHeap:HeapType;")
     outputBuffer.newLine
-    outputBuffer.put("havoc Heap;")
+    outputBuffer.put("havoc "+ transContext.getHeap()+ ";")
 
     //Class Claim Code Generation
 
@@ -62,7 +68,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
     //Class Invariant Code
 
-    classInvariantCodeGen()
+    classInvCodeGen()
 
     //Closing of Constructor Procedure
     outputBuffer.newLine
@@ -70,15 +76,15 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
     //Thread Procedure
 
-    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
+    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)    
       mem match {
         case ThreadDeclNd(claimList: List[ClaimNd], block: CommandNd) => {
           outputBuffer.newLine
-          outputBuffer.put("procedure " + dlNd.name + "." + mem.name + " (this: Ref)")
+          outputBuffer.put("procedure " + dlNd.name + "." + mem.name + " (" + transContext.getObjRef() + " : Ref)")
           outputBuffer.newLine
-          outputBuffer.put("dtype(this) <: " + dlNd.name)
+          outputBuffer.put("dtype("+ transContext.getObjRef()+ ") <: " + dlNd.fqn.toString)
           outputBuffer.newLine
-          outputBuffer.put("modifies heap;")
+          outputBuffer.put("modifies "+ transContext.getHeap()+ ";")
           outputBuffer.newLine
           outputBuffer.put("{")
           outputBuffer.newLine
@@ -98,9 +104,62 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       }
     outputBuffer
   }
+  
+  //Class Claim Code Generation
 
-  def commandCodeGen(cmd: CommandNd) {
+  private def classClaimCodeGen() {
+    val localTransContext = new TransContext("Permission", transContext.getObjRef)
+    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
+      mem match {
+        case ClaimNd(pmn) =>
+          val perm_pairs = pmn.pm;
+          var result = "";
+          for ((loc, amnt) <- perm_pairs) {
+            loc match {
+              case ObjectIdLSN(nameExp) => {
+                val fqn = dlNd.name + "." + nameExp.name.qn.toString
+                 val amount: String = expObj.expCodeGen(amnt);
+                outputBuffer.newLine
+                outputBuffer.put("//Claim")
+                outputBuffer.newLine
+                outputBuffer.put(localTransContext.getHeap()+"["+localTransContext.getObjRef()+"," + fqn + "] := "+ localTransContext.getHeap() + "["+localTransContext.getObjRef()+"," + fqn + "] + " + amount + ";")
+              }
+              case _ => contracts.Contracts.toDo("Location Set Node with Array")
+            }
+          }
+        case _ =>
+      }
+    }
+    outputBuffer.newLine // error message
+    outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0);")
+  }
+  
+  //Object Initialization Code Generation
+  
+  private def objectsInitCodeGen() {
+    var objDecl, objInits = ""
+    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
+      mem match {
+        case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
+          objDecl = objDeclCodeGen(isConst, acc, ty, mem.fqn.toString)
+          val objType: String = TypeCodeGen(ty)
+          val exp: String = new ExpCodeGen().initExpCodeGen(init, mem.fqn.toString)
+          outputBuffer.newLine
+          outputBuffer.put("//Initialize Heap")
+          outputBuffer.newLine
+          outputBuffer.put(transContext.getHeap()+"["+transContext.getObjRef()+"," + mem.fqn.toString + "] := " + exp + ";")
+          // building the expression not required for this subroutine, This subroutine contains the initialization of objects
+          outputBuffer.newLine
+        }
+        case _ => ""
+      }
+    }
+  }
+
+  private def commandCodeGen(cmd: CommandNd) {
+    
     cmd match {
+      
       case SkipCmdNd() => { //Do Nothing
       }
 
@@ -112,29 +171,29 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       case LocalDeclCmdNd(decl) => {
         val objType: String = TypeCodeGen(decl.ty)
         outputBuffer.newLine
-        outputBuffer.put("Heap[this, " + decl.fqn + "] := " + expObj.getExpCode(decl.init) + ";")
+        outputBuffer.put("Heap[" + transContext.getObjRef() + "," + decl.fqn + "] := " + expObj.expCodeGen(decl.init) + ";")
         outputBuffer.newLine
       }
 
       case AssignmentCmdNd(lhs, rhs) => {
-        
+
         // Check the Permissions
-        
+
         for (l_exp <- lhs.init) {
           outputBuffer.newLine
-          outputBuffer.put(expObj.getExpCode(l_exp))
+          outputBuffer.put(expObj.expCodeGen(l_exp)) // build with TransContext
           if (!(l_exp.equals(lhs.last))) // Not to put comma for last expression in sequence
             outputBuffer.put(",")
         }
-        outputBuffer.put(expObj.getExpCode(lhs.last))
+        outputBuffer.put(expObj.expCodeGen(lhs.last))
         outputBuffer.put(" = ")
 
         for (r_exp <- rhs) {
-          outputBuffer.put(expObj.getExpCode(r_exp))
+          outputBuffer.put(expObj.expCodeGen(r_exp))
           if (!(r_exp.equals(rhs.last))) // Not to put comma for last expression in sequence
             outputBuffer.put(",")
         }
-        outputBuffer.put(expObj.getExpCode(rhs.last))
+        outputBuffer.put(expObj.expCodeGen(rhs.last))
         outputBuffer.put(";")
       }
 
@@ -144,7 +203,8 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       case IfCmdNd(guard, thenCmd, elseCmd) => {
       }
 
-      case WhileCmdNd(guard, lil, body) => {
+      case WhileCmdNd(guard, lil, body) => { //TODO use the Loop Invariant
+        
         outputBuffer.newLine
         outputBuffer.put("while(" + "true" + ")") // build guard expression
         outputBuffer.newLine
@@ -171,15 +231,24 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           outputBuffer.put(mi.nameNd + ":")
           val methDecl = for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
             mem match {
-              case MethodDeclNd(acc, paramList, preCndList, postCndList, givesPerList, takesPerList, borrowsPerList) => {
-                if (mem.name.toString.equals(mi.nameNd.toString)) {
+              case MethodDeclNd(acc, 
+                                paramList, 
+                                preCndList, 
+                                postCndList, 
+                                givesPerList, 
+                                takesPerList, 
+                                borrowsPerList) => {
+                if (mem.name.toString.equals(mi.nameNd.toString)) { // consider the parameters and borrows
                   methTakesPerCodeGen(acc, mem.name, paramList, takesPerList)
-                  methPreCondCodeGen(acc, mem.name, paramList, preCndList)
-                  methodImplementationCodeGen(mi)
+                  methPreCondCodeGen(acc, mem.name, paramList, preCndList)  
+                  outputBuffer.newLine
+                  outputBuffer.put("//Method Implementatiom")
+                  //Figure out the need of parameter list
+                  commandCodeGen(mi.fstCmd)
                   methPostCondCodeGen(acc, mem.name, paramList, postCndList)
                   methGivesPerCodeGen(acc, mem.name, paramList, givesPerList)
+                  commandCodeGen(mi.sndCmd)
                 }
-
               }
               case _ => "" // Check TypeChecker line 279-280
             }
@@ -188,17 +257,18 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
       case WithCmdNd(lock, tpl, guard, command, gpl) => {
 
+        //lock expression must be an object implementing interface lock
         //guard translation
 
         //Lock Translation
         outputBuffer.newLine;
         outputBuffer.put("var that : Ref;")
         outputBuffer.newLine
-        outputBuffer.put("that := " + expObj.getLockExpCode(lock) + ";");
+        outputBuffer.put("that := " + dlNd.fqn.toString+"_"+expObj.lockExpCodeGen(lock) + ";");
         outputBuffer.newLine
         outputBuffer.put("preHeap := Heap;")
         // access class invariant for this object
-        
+
         // Assume The class invariant with for Locked object
         assumeClassInvariant()
 
@@ -207,6 +277,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
           for ((lsn, amnt) <- tp.pmn.pm)
             lsn match {
               case ObjectIdLSN(nameExp) => {
+                val amount : String = expObj.expCodeGen(amnt)
                 outputBuffer.newLine
                 outputBuffer.put("oldPermission := Permission;")
                 outputBuffer.newLine
@@ -218,46 +289,36 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
                 outputBuffer.newLine
                 outputBuffer.put("Heap[this," + lsn.getName() + "];")
                 outputBuffer.newLine
-                outputBuffer.put("Permission[this," + lsn.getName() + "] := " + "Permission[this," + lsn.getName() + "] + " + amnt + ";")
+                outputBuffer.put("Permission[this," + lsn.getName() + "] := " + "Permission[this," + lsn.getName() + "] + " + amount + ";")
               }
               case _ => contracts.Contracts.toDo("Array Location Set Node")
             }
         commandCodeGen(command)
 
         assertClassInvariant()
-        
+
         //gives permission list
       }
 
       case AssertCmdNd(assertion) => {
-        val expCode = new ExpCodeGen().getExpCode(assertion)
+        val expCode = expObj.expCodeGen(assertion)
         val parts = expCode.split(" ")
-        val per = "\nassert Permission[this," + parts(0) + "] > 0.0 ;"
+        val per = "\nassert Permission[this," + parts(0) + "] > 0.0 ;" // First Part
         val assertCmdCode = per + "\nassert Heap[this," + parts(0) + "] " + parts(1) + ";"
-        assertCmdCode
+        outputBuffer.newLine
+        outputBuffer.put(assertCmdCode)
       }
 
       case AssumeCmdNd(assumption) => {
-        val expCode = new ExpCodeGen().getExpCode(assumption)
+        val expCode = expObj.expCodeGen(assumption)
         val parts = expCode.split(" ")
-        val per = "\nassume Permission[this," + parts(0) + "] > 0.0 ;"
-        val assertCmdCode = per + "\nassume Heap[this," + parts(0) + "] " + parts(1) + ";"
-        assertCmdCode
+        val per = "\nassume Permission[this," + parts(0) + "] > 0.0 ;" //First Part
+        val assumeCmdCode = per + "\nassume Heap[this," + parts(0) + "] " + parts(1) + ";"
+        outputBuffer.newLine
+        outputBuffer.put(assumeCmdCode)
       }
-
-      case _ => {
-        ""
-      }
+      case _ => {}
     }
-  }
-
-  // Method Implementation inside Thread, Code Generation
-  def methodImplementationCodeGen(mi: MethodImplementationDeclNd) {
-    outputBuffer.newLine
-    outputBuffer.put("//Method Implementatiom")
-    //Figure out the need of parameter list
-    commandCodeGen(mi.fstCmd)
-    commandCodeGen(mi.sndCmd)
   }
 
   //Method's 'pre' Condition Code Generation
@@ -272,7 +333,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       val exp = prc.condition;
       transContext.set("Heap", "this")
       outputBuffer.newLine
-      outputBuffer.put("assume " + build(prc.condition, transContext)) // assume and assert
+      outputBuffer.put("assume " + expObj.buildExp(prc.condition, transContext)) // assume and assert
     }
   }
 
@@ -284,7 +345,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       for ((lsn, expNd) <- tp.pmn.pm)
         lsn match {
           case ObjectIdLSN(nameExp) => {
-            val amount: String = new ExpCodeGen().getExpCode(expNd)
+            val amount: String = new ExpCodeGen().expCodeGen(expNd)
             outputBuffer.newLine
             outputBuffer.put("oldPermission := Permission;")
             outputBuffer.newLine
@@ -313,17 +374,18 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       val tempObj = new ExpCodeGen;
       transContext.set("Heap", "this")
       outputBuffer.newLine
-      val nameExps = tempObj.getNameExpCode(exp)
+      val nameExps = tempObj.nameExpCodeGen(exp)
       for (name <- nameExps) {
         outputBuffer.newLine
         outputBuffer.put("assert Permission[this," + name + "] > 0.0;")
       }
       outputBuffer.newLine
-      outputBuffer.put("assert " + build(poc.condition, transContext)) // assume and assert
+      outputBuffer.put("assert " + expObj.buildExp(poc.condition, transContext)) // assume and assert
     }
   }
 
   //Method's 'gives' Specification Code Generation
+  
   def methGivesPerCodeGen(acc: Access, name: String, params: List[ParamDeclNd], givesPers: List[GivesPerNd]) {
     outputBuffer.newLine
     outputBuffer.put("//Giving Permissions(s)")
@@ -331,140 +393,57 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       for ((lsn, amnt) <- tp.pmn.pm)
         lsn match {
           case ObjectIdLSN(nameExp) => {
+            val amount = expObj.expCodeGen(amnt)
             transContext.set("Permission", "this")
             outputBuffer.newLine
-            outputBuffer.put("assert "); build(nameExp, transContext); outputBuffer.put(" := "); build(nameExp, transContext); outputBuffer.put(" - "); outputBuffer.put(amnt + ";");
+            outputBuffer.put("assert "); expObj.buildExp(nameExp, transContext); outputBuffer.put(" := "); expObj.buildExp(nameExp, transContext); outputBuffer.put(" - "); outputBuffer.put(amount + ";");
           }
           case _ => contracts.Contracts.toDo("Array Location Set Node")
         }
   }
   
-  
-  def assumeClassInvariant() {
-        outputBuffer.newLine;
-        outputBuffer.put("//Assuming class invariant for Locked object")
-       for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
-          mem match {
-            case ClassInvNd(exp) => {
-              exp match {
-                case CanReadOp(loc) => {
-                  outputBuffer.newLine
-                  outputBuffer.setError("Don't have enough permission, permission is \'0\' in all cases when it's unable to read a value", mem.coord)
-                  outputBuffer.put("assume LockPermission[that," + dlNd.name + "." + loc.getName().toString() + "] > 0.0;");
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-                case CanWriteOp(loc) => {
-                  outputBuffer.newLine
-                  outputBuffer.setError("Don't have anough permission to write, permission must be greater of equal to \'1\' to perform write", mem.coord)
-                  outputBuffer.put("assume LockPermission[that," + dlNd.name + "." + loc.getName().toString() + "] == 1.0;");
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-                case PermissionOp(loc) => {
-                  contracts.Contracts.toDo("Permission Operator: To get amount of permission")
-                }
-                case _ => {
-                  transContext.set("LockPermission", "that")
-                  outputBuffer.newLine
-                  outputBuffer.setError("Bad Invariant Expression", mem.coord)
-                  outputBuffer.put("assert " + build(exp, transContext))
-                  transContext.set("Heap", "that")
-                  outputBuffer.put(" && "+ build(exp, transContext))// build -> object
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-              }
-
-            }
-            case _ => {}
-          }
-        }
-    
-  }
-  
   def assertClassInvariant() {
     outputBuffer.newLine;
     outputBuffer.put("//Asserting class invariant for Locked object")
-            for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
-          mem match {
-            case ClassInvNd(exp) => {
-              exp match {
-                case CanReadOp(loc) => {
-                  outputBuffer.newLine
-                  outputBuffer.setError("Don't have enough permission, permission is \'0\' in all cases when it's unable to read a value", mem.coord)
-                  outputBuffer.put("assert LockPermission[that," + dlNd.name + "." + loc.getName().toString() + "] > 0.0;");
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-                case CanWriteOp(loc) => {
-                  outputBuffer.newLine
-                  outputBuffer.setError("Don't have anough permission to write, permission must be greater of equal to \'1\' to perform write", mem.coord)
-                  outputBuffer.put("assert LockPermission[that," + dlNd.name + "." + loc.getName().toString() + "] == 1.0;");
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-                case PermissionOp(loc) => {
-                  contracts.Contracts.toDo("Permission Operator: To get amount of permission")
-                }
-                case _ => {
-                  transContext.set("LockPermission", "that")
-                  outputBuffer.newLine
-                  outputBuffer.setError("Bad Invariant Expression", mem.coord)
-                  outputBuffer.put("assert " + build(exp, transContext))
-                  transContext.set("Heap", "that")
-                  outputBuffer.put(" && "+ build(exp, transContext))// build -> object
-                  outputBuffer.newLine
-                  outputBuffer.clearError
-                }
-              }
-
-            }
-            case _ => {}
-          }
-        }
-  }
-
-  //Class Claim Code Generation
-
-  def classClaimCodeGen() {
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
-      mem match {
-        case ClaimNd(pmn) =>
-          val perm_pairs = pmn.pm;
-          var result = "";
-          for ((loc, amount) <- perm_pairs) {
-            var name = "";
-            loc match {
-              case ObjectIdLSN(nameExp) => {
-                name = dlNd.name + "." + nameExp.name.toString();
-              }
-              case _ => contracts.Contracts.toDo("Location Set Node with Array")
-            }
-            var amnt: String = "";
-            amount match {
-              case IntLiteralExpNd(i: Long) => amnt = i.toString()
-              case FloatLiteralExpNd(x: Double) => amnt = x.toString()
-              case _ => contracts.Contracts.toDo("Permission Type Left")
-            }
-            outputBuffer.newLine
-            outputBuffer.put("//Claim")
-            outputBuffer.newLine
-            outputBuffer.put("Permission[this," + name + "] := Permission[this," + name + "] + " + amnt + ";")
+      mem match {       
+        case ClassInvNd(exp) => {
+          val invString = expObj.InvExpCodeGen(exp,mem.fqn.toString, transContext.getObjRef())
+          outputBuffer.newLine
+          outputBuffer.setError("Invariant does not hold", mem.coord)
+          outputBuffer.put("assert "+invString)
+          outputBuffer.newLine
+          outputBuffer.clearError
           }
-        case _ =>
+        
+        case _ => {}
       }
     }
-    outputBuffer.newLine
-    outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0);")
   }
 
+  def assumeClassInvariant() {
+    outputBuffer.newLine;
+    outputBuffer.put("//Asserting class invariant for Locked object")
+    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
+      mem match {       
+        case ClassInvNd(exp) => {
+          val invString = expObj.InvExpCodeGen(exp,mem.fqn.toString, transContext.getObjRef())
+          outputBuffer.newLine
+          outputBuffer.put("assume "+invString)
+          outputBuffer.newLine
+          }
+        
+        case _ => {}
+      }
+    }
+  }
+  
   //Thread Claim Code Generation
 
   def claimCodeGen(claimNd: ClaimNd) {
     val perm_pairs = claimNd.pmn.pm;
     var result = "";
-    for ((loc, amount) <- perm_pairs) {
+    for ((loc, amnt) <- perm_pairs) {
       var name = "";
       loc match {
         case ObjectIdLSN(nen) => {
@@ -472,180 +451,45 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         }
         case _ => contracts.Contracts.toDo("Location Set Node with Array")
       }
-      var amnt: String = "";
-      amount match {
-        case IntLiteralExpNd(i: Long) => amnt = i.toString()
-        case FloatLiteralExpNd(x: Double) => amnt = x.toString()
-        case _ => contracts.Contracts.toDo("Permission Type Left")
-      }
+      val amount: String = expObj.expCodeGen(amnt)
       outputBuffer.newLine
       outputBuffer.put("//Claim")
       outputBuffer.newLine
-      outputBuffer.put("Permission[this," + name + "] := Permission[this," + name + "] + " + amnt + ";")
-
+      outputBuffer.put("Permission["+transContext.getObjRef()+ "," + name + "] := Permission[" +transContext.getObjRef()+ "," + name + "] + " + amount + ";")
     }
   }
 
-  def classInvariantCodeGen() {
+  private def classInvCodeGen() {
     outputBuffer.newLine
     outputBuffer.put("//Class Invariant")
-    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
+    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) 
       mem match {
-        case ClassInvNd(expNd) => {
-          expNd match {
-            case CanReadOp(loc) => {
-              outputBuffer.newLine
-              outputBuffer.setError("Don't have enough permission, permission is \'0\' in all cases when it's unable to read a value", mem.coord)
-              outputBuffer.put("assert Permission[this," + dlNd.name + "." + loc.getName().toString() + "] > 0.0;");
-              outputBuffer.newLine
-              outputBuffer.clearError
-            }
-            case CanWriteOp(loc) => {
-              outputBuffer.newLine
-              outputBuffer.setError("Don't have anough permission to write, permission must be greater of equal to \'1\' to perform write", mem.coord)
-              outputBuffer.put("assert Permission[this," + dlNd.name + "." + loc.getName().toString() + "] == 1.0;");
-              outputBuffer.newLine
-              outputBuffer.clearError
-            }
-            case PermissionOp(loc) => contracts.Contracts.toDo("Permission Operator: To get amount of permission")
-            case _ => {
-              transContext.set("Permission", "this")
-              outputBuffer.newLine
-              outputBuffer.setError("Bad Invariant Expression", mem.coord)
-              outputBuffer.put("assert " + build(expNd, transContext)); // build -> object
-              outputBuffer.newLine
-              outputBuffer.clearError
-            }
-          }
-        }
-        case _ => "" // Unreachable not working, will fix it later
-      }
-    }
-  }
-
-  def build(expNd: ExpNd, buildFor: TransContext): String = {
-    //expNd, parameter(which heap to use) H1,H2 , Structure combining array heap, permission map, -> array permission, field permission, this translating in context of which object
-    // process inv wrt object(locked)
-    // Output Builder
-    // Two state expressions- post conditions need two Heaps,
-
-    val result: String = expNd match {
-
-      case NoExpNd() => ""
-
-      case IntLiteralExpNd(i: Long) => i.toString()
-
-      case FloatLiteralExpNd(x: Double) => x.toString()
-
-      case NameExpNd(name: NameNd) => {
-        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + dlNd.name + "." + name.qn.toString() + "]"
-      }
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => List(build(x, buildFor), " ", resBiOp(op), " ", build(y, buildFor)) mkString
-
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + build(x, buildFor)
-
-      case MemberExpNd(x: ExpNd, name: String) => build(x, buildFor) + "." + name
-
-      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
-        var chainExp = ""
-        for (op <- ops)
-          chainExp += (build(operands(ops.indexOf(op)), buildFor) + chainingOpTrans(op) + build(operands(ops.indexOf(op) + 1), buildFor))
-        chainExp;
-      }
-      case FetchExpNd(x: ExpNd) => build(x, buildFor)
-
-      case AsExpNd(x: ExpNd, _) => build(x, buildFor) // TODO insert type conversions?
-
-      case _ => expNd.toString()
-    }
-    result
-  }
-
-  private def chainingOpTrans(op: ChainingOperator): String = {
-    op match {
-      case EqualOp => return "=="
-      case NotEqualOp => return "!="
-      case LessOp => return "<"
-      case LessOrEqualOp => return "<="
-      case GreaterOp => return ">"
-      case GreaterOrEqualOp => return ">="
-    }
-  }
-
-  private def biOpTrans(op: BinaryOperator): String = {
-    op match {
-      case OrOp => return "||"
-      case AndOp => return "&&"
-      case AddOp => return "+"
-      case SubOp => return "-"
-      case MulOp => return "*"
-      case SlashDivOp => return "/"
-      case WordDivOp => return "/"
-      case RemOp => return "%"
-      case _ => return ""
-    }
-  }
-
-  private def resBiOp(op: BinaryOperator) = {
-    val result = op match {
-      case ImpliesOp => "==>"
-      case EquivOp => "=="
-      case OrOp => "||"
-      case AndOp => "&&"
-      case AddOp => "+"
-      case SubOp => "-"
-      case MulOp => "*"
-      case SlashDivOp => "/"
-      case WordDivOp => "/"
-      case RemOp => "%"
-      //case IndexOp =>
-      case _ => op.toString()
-    }
-    result
-  }
-  private def resUnaOp(op: UnaryOperator) = {
-    val result = op match {
-      case NegativeOp => "-"
-      case NotOp => "!"
-      case PrimeOp => "'"
-    }
-    result
-  }
-  private def resOpChain(op: ChainingOperator): String = {
-    val result: String = op match {
-      case EqualOp => "=="
-      case NotEqualOp => "!="
-      case LessOp => "<"
-      case LessOrEqualOp => "<="
-      case GreaterOp => ">"
-      case GreaterOrEqualOp => ">="
-    }
-    result
-  }
-
-  private def objectsInitCodeGen() {
-    var objDecl, objInits = ""
-    for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
-      mem match {
-        case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
-          objDecl = getObjDeclCode(isConst, acc, ty, dlNd.name, mem.name)
-          val objName = dlNd.name + "." + mem.name
-          val objType: String = TypeCodeGen(ty)
-          val exp: String = new ExpCodeGen().getExpCode(init, objName.toString())
+        case ClassInvNd(exp) => {
+          val invString = expObj.InvExpCodeGen(exp,dlNd.fqn.toString,transContext.getObjRef())
           outputBuffer.newLine
-          outputBuffer.put("Heap[this, " + objName + "] := " + exp + ";")
-          // TODO When it will be that?
-          // building the expression not required for this subroutine, This subroutine contains the initialization of objects
+          outputBuffer.setError("Invariant does not hold", mem.coord)
+          outputBuffer.put("assert "+ invString)
           outputBuffer.newLine
+          outputBuffer.clearError
         }
-        case _ => ""
-      }
-    }
+        case _ => {}
   }
-  private def getObjDeclCode(isConst: Boolean, acc: Access, ty: TypeNd, className: String, objName: String): String = {
-    val objQN = className + "." + objName
+  }
+  
+  def loopInvCodeGen(loopInv : LoopInvNd) {
+    outputBuffer.newLine
+    outputBuffer.put("//loop Invariant")
+          val invString = expObj.InvExpCodeGen(loopInv.exp, dlNd.fqn.toString, transContext.getObjRef())
+          outputBuffer.newLine
+          outputBuffer.setError("Invariant does not hold", loopInv.coord)
+          outputBuffer.put("assert "+invString)
+          outputBuffer.newLine
+          outputBuffer.clearError
+  }
+    
+  def objDeclCodeGen(isConst: Boolean, acc: Access, ty: TypeNd, fqn: String): String = {
     val objType: String = TypeCodeGen(ty)
-    val objCode = "\nconst unique " + objQN + ":" + "Field " + objType + ";"
+    val objCode = "\nconst unique " + fqn + ":" + "Field " + objType + ";"
     return objCode
   }
 

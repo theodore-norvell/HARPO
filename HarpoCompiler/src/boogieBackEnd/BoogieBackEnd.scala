@@ -231,7 +231,7 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
 						dlNd match{ 						
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
 						  val objType: String = TypeCodeGen(ty)
-						  val objInit: String = new ExpCodeGen().getExpCode(initExp, dlNd.fqn.toString())
+						  val objInit: String = new ExpCodeGen().initExpCodeGen(initExp, dlNd.fqn.toString())
 						  outputBuffer.newLine
 						  outputBuffer.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
 						}

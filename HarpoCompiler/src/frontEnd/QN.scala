@@ -27,9 +27,13 @@ case class FQN( names : List[String]) extends QN( names ) {
   override def isFullyQualified = true ;
   
   override def toString() : String = {
-      "::" ++ names.reduce((a,b) => b ++ "::" ++ a)
+      names.reduce((a,b) => b ++ "." ++ a)
   }
   
+//  override def toString() : String = {
+//     "::" ++ names.reduce((a,b) => b ++ "::" ++ a)
+//  }
+//  
   def prefix = new FQN( names.tail )
   
   def append( rqn : RQN) = new FQN( rqn.names ++ this.names )
