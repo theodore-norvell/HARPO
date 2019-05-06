@@ -130,8 +130,11 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         case _ =>
       }
     }
-    outputBuffer.newLine // error message
+    outputBuffer.newLine
+    outputBuffer.setError("Maximum Permission Amount Must Not Exceed \'1.0\'",dlNd.coord)
     outputBuffer.put("assert(forall<x> r: Ref, f: Field x :: Permission[r,f] <= 1.0);")
+    outputBuffer.newLine
+    outputBuffer.clearError
   }
   
   //Object Initialization Code Generation
@@ -377,10 +380,16 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
       val nameExps = tempObj.nameExpCodeGen(exp)
       for (name <- nameExps) {
         outputBuffer.newLine
+        outputBuffer.setError("Permission amount should be greater than 0.0",poc.condition.coord)
         outputBuffer.put("assert Permission[this," + name + "] > 0.0;")
+        outputBuffer.newLine
+        outputBuffer.clearError
       }
       outputBuffer.newLine
+      outputBuffer.setError("Post Condition does not satisfy", poc.condition.coord)
       outputBuffer.put("assert " + expObj.buildExp(poc.condition, transContext)) // assume and assert
+      outputBuffer.newLine
+      outputBuffer.clearError
     }
   }
 
@@ -396,7 +405,10 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
             val amount = expObj.expCodeGen(amnt)
             transContext.set("Permission", "this")
             outputBuffer.newLine
+            outputBuffer.setError("Can not give permission(s)",lsn.getName().coord)
             outputBuffer.put("assert "); expObj.buildExp(nameExp, transContext); outputBuffer.put(" := "); expObj.buildExp(nameExp, transContext); outputBuffer.put(" - "); outputBuffer.put(amount + ";");
+            outputBuffer.newLine
+            outputBuffer.clearError
           }
           case _ => contracts.Contracts.toDo("Array Location Set Node")
         }
@@ -410,7 +422,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         case ClassInvNd(exp) => {
           val invString = expObj.InvExpCodeGen(exp,mem.fqn.toString, transContext.getObjRef())
           outputBuffer.newLine
-          outputBuffer.setError("Invariant does not hold", mem.coord)
+          outputBuffer.setError("Invariant does not hold", exp.coord)
           outputBuffer.put("assert "+invString)
           outputBuffer.newLine
           outputBuffer.clearError
@@ -467,7 +479,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
         case ClassInvNd(exp) => {
           val invString = expObj.InvExpCodeGen(exp,dlNd.fqn.toString,transContext.getObjRef())
           outputBuffer.newLine
-          outputBuffer.setError("Invariant does not hold", mem.coord)
+          outputBuffer.setError("Invariant does not hold", exp.coord)
           outputBuffer.put("assert "+ invString)
           outputBuffer.newLine
           outputBuffer.clearError
@@ -481,7 +493,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     outputBuffer.put("//loop Invariant")
           val invString = expObj.InvExpCodeGen(loopInv.exp, dlNd.fqn.toString, transContext.getObjRef())
           outputBuffer.newLine
-          outputBuffer.setError("Invariant does not hold", loopInv.coord)
+          outputBuffer.setError("Invariant does not hold", loopInv.exp.coord)
           outputBuffer.put("assert "+invString)
           outputBuffer.newLine
           outputBuffer.clearError
