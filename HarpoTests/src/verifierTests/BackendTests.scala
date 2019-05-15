@@ -30,7 +30,8 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
     hb.addFile(fileName, fileContent)
     hb.runHarpoToBoogieTrans(outputBuffer)
     outputBuffer = hb.getBoogieOutput(outputBuffer)
-    outputBuffer
+    val boogieCode: String = outputBuffer.result().mkString("\n")
+    boogieCode
   }
 
   behavior of "The Boogie back end with Harpo 'Buffer' class";
