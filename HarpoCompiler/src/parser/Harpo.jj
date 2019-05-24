@@ -85,8 +85,10 @@ This file is importing packages written in Scala
 				- initExp - >ExpNd- > Exp0- >Exp1- >Exp2- >Exp3- >Exp4- >Exp5- >Exp6
 				- Optional Guard
 				- ObjID ExpNd
-			- Name */
-			options{  JDK_VERSION = "1.7";
+			- Name
+*/
+
+options{  JDK_VERSION = "1.7";
   DEBUG_TOKEN_MANAGER = false ;
   DEBUG_PARSER = false ;  STATIC = false ;}PARSER_BEGIN(HarpoParser)
 	package parser;
@@ -175,7 +177,8 @@ TOKEN :{
 |	"assume" 
 | 	"borrows"
 | 	"canRead"
-| 	"canWrite"|	"class"
+| 	"canWrite"
+|	"class"
 |	"claim"
 |	"co"
 |   "const"
@@ -208,6 +211,7 @@ TOKEN :{
 |	"when"
 |	"while"
 |	"with"
+| 	"this"
 }
 
 TOKEN :
@@ -738,7 +742,8 @@ CommandNd Command() : {
 	CommandNd p,q ;
 	MethodImplementationDeclNd mi ;
 	MethodImplementationList mis ;
-	ExpNd x, y; 
+	ExpNd x, y;
+	ExpNd lock; 
 	Token tk = getToken(1);
 	LoopInvNd loopInv;
 	LoopInvList wlil = builder.loopInvList();
@@ -815,7 +820,7 @@ CommandNd Command() : {
 		["accept"] ")"
 		{return builder.makeAccept(mis, getCoord(tk));}
 	|
-		"with" x=ObjectId()
+		"with" lock = Lock()
 
 		(takesPer = TakesPer() { builder.add(tpl,takesPer);})*
 		
@@ -825,7 +830,7 @@ CommandNd Command() : {
 		
 		 ["with"] ")"
 		 
-		{return builder.makeWith( x,tpl, y, p,gpl, getCoord(tk)) ;}	
+		{return builder.makeWith( lock,tpl, y, p,gpl, getCoord(tk)) ;}	
 	)
 }
 
@@ -1095,6 +1100,7 @@ ExpNd Exp8() :
 	CanWriteOp canWrite;
 	PermissionOp permissionOp;
 	LocSetNd locSet;
+	ExpNd objId;
 	ExpNd x=null;
 	Token tk ;
 }
@@ -1116,7 +1122,7 @@ ExpNd Exp8() :
 |
 	 tk = "canWrite" "(" locSet = LocSet() ")"  { return builder.makeCanWriteOp(locSet,getCoord(tk));}
 |
-	 tk = "permission" "(" locSet = LocSet() ")"  { return builder.makePermissionOp(locSet,getCoord(tk));}
+	 tk = "permission" "(" objId = ObjectId() ")"  { return builder.makePermissionOp(objId,getCoord(tk));}
 |  
 	"(" x=Exp() ")"  { return x ; }
 
@@ -1138,7 +1144,7 @@ ExpNd ObjectId() : {
 	ExpNd r, x ;
 	Token tk = getToken(1) ;
 } {
-	str=Name()           { name = builder.simpleName( str, getCoord(tk) ) ; }                         { r = builder.nameExp(name, getCoord(tk)); }
+	str=Name() { name = builder.simpleName( str, getCoord(tk) ) ; } { r = builder.nameExp(name, getCoord(tk)); }
 	(
 		tk="[" x=Exp() "]"   { r = builder.indexExp(r, x, getCoord(tk)) ; }
 	|
@@ -1146,6 +1152,20 @@ ExpNd ObjectId() : {
 	)*
 	{return r; }
 }
+
+ExpNd Lock() : {
+  ExpNd r;
+  Token tk = getToken(1);
+  
+}
+{
+
+  LOOKAHEAD("this") tk = "this" { r =  builder.makeThis("this", getCoord(tk));}
+| 
+  r = ObjectId() { return r;} // ObjectId is prioritized, 
+
+}
+
 
 NameExpNd ObjectName() : { 
 	String str ;
@@ -1158,6 +1178,7 @@ NameExpNd ObjectName() : {
 	{ r = builder.nameExp(name, getCoord(tk)); }
 	{return r; }
 }
+
 String Name() : {
 	Token t ;	
 } {

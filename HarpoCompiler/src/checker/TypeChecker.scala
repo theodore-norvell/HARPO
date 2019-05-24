@@ -1,7 +1,6 @@
 package checker
 
 import scala.collection.mutable.ArrayBuffer
-
 import contracts.Contracts
 import frontEnd.AST._
 import frontEnd.QN
@@ -28,15 +27,15 @@ class TypeChecker(
       case FloatLiteralExpNd(x) =>
         Some(real64)
 
-      case CanReadOp(lsn) => 
-         typeCheckLocSet(lsn)
-      
-      case CanWriteOp(lsn) => 
+      case CanReadOp(lsn) =>
         typeCheckLocSet(lsn)
-      
-      case PermissionOp(lsn) => 
+
+      case CanWriteOp(lsn) =>
         typeCheckLocSet(lsn)
-      
+
+      case PermissionOp(exp) =>
+        typeCheck(exp)
+        
       case NameExpNd(name) =>
         val decl = name.decl.getOrElse {
           Contracts.unreachable("Name not resolved by type checking time.")
@@ -312,7 +311,6 @@ class TypeChecker(
           errorRecorder.reportFatal(
             nameNd + " does not resolve to a method declaration",
             nameNd.coord)
-
         typeCheck(fstCmd)
         typeCheck(sndCmd)
       }
@@ -428,7 +426,7 @@ class TypeChecker(
                 val are = if (argList.length == 1) "is" else "are"
                 errorRecorder.reportFatal(
                   "Incorrect number of arguments. "
-                  + s"${paramList.length} ${were} expected, but there ${are} ${argList.length}.",
+                    + s"${paramList.length} ${were} expected, but there ${are} ${argList.length}.",
                   command.coord)
               }
             case _ => errorRecorder.reportFatal(
@@ -448,7 +446,7 @@ class TypeChecker(
           li.exp match {
             case CanReadOp(lsn) => typeCheckLocSet(lsn)
             case CanWriteOp(lsn) => typeCheckLocSet(lsn)
-            case PermissionOp(lsn) => typeCheckLocSet(lsn)
+            case PermissionOp(exp) => typeCheck(exp)
             case _ => typeCheck(li.exp)
           }
         }
@@ -479,11 +477,11 @@ class TypeChecker(
         }
 
       case withCmd @ WithCmdNd(lock, tpl, guard, command, gpl) =>
-        withCmd.guard = convertGuard(guard)
-        for (pn <- tpl) typeCheck(pn)
+        for (pn <- tpl)
+          typeCheck(pn)
         typeCheck(command)
-        for (pn <- gpl) typeCheck(pn)
-        //toDo("With commands in type checker")
+        for (pn <- gpl)
+          typeCheck(pn)
     }
   }
 
@@ -575,60 +573,60 @@ class TypeChecker(
     }
   }
 
-  private def typeCheckLocSet(lsn: LocSetNd) : Option[Type] = {
+  private def typeCheckLocSet(lsn: LocSetNd): Option[Type] = {
     val resultType: Option[Type] = lsn match {
       case ObjectIdLSN(name) => {
-        typeCheck(name) 
-//        val result = valueConvert(exp)
-//       result.tipe
+        typeCheck(name)
+        //        val result = valueConvert(exp)
+        //       result.tipe
       }
-   }
-   resultType
+    }
+    resultType
   }
 
-//        exp match {
-//          case CanReadOp(x) =>
-//            {
-//              typeCheck(x.exp())
-//              val result = valueConvert(x.exp())
-//              result.tipe match {
-//                case Some(tipe @ PrimitiveType(_)) =>
-//                  result.tipe = Some(LocationType(tipe))
-//                case _ => {}
-//                //TODO Add case for reference types
-//              }
-//              result.tipe
-//            }
-//          case CanWriteOp(x) => 
-//            {
-//            typeCheck(x.exp())
-//            val result = valueConvert(x.exp())
-//            result.tipe match {
-//              case Some(tipe @ PrimitiveType(_)) =>
-//                result.tipe = Some(LocationType(tipe))
-//              case _ => {}
-//              //TODO Add case for reference types
-//            }
-//            result.tipe
-//          }
-//          case PermissionOp(x) =>  
-//            {
-//            typeCheck(x.exp())
-//            val result = valueConvert(x.exp())
-//            result.tipe match {
-//              case Some(tipe @ PrimitiveType(_)) =>
-//                result.tipe = Some(LocationType(tipe))
-//              case _ => {}
-//              //TODO Add case for reference types
-//            }
-//            result.tipe
-//          }
-//         case _ => typeCheck(exp) 
-//        }
-//      //TODO add more case array location sets
-//    }
-//   resultType
-//   }
+  //        exp match {
+  //          case CanReadOp(x) =>
+  //            {
+  //              typeCheck(x.exp())
+  //              val result = valueConvert(x.exp())
+  //              result.tipe match {
+  //                case Some(tipe @ PrimitiveType(_)) =>
+  //                  result.tipe = Some(LocationType(tipe))
+  //                case _ => {}
+  //                //TODO Add case for reference types
+  //              }
+  //              result.tipe
+  //            }
+  //          case CanWriteOp(x) =>
+  //            {
+  //            typeCheck(x.exp())
+  //            val result = valueConvert(x.exp())
+  //            result.tipe match {
+  //              case Some(tipe @ PrimitiveType(_)) =>
+  //                result.tipe = Some(LocationType(tipe))
+  //              case _ => {}
+  //              //TODO Add case for reference types
+  //            }
+  //            result.tipe
+  //          }
+  //          case PermissionOp(x) =>
+  //            {
+  //            typeCheck(x.exp())
+  //            val result = valueConvert(x.exp())
+  //            result.tipe match {
+  //              case Some(tipe @ PrimitiveType(_)) =>
+  //                result.tipe = Some(LocationType(tipe))
+  //              case _ => {}
+  //              //TODO Add case for reference types
+  //            }
+  //            result.tipe
+  //          }
+  //         case _ => typeCheck(exp)
+  //        }
+  //      //TODO add more case array location sets
+  //    }
+  //   resultType
+  //   }
 
   private def typeCheckAnArgument(a: ExpNd, p: Parameter): ExpNd = {
     val LocationType(paramBaseType) = p.ty
@@ -681,15 +679,25 @@ class TypeChecker(
   private def binaryOpType$(exp: BinaryOpExpNd, x: ExpNd, y: ExpNd, xTy: Type, yTy: Type, op: BinaryOperator): Option[Type] =
     op match {
       case ImpliesOp | EquivOp | OrOp | AndOp =>
-        exp.x = valueConvert(x)
-        exp.y = valueConvert(y)
-        if (exp.x.tipe == None || exp.y.tipe == None)
-          None
-        else if (exp.x.tipe.get != bool || exp.y.tipe.get != bool) {
-          errorRecorder.reportFatal("The " + op + "operation applies only to values of type Bool.", exp.coord)
-          None
-        } else
-          Some(bool)
+        (x, y) match {
+          case (_, CanReadOp(locSet)) => None
+          case (_, CanWriteOp(locSet)) => None
+          case (CanReadOp(locSet), _) => None
+          case (CanWriteOp(locSet), _) => None
+          case _ => {
+            exp.x = valueConvert(x)
+            exp.y = valueConvert(y)
+            if (exp.x.tipe == None || exp.y.tipe == None)
+              None
+            else if (exp.x.tipe.get != bool || exp.y.tipe.get != bool) {
+              errorRecorder.reportFatal("The " + op + "operation applies only to values of type Bool.", exp.coord)
+              None
+            } else
+              Some(bool)
+
+          }
+
+        }
 
       case AddOp | SubOp | MulOp =>
         exp.x = valueConvert(x)
@@ -706,7 +714,7 @@ class TypeChecker(
           } else if (!isArithmeticType(result.get)) {
             errorRecorder.reportFatal(
               s"The ${op} operation is applied to values of types"
-              + s" ${xt} and ${yt}, but should only be applied to values of arithmetic type.",
+                + s" ${xt} and ${yt}, but should only be applied to values of arithmetic type.",
               exp.coord)
             None
           } else {
@@ -751,7 +759,7 @@ class TypeChecker(
           } else if (!isIntegralType(result.get)) {
             errorRecorder.reportFatal(
               s"The ${op} operation is applied to values of types"
-              + s" ${xt} and ${yt}, but should only be applied to values of integral type.",
+                + s" ${xt} and ${yt}, but should only be applied to values of integral type.",
               exp.coord)
             None
           } else {

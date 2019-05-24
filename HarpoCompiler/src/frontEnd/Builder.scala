@@ -30,6 +30,8 @@ class Builder(val errorRecorder: ErrorRecorder) {
     val name = "ClaimNd#" + claimId; claimId += 1;
     new ClaimNd(pm)(name, coord)
   }
+  
+  def makeThis(str : String , coord: Coord) = new ThisExpNd(str)(coord)
 
   // Object Permission Map list without the permission value
 
@@ -157,9 +159,9 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makeCanWriteOp(x: LocSetNd, coord: AST.Coord) = new CanWriteOp(x)(coord)
 
-  //'Permission' Operation
+  //Get amount of 'Permission' Operation
 
-  def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
+  def makePermissionOp(x: ExpNd, coord: AST.Coord) = new PermissionOp(x)(coord)
   
   var next = 0
 
@@ -248,7 +250,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makeCo(cl: ClaimList, p: CommandNd, q: CommandNd, coord: Coord) = new CoCmdNd(cl.toList, p, q)(coord)
 
-  def makeWith(x: ExpNd, tpl: TakesPerList, y: ExpNd, p: CommandNd, gpl: GivesPerList, coord: Coord) = new WithCmdNd(x, tpl.toList, y, p, gpl.toList)(coord)
+  def makeWith(lock: ExpNd, tpl: TakesPerList, y: ExpNd, p: CommandNd, gpl: GivesPerList, coord: Coord) = new WithCmdNd(lock, tpl.toList, y, p, gpl.toList)(coord)
 
   def makeAccept(mil: MethodImplementationList, coord: Coord) = new AcceptCmdNd(mil toList)(coord)
 

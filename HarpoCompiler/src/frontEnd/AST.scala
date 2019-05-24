@@ -173,6 +173,7 @@ class AST{
     case class ClassInvNd(exp: ExpNd)( name: String, coord: AST.Coord )
       extends DeclNd( name , coord) {
     override def pp = Pretty.func( "ClassInvNd["::name::"]", exp )
+    def getExp : ExpNd = exp;
     }
      
     case class LoopInvNd(exp:ExpNd)( name: String, coord: AST.Coord )
@@ -285,7 +286,7 @@ class AST{
         override def pp = Pretty.func( "LocalDeclCmdNd", decl )
     }
 
-    case class AssignmentCmdNd( lhs: Seq[ ExpNd ], var rhs: Seq[ ExpNd ] )( coord: AST.Coord )
+    case class AssignmentCmdNd( lhs: Seq[ ExpNd ], var rhs: Seq[ ExpNd ] )( coord: AST.Coord ) 
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "AssignmentCmdNd", lhs, rhs )
     }
@@ -325,7 +326,7 @@ class AST{
         override def pp = Pretty.func( "AcceptCmdNd", methodImplementationList )
     }
 
-    case class WithCmdNd( lock: ExpNd,tpl: List[TakesPerNd], var guard: ExpNd, command: CommandNd, gpl:List[GivesPerNd])( coord: AST.Coord )
+    case class WithCmdNd( lock: ExpNd, tpl: List[TakesPerNd], var guard: ExpNd, command: CommandNd, gpl:List[GivesPerNd])( coord: AST.Coord )
         extends CommandNd( coord ) {
         override def pp = Pretty.func( "WithCmdNd", lock, guard, command )
     }
@@ -449,6 +450,10 @@ class AST{
         override def ppp = Pretty.func( "FetchExpNd", x )
     }
     
+    case class ThisExpNd(str : String)(coord: AST.Coord) extends ExpNd(coord){
+      override def ppp = Pretty.func("CurrentObjReference", str)
+    }
+    
     case class ObjIdsNd( x: List[ExpNd]) (coord: AST. Coord) extends ExpNd(coord) {
         override def ppp = Pretty.func("ObjIdsNd", x)
     }
@@ -470,7 +475,7 @@ class AST{
       override def ppp = Pretty.func("CanWriteOp", x)
     }
   
-    case class PermissionOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
+    case class PermissionOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
       override def ppp = Pretty.func("PermissionOp", x)
     }
 
@@ -564,6 +569,7 @@ class AST{
 
     case class NameNd( qn: QN )( val coord: AST.Coord ) extends Pretty {
         var decl: Option[ DeclNd ] = None // Set during the resolution phase.
+        def getDecl = decl;
         override def toString = qn.toString
     }
     
