@@ -81,8 +81,8 @@ class HarpoToCCompiler {
 
     // To do. Add the C code generator
     if (masterDeclList != null && errorRecorder.getFatalCount() == 0) {
-      val cCodeGen = new CBackEnd(masterDeclList)
-      cOutput = cCodeGen.getCCode()
+      val cCodeGen = new CBackEnd()
+      cOutput = cCodeGen.getCCode(masterDeclList) ;
       println("This is C output: ", cOutput);
     }
   }
