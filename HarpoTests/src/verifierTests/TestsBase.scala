@@ -40,16 +40,16 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
   }
 
   def tryWithParser(str: String, expectedFatalErrors: Int = 0, expectedWarningErrors: Int = 0) =
-    tryWith(str, expectedFatalErrors, expectedWarningErrors, false, false)
+    tryWith(str, expectedFatalErrors, expectedWarningErrors, false)
 
   def tryWithChecker(str: String, expectedFatalErrors: Int = 0, expectedWarningErrors: Int = 0) =
-    tryWith(str, expectedFatalErrors, expectedWarningErrors, true, false)
+    tryWith(str, expectedFatalErrors, expectedWarningErrors, true)
 
   def tryWithBoogieBackEnd(str: String, expectedFatalErrors: Int = 0, expectedWarningErrors: Int = 0, runChecker: Boolean = true) = {
-    tryWith(str, expectedFatalErrors, expectedWarningErrors, runChecker, true)
+    tryWith(str, expectedFatalErrors, expectedWarningErrors, runChecker)
 
     println("\n\n\nVerifier start")
-    var verify = new HarpoToBoogieTranslator()
+    val verify = new HarpoToBoogieTranslator()
     verify.addFile("HarpoSourceCode.harpo", str)
     var outputBuffer: OutputBuilder = new OutputBuilder;
     var transBuffer: OutputBuilder = new OutputBuilder;
@@ -61,13 +61,12 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
     writer.write(text)
     writer.close()
 
-    // println("Boogie Script\n\n\n"+ boogieScript)
     val command = "cmd.exe /c boogie \"BoogieOutputScript.bpl\"";
     /*
-   * without c process will hang
-   * ! will give back result
-   * !! gives back output in result
-   */
+   	* without c process will hang
+   	* ! will give back result
+   	* !! gives back output in result
+   	*/
     var log: String = "";
 
     var result: String = "";
@@ -89,7 +88,7 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
 
   }
 
-  def tryWith(str: String, expectedFatalErrors: Int, expectedWarningErrors: Int, runChecker: Boolean, runBoogieBackEnd: Boolean): StandardErrorRecorder = {
+  def tryWith(str: String, expectedFatalErrors: Int, expectedWarningErrors: Int, runChecker: Boolean): StandardErrorRecorder = {
 
     // Build the builder and the parser
     val errorRecorder = new StandardErrorRecorder()
@@ -145,46 +144,6 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
         println("-----------------------------")
         for (i <- 0 until errorRecorder.getTotalErrorCount())
           println(errorRecorder.getErrorCoord(i) + " " + errorRecorder.getErrorText(i));
-      }
-    }
-
-    if (runBoogieBackEnd) {
-      assert(errorRecorder.getFatalCount() == 0, "Checking error prevents Boogie back end from running.")
-      if (dl != null) {
-        println("-----------Boogie Code  generated-------------\n")
-
-        val boogieCodeGen = new BoogieBackEnd(dl, outputBuffer)
-        val boogieOutputBuffer = boogieCodeGen.getBoogieCode();
-        boogieOutputBuffer.newLine
-        val code: String = boogieOutputBuffer.result().mkString("\n")
-        println(code)
-        val writer = new PrintWriter(new File("BoogieOutputScript.bpl"))
-        writer.write(code)
-        writer.close()
-
-        // println("Boogie Script\n\n\n"+ boogieScript)
-        val command = "cmd.exe /c boogie \"BoogieOutputScript.bpl\"";
-        /*
-   			* without c process will hang
-   			* ! will give back result
-   			* !! gives back output in result
-   			*/
-        var log: String = "";
-
-        var result: String = "";
-
-        val logger = ProcessLogger((out) => result = out, (err) => log = err)
-
-        val output = Process(command).!(logger)
-
-        val outputDes = Process(command).!!
-
-        println(" ================== Boogie Verifier Results Begin====================== \n\n")
-        println(output)
-        println(result)
-        println(outputDes)
-        println(" \n\n================== Boogie Verifier Results End======================")
-        println("\n\n\nVerifier end")
       }
     }
     assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
