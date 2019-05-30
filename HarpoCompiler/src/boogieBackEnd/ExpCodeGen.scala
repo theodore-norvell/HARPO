@@ -9,7 +9,7 @@ import util.OutputBuilder;
 
 class ExpCodeGen() {
 
-  var nameExp = ArrayBuffer[String]();
+
   
   def initExpCodeGen(init: InitExpNd): String = {
     val result: String = init match {
@@ -60,7 +60,7 @@ class ExpCodeGen() {
 
   //Collect all the name nodes used in the expression, essentially needed before asserting the expressions are defined
   
-  def nameExpCodeGen(expNd: ExpNd): List [String] = { 
+  def nameExpCodeGen(expNd: ExpNd, nameExp : ArrayBuffer[String]): List [String] = { 
       
      expNd match {
 
@@ -70,21 +70,21 @@ class ExpCodeGen() {
       
       case FloatLiteralExpNd(x: Double) => {}
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => nameExpCodeGen(x) ; nameExpCodeGen(y)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => nameExpCodeGen(x,nameExp) ; nameExpCodeGen(y,nameExp)
       
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => nameExpCodeGen(x)
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => nameExpCodeGen(x,nameExp)
 
-      case MemberExpNd(x: ExpNd, name: String) => nameExpCodeGen(x)
+      case MemberExpNd(x: ExpNd, name: String) => nameExpCodeGen(x,nameExp)
 
-      case FetchExpNd(x: ExpNd) => nameExpCodeGen(x)
+      case FetchExpNd(x: ExpNd) => nameExpCodeGen(x,nameExp)
 
-      case AsExpNd(x: ExpNd, _) => nameExpCodeGen(x)
+      case AsExpNd(x: ExpNd, _) => nameExpCodeGen(x,nameExp)
       
       case NameExpNd( name : NameNd ) =>  nameExp += name.decl.get.fqn.toString()
       
       case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => {
         for(exp <- operands) 
-          nameExpCodeGen(exp)
+          nameExpCodeGen(exp,nameExp)
       }
       
       case CanReadOp(x) => {}
@@ -197,7 +197,6 @@ class ExpCodeGen() {
    result
   }
   
-  
   // Generate only the Boogie expressions for the invariants
   
   def InvExpCodeGen(exp: ExpNd, fqn: String, transContext: TransContext) : String = {
@@ -247,6 +246,58 @@ class ExpCodeGen() {
   }
     result
   }
+  
+  
+  
+  def InvExpCodeGen(exp: ExpNd, fqn: String, lockTransContext: TransContext, baseTransContext: TransContext) : String = {
+    
+    val result: String = exp match {
+    
+      case NoExpNd() => ""
+        
+      case IntLiteralExpNd(i: Long) => i.toString
+      
+      case FloatLiteralExpNd(x: Double) => x.toString
+
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext) + " " + resBiOp(op) + " " + InvExpCodeGen(y,fqn,lockTransContext,baseTransContext)
+      
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
+
+      case MemberExpNd(x: ExpNd, name: String) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext) + "." + name
+
+      case FetchExpNd(x: ExpNd) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
+
+      case AsExpNd(x: ExpNd, _) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
+      
+      case NameExpNd( name : NameNd ) =>
+        var expCode = ""
+        name.decl.get.parent match {
+          case Some(nd) => expCode =  baseTransContext.getHeap()+"["+baseTransContext.getObjRef()+"," + name.decl.get.fqn.toString() +"] " mkString
+          case None => {}
+        }
+      expCode
+      
+      case CanReadOp(locSet) => {
+//        val transContextPer = new TransContext("LockPermission", transContext.getObjRef())
+        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef()+"," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+      }
+      
+      case CanWriteOp(locSet) => {
+//        val transContextPer = new TransContext("Permission", transContext.getObjRef())
+        lockTransContext.getHeap() + "[" +lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+      }
+        
+      case PermissionOp(objId) => ""// return the amount of permission 
+      
+      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => InvExpCodeGen(operands(0),fqn,lockTransContext,baseTransContext) + " " + resOpChain(ops(0)) + " " + InvExpCodeGen(operands(1),fqn, lockTransContext,baseTransContext)
+      
+      case _ => exp.toString()
+    
+  }
+    result
+  }
+  
+  
   
   // Build the Simple Boogie equivalent expression.
   
@@ -380,13 +431,12 @@ class ExpCodeGen() {
 
       case FloatLiteralExpNd(x: Double) => "true"
       
-      case CanReadOp(loc) =>  {
-        
-        buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+      case CanReadOp(loc) =>  {   "true"  
+        //buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
       }
         
-      case CanWriteOp(loc) => {
-        buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+      case CanWriteOp(loc) => { "true"
+        //buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
       }
 
       case NameExpNd(name: NameNd) => { 

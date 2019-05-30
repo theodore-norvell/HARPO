@@ -160,12 +160,12 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
       mpn match {
         case GivesPerNd(pmn) => ()
         case TakesPerNd(pmn) => ()
+        case _ => ()
       }
     }
     def buildSTfromCommand(command: CommandNd, containingFQN: FQN) {
       command match {
-        case SkipCmdNd() =>
-          ()
+        case SkipCmdNd() => ()
         case SeqCommandNd(fstCmd, sndCmd) =>
           buildSTfromCommand(fstCmd, containingFQN)
           buildSTfromCommand(sndCmd, containingFQN)
@@ -207,11 +207,16 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
             buildSTFromDecl(methImpl, containingFQN)
           }
         case WithCmdNd(lock, tpl, guard, command, gpl) =>
+          buildSTfromLock(lock,containingFQN)
           buildSTfromCommand(command, containingFQN)
           for (pmn <- tpl) buildSTfromWithPerList(pmn, containingFQN)
           for (pmn <- gpl) buildSTfromWithPerList(pmn, containingFQN)
 
       }
+    }
+    
+    def buildSTfromLock(lock: ExpNd,containingFQN: FQN) {
+        ()
     }
 
     def computeAnscestors(decls: DeclList): Boolean = {

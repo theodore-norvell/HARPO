@@ -63,7 +63,7 @@ class Checker( val errorRecorder : ErrorRecorder ) {
             println("Failed to build the symbol table. Fetal Count: ", errorRecorder.getFatalCount())
             errorRecorder.bailOut() }
         
-        symbolTable.dump
+        //symbolTable.dump
         
         // (1) Lookup name in the symbol table. Associate each NameNd with a declaration
         val resolver = new Resolver( errorRecorder, symbolTable ) 
