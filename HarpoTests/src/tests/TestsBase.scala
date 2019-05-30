@@ -108,8 +108,8 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
         assert(errorRecorder.getFatalCount() == 0, "Checking error prevents C back end from running.")
         if( dl != null ) {
             println("-----------C Code  generated-------------\n")
-            val cCodeGen=new CBackEnd(dl)
-            println(cCodeGen.getCCode())       
+            val cCodeGen=new CBackEnd()
+            println(cCodeGen.getCCode(dl))       
         }
     }
     
