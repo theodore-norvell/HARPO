@@ -70,6 +70,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                 result
             case ArrayTypeNd( baseType, bound ) =>
                 val base = extractTypeFromTypeNode(baseType) 
+                ArrayType(base,bound)
                 if( isIntegralConstant( bound ) ) {
                     ArrayType( base, bound) }
                 else {
@@ -82,8 +83,19 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
         
     }
     
-    private def isIntegralConstant( x : ExpNd ) = { assert( false, "TBD") ; false }
-
+    private def isIntegralConstant( x : ExpNd ) :  Boolean = {
+    x.tipe match {
+      case Some(LocationType(base)) =>
+        base.name.toString() match {
+          case "Int8" => true
+          case "Int16" => true
+          case "Int32" => true
+          case "Int64" => true
+          case _ =>  false
+        }
+      case _ => false
+    }     
+    }
     /** Create types and associate each TypeNd (apart from NoTypeNd) with a type.
      *  
      *  For each TypeNd within a set of declarations, set its tipe field to a Type object.

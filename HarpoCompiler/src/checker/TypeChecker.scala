@@ -327,7 +327,7 @@ class TypeChecker(
         val permissionAmount0 = valueConvert(permissionAmount);
         typeConvert(permissionAmount0, Some(real64))
       }
-    pmn.setAmounts(newAmounts.toList) // tEST THE TREE
+    pmn.setAmounts(newAmounts.toList) // Test the tree.
   }
 
   def typeCheck(lsn: LocSetNd) {
