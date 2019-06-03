@@ -20,18 +20,17 @@ import util.OutputBuilder;
 
 @RunWith(classOf[JUnitRunner])
 class BackendTests extends FlatSpec with BeforeAndAfterEach {
-  
-  var outputBuffer : OutputBuilder = new OutputBuilder;
 
-  var hb = new HarpoToBoogieTranslator()
+  
   val out = new OutputStreamWriter(System.out)
 
   def getBoogie(fileName: String, fileContent: String) = {
-    hb.addFile(fileName, fileContent)
-    hb.runHarpoToBoogieTrans(outputBuffer)
-    outputBuffer = hb.getBoogieOutput(outputBuffer)
-    val boogieCode: String = outputBuffer.result().mkString("\n")
-    boogieCode
+      var hb = new HarpoToBoogieTranslator()
+      hb.addFile(fileName, fileContent)
+      val (errorRecorder, outputBuilder) = hb.runHarpoToBoogieTrans( true )
+      assertResult( 0 )( errorRecorder.getFatalCount() ) 
+      val boogieCode: String = outputBuilder.result().mkString("\n")
+      boogieCode
   }
 
   behavior of "The Boogie back end with Harpo 'Buffer' class";

@@ -9,7 +9,7 @@ import frontEnd.AST.ClassInvNd;
 import frontEnd.AST.LoopInvNd;
 import scala.collection.mutable.ArrayBuffer;
 
-private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
+private class ClassCodeGen(val dlNd: DeclNd, val outputBuffer: OutputBuilder) {
 
   //global translation context has most generic form of heap and object reference,
   //local translation contexts are made while changing to particular Heap and object reference i.e preHeap, tempHeap, oldHeap, and *_this, *_that
@@ -28,7 +28,7 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
 
   var lockExpList = List[String]() //lock expression must be an object implementing interface lock
 
-  def classCodeGen(): OutputBuilder = {
+  def classCodeGen(): Unit = {
     
     classIdentifierCodeGen()
 
@@ -37,9 +37,9 @@ private class ClassCodeGen(val dlNd: DeclNd, var outputBuffer: OutputBuilder) {
     constructorProcedureCodeGen()
 
     threadProcedureCodeGen()
-
-    outputBuffer
   }
+  
+  def getOutputBuilder : OutputBuilder = this.outputBuffer ;
 
   // Class Identifier Code Generation
   private def classIdentifierCodeGen() {

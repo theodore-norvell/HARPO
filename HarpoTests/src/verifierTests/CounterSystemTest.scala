@@ -168,5 +168,6 @@ class CounterSystemTest extends TestsBase {
  """)
     val cmd = "Boogie test.bpl"
     val output = cmd.!!
+    println( output ) ;
   }
 }
