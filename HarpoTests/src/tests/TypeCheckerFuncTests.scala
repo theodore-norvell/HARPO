@@ -328,6 +328,34 @@ class TypeCheckerFuncTests extends TestsBase with BeforeAndAfterEach {
         assertResult( 0 )( er.getFatalCount() + er.getWarningCount() )
         assertResult( initExpType.get )( objDeclType )
     }
+
+    behavior of "ArrayTypeNd";
+    it should "declare array object of constant size" in {
+        val result = checkCode( "const size : Int32 := 10 obj buf : Real64[size] := (for i:size do 0 for)")
+        val dl = result._1
+        val er = result._2    
+        assertResult( 0 )( er.getFatalCount() + er.getWarningCount() )
+    }
+    
+    behavior of "ArrayTypeNd";
+    it should "declare array object of nonconstant size" in {
+        val result = checkCode( "obj size : Int32 := 10 obj buf : Real64[size] := (for i:size do 0 for)")
+        val dl = result._1
+        val er = result._2    
+        assertResult( 1 )( er.getFatalCount() )
+        assertResult( "TODO: Fill in the error message" )( er.getFatalText(0) ) 
+        assertResult( 0 )( er.getWarningCount() )
+    }
+    
+    behavior of "ArrayTypeNd";
+    it should "declare array object of noninteger size" in {
+        val result = checkCode( "const size : Real64 := 10 obj buf : Real64[size] := (for i:size do 0 for)")
+        val dl = result._1
+        val er = result._2    
+        assertResult( 1 )( er.getFatalCount() )
+        assertResult( "TODO: Fill in the error message" )( er.getFatalText(0) ) 
+        assertResult( 0 )( er.getWarningCount() )
+    }
     
     it should "allow a specified type that is a super type of its InitExp" in {
         val result = checkCode( "obj x : Int32 := 10 as Int8" )
