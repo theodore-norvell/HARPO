@@ -12,3 +12,4 @@ RemoteSystemsTempFiles/*
 bin/
 .DS_Store
 *.tex.Backup-*
+BoogieOutputScript.bpl
