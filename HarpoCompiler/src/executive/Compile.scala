@@ -2,51 +2,32 @@ package executive
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
+
+import scala.collection.mutable.ArrayBuffer
 import scala.io.Source;
 import sys.process._;
 import scala.sys.process.ProcessBuilder;
 import util.OutputBuilder;
 
-object Compile extends App {
-    println( "\n\n\nVerifier start" )
-    var verify = new HarpoToBoogieTranslator()
-    verify.addFile( "HarpoSourceCode.harpo", getHarpoSource() )
-    val ( errorRecorder, transBuffer ) = verify.runHarpoToBoogieTrans( true )
+import boogieBackEnd.VerificationReport;
+import boogieBackEnd.BoogieErrorParser;
 
-    errorRecorder.printErrors( System.out ) 
-    
+object Compile extends App {
+    val verbose : Boolean = true
+    println( "\n\n\nVerifier start" )
+    var translator = new HarpoToBoogieTranslator()
+    translator.addFile( "HarpoSourceCode.harpo", getHarpoSource() )
+    val ( errorRecorder, transBuffer ) = translator.runHarpoToBoogieTrans( verbose )
+
     if ( errorRecorder.getFatalCount() == 0 ) {
         transBuffer.newLine
         val text : String = transBuffer.result().mkString( "\n" )
-        println( text )
-        val writer = new PrintWriter( new File( "BoogieOutputScript.bpl" ) )
-        writer.write( text )
-        writer.close()
-
-        // println("Boogie Script\n\n\n"+ boogieScript)
-        val command = "boogie BoogieOutputScript.bpl";
-        /*
-       * without c process will hang
-       * ! will give back result
-       * !! gives back output in result
-       */
-        var log : String = "";
-
-        var result : String = "";
-
-        val logger = ProcessLogger( ( out ) => result = out, ( err ) => log = err )
-
-        val output = Process( command ).!( logger )
-
-        val outputDes = Process( command ).!!
-
-        println( " ================== Boogie Verifier Results Begin====================== \n\n" )
-        println( output )
-        println( result )
-        println( outputDes )
-        println( " \n\n================== Boogie Verifier Results End======================" )
-
+        val vr : VerificationReport = translator.runVerifer( text, verbose )
+        // TODO process the report.
     }
+
+    errorRecorder.printErrors( System.out )
+    
     println( "\n\n\nVerifier end" )
 
     def getHarpoSource() : String = {

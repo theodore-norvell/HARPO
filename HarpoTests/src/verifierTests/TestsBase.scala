@@ -6,34 +6,36 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
+
 import java.io.Reader
 import java.io.StringReader
 import java.io.OutputStreamWriter
-import frontEnd.ErrorRecorder
-import frontEnd.StandardErrorRecorder
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.immutable.Range
-import frontEnd.AST
-import parser.HarpoParser
-import parser.ParseException
-import parser.TokenMgrError
-import checker.Checker
-import frontEnd.CompilerBailOutException
-import boogieBackEnd.BoogieBackEnd
-import util.OutputBuilder;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.IOException ;
-import sys.process._;
-import scala.sys.process.ProcessBuilder;
+
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.immutable.Range
+import scala.collection.script.Message
+
+import boogieBackEnd.BoogieBackEnd
+import boogieBackEnd.VerificationReport
+import checker.Checker
+import frontEnd.AST
+import frontEnd.ErrorRecorder
+import frontEnd.StandardErrorRecorder
+import frontEnd.CompilerBailOutException
+import frontEnd.StandardErrorRecorder
+import frontEnd.AST
+import frontEnd.ErrorRecorder
+import parser.HarpoParser
+import parser.ParseException
+import parser.TokenMgrError
+import util.OutputBuilder;
 import executive.HarpoToBoogieTranslator;
 import util.OutputBuilder
 import executive.HarpoToBoogieTranslator
 import parser.HarpoParser
-import frontEnd.StandardErrorRecorder
-import frontEnd.AST
-import frontEnd.ErrorRecorder
-import scala.collection.script.Message
 
 class TestsBase extends FlatSpec with BeforeAndAfterEach {
 
@@ -64,34 +66,8 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
         if ( errorRecorder.getFatalCount() == 0 ) {
             transBuffer.newLine
             val text : String = transBuffer.result().mkString( "\n" )
-            println( text )
-            val writer = new PrintWriter( new File( "BoogieOutputScript.bpl" ) )
-            writer.write( text )
-            writer.close()
-
-            val command = "boogie BoogieOutputScript.bpl";
-            /*
-           	* without c process will hang
-           	* ! will give back result
-           	* !! gives back output in result
-           	*/
-            val standardOut : ArrayBuffer[String] = new ArrayBuffer[String]() ;
-            val standardErr : ArrayBuffer[String] = new ArrayBuffer[String]() ;
-            val logger = ProcessLogger( ( out ) => standardOut += out, ( err ) => standardErr += err )
-            try {
-                val resultCode = Process( command ).!( logger )
-                
-                println( " ================== Boogie Verifier Standard Output Begin======================" )
-                println( standardOut.mkString("\n") )
-                println( "================== Boogie Verifier Standard Error Begin======================" )
-                println( standardErr.mkString("\n")  )
-                println( " ================== Boogie Verifier Results End======================" )
-            } catch {
-                case e : IOException => 
-                    println( "Boogie execution bombed: Error is ", e.getMessage() )
-                    println( "PATH is " + System.getenv("PATH") )
-                    throw e ;
-            }
+            val vr : VerificationReport = verify.runVerifer( text, true )    
+            // TODO process the report.
             text 
         } else {
             "Fatal errors"

@@ -1,13 +1,16 @@
 package executive
-import scala.collection.mutable.ArrayBuffer;
-import java.io.PrintWriter;
+
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringReader 
+import scala.collection.mutable.ArrayBuffer 
+import scala.sys.process.Process;
+import scala.sys.process.ProcessLogger;
+
 import frontEnd._
 import parser._ 
 import checker.Checker ;
-import scala.collection.mutable.ArrayBuffer 
-import java.io.StringReader 
-import boogieBackEnd.BoogieBackEnd
+import boogieBackEnd._
 import util.OutputBuilder;
 
 class HarpoToBoogieTranslator {
@@ -85,4 +88,40 @@ class HarpoToBoogieTranslator {
             (errorRecorder, null) 
         }
     }
+
+    def runVerifer( text : String, verbose : Boolean ) : VerificationReport = {
+        if ( verbose ) {
+            println( " ================== Boogie to Verify======================" )
+            println( text )
+            println( " ================== End of Boogie to Verify======================" )
+        }
+        val writer = new PrintWriter( new File( "BoogieOutputScript.bpl" ) )
+        writer.write( text )
+        writer.close()
+
+        val command = "boogie BoogieOutputScript.bpl";
+        val stdOut : ArrayBuffer[String] = new ArrayBuffer[String]
+        val stdErr : ArrayBuffer[String] = new ArrayBuffer[String]
+        val logger = ProcessLogger( ( line ) => stdOut += line, ( line ) => stdErr += line )
+        if ( verbose ) { println( "Running boogie verifier" ) }
+        val exitValue = try {
+                Process( command ).!( logger )
+            } catch {
+                case e : Throwable => 
+                    println( "Boogie execution bombed: Error is ", e.getMessage() )
+                    println( "PATH is " + System.getenv("PATH") )
+                    throw e ;
+            }
+        if ( verbose ) {
+            println( "Exit value is " + exitValue ) 
+            println( " ================== Boogie Verifier Standard Output Begin======================" )
+            println( stdOut.mkString( "\n" ) )
+            println( " ================== Boogie Verifier Standard Error Begin======================" )
+            println( stdErr.mkString( "\n" ) )
+            println( "================== Boogie Verifier Results End======================" )
+        }    
+        val parser = new BoogieErrorParser
+        parser.parseBoogieOutput( stdOut )
+    }
+
 }
