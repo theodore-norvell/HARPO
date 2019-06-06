@@ -12,7 +12,7 @@ import util.OutputBuilder;
 import boogieBackEnd.VerificationReport;
 import boogieBackEnd.BoogieErrorParser;
 
-object Compile extends App {
+object HarpoVerifier extends App {
     val verbose : Boolean = true
     println( "\n\n\nVerifier start" )
     var translator = new HarpoToBoogieTranslator()

@@ -37,7 +37,7 @@ import util.OutputBuilder
 import executive.HarpoToBoogieTranslator
 import parser.HarpoParser
 
-class TestsBase extends FlatSpec with BeforeAndAfterEach {
+class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
 
     override def beforeEach( td : TestData ) {
         println( ">>>>>>>>>>>>>Starting " + td.name + " >>>>>>>>>>>>>>>>>>" )

@@ -13,7 +13,7 @@ import executive.HarpoToBoogieTranslator ;
 import frontEnd.StandardErrorRecorder
 
 @RunWith( classOf[JUnitRunner] )
-class BoogieLineMappingTest extends TestsBase {
+class BoogieLineMappingTest extends VerifierTestBase {
     def runBoogie( stringBoogie : String ) = {
         
     }
