@@ -19,9 +19,9 @@ import frontEnd.AST.ClassLike
 @RunWith(classOf[JUnitRunner])
 class CounterSystemTest extends TestsBase {
   val out = new OutputStreamWriter(System.out)
-  behavior of "The Boogie back end with Harpo 'Buffer' class";
+  behavior of "The Boogie back end with Harpo 'Counter' class";
 
-  it should "generate Boogie code for buffer class" in {
+  it should "generate Boogie code for Counter class" in {
     val str = """
           //Counter Class in HARPO/L, A program that shows class invariant and a lock block
 
@@ -166,7 +166,7 @@ class CounterSystemTest extends TestsBase {
 }
 }
  """)
-    val cmd = "Boogie test.bpl"
+    val cmd = "Boogie " + BoogieSource + ".bpl" 
     val output = cmd.!!
   }
 }

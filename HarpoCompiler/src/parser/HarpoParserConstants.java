@@ -152,6 +152,7 @@ public interface HarpoParserConstants {
     "<REAL_LITERAL>",
     "<EXP>",
     "<UNEXPECTED_CHARACTER>",
+    "\"this\"",
   };
 
 }

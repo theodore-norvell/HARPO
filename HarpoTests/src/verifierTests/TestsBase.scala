@@ -61,7 +61,7 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
     writer.write(text)
     writer.close()
 
-    val command = "cmd.exe /c boogie \"BoogieOutputScript.bpl\"";
+    val command = "boogie \"BoogieOutputScript.bpl\"";
     /*
    	* without c process will hang
    	* ! will give back result
@@ -114,7 +114,11 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
           null
         }
       }
-
+    errorRecorder.printErrors(Console.out)
+    println("================== Begin: The AST ====================== \n\n")
+    println(dl.format(80))
+    println(" ================== End: The AST ======================\n\n")
+    
     // Output all errors
     if (errorRecorder.getTotalErrorCount() > 0) {
       println("-----------------------------");
@@ -133,12 +137,11 @@ class TestsBase extends FlatSpec with BeforeAndAfterEach {
           println("----The checker has bailed---");
       }
 
+      errorRecorder.printErrors(Console.out)
       // Output the tree.
-      println("----The AST after checking---");
+      println("================== Begin: The AST after checking ====================== \n\n")
       println(dl.format(80))
-      println
-      println("---------------------------------------");
-
+      println(" ================== End: The AST after checking ======================\n\n")
       // Output all errors
       if (errorRecorder.getTotalErrorCount() > 0) {
         println("-----------------------------")

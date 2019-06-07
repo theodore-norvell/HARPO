@@ -25,9 +25,9 @@ import frontEnd.AST.ClassLike
 class CounterTests extends TestsBase {
   
   behavior of "The Boogie back end with Harpo 'Counter' class";
-  it should "generate Boogie code for Counter class" in {
+  it should "generate Boogie code for Counter class with lock" in {
     
-    var str = """ 
+    val str = """ 
                 (class Counter()	                
                   claim count@0.5
 	                invariant canRead(count) /\ count >_ 0
@@ -51,11 +51,16 @@ class CounterTests extends TestsBase {
 	                thread)
              class)"""
 
-    var BoogieSource = tryWithBoogieBackEnd(str)
+    val BoogieSource = tryWithBoogieBackEnd(str)
     
     println(BoogieSource)
     
-    str = """ 
+  }
+  
+  
+  it should "generate Boogie code for Counter class without lock" in {
+        
+    val str = """ 
                 (class Counter()	                
                   claim count@0.5
 	                invariant canRead(count) /\ count >_ 0
@@ -76,9 +81,61 @@ class CounterTests extends TestsBase {
 	                thread)
              class)"""
 
-    BoogieSource = tryWithBoogieBackEnd(str)
+    val BoogieSource = tryWithBoogieBackEnd(str)
     
     println(BoogieSource)
   }
   
+    it should "generate Boogie code for Counter class without object invariant" in {
+        
+    val str = """ 
+                (class Counter()	                
+                  claim count@0.5
+
+	                proc increment()
+	                  takes count@0.5
+	                  pre count>_0
+	                  post count'>0
+	                  gives count@0.5
+	                obj count: Int32 := 0
+	                (thread (*t0*)
+		                (while true
+		                  do
+			                  (accept increment()
+					                  count := count+1; 
+				                accept)
+		                while)
+	                thread)
+             class)"""
+
+    val BoogieSource = tryWithBoogieBackEnd(str)
+    
+    println(BoogieSource)
+  }
+  
+    
+    it should "generate Boogie code for Counter class without takes and gives" in {
+        
+    val str = """ 
+                (class Counter()	                
+                  claim count@0.5
+
+	                proc increment()
+	                  pre count>_0
+	                  post count'>0
+	                obj count: Int32 := 0
+	                (thread (*t0*)
+		                (while true
+		                  do
+			                  (accept increment()
+					                  count := count+1; 
+				                accept)
+		                while)
+	                thread)
+             class)"""
+
+    val BoogieSource = tryWithBoogieBackEnd(str)
+    
+    println(BoogieSource)
+  }
 }
