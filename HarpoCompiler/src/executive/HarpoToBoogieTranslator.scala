@@ -29,7 +29,7 @@ class HarpoToBoogieTranslator {
         files += ((fileName, fileText))
     }
     
-    def runHarpoToBoogieTrans( outputBuffer: OutputBuilder) : OutputBuilder ={
+    def runHarpoToBoogieTrans( verbose : Boolean) {
       
         var transOutBuffer = new OutputBuilder 
         errorRecorder = new StandardErrorRecorder()
@@ -74,9 +74,9 @@ class HarpoToBoogieTranslator {
         // The boogie code generator
         if( errorRecorder.getFatalCount() == 0) {
            println("Fetal Errors= ", errorRecorder.getFatalCount());
-           val boogieCodeGen=new BoogieBackEnd(masterDeclList, outputBuffer)
+           val boogieCodeGen=new BoogieBackEnd(masterDeclList, transOutBuffer)
            transOutBuffer = boogieCodeGen.getBoogieCode();
            }
-        transOutBuffer
+        (errorRecorder, transOutBuffer)
     }
 }
