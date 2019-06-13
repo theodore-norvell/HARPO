@@ -22,7 +22,7 @@ import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
-class Scenario2Test extends TestsBase {
+class Scenario2Test extends VerifierTestBase {
   
   behavior of "The Boogie back end with Harpo 'Scenario 2' class";
   it should "generate Boogie code for 'Scenario2' class" in {

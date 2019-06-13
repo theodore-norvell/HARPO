@@ -22,7 +22,7 @@ import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
-class BufferTest extends TestsBase {
+class BufferTest extends VerifierTestBase {
   
   behavior of "The Boogie back end with Harpo 'Buffer' class";
   it should "generate Boogie code for Buffer class" in {

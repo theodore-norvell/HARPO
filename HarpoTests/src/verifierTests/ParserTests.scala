@@ -15,7 +15,7 @@ import frontEnd.ErrorRecorder
 import frontEnd.AST
 
 @RunWith(classOf[JUnitRunner])
-class ParserTests extends TestsBase {
+class ParserTests extends VerifierTestBase {
 
   "The parser" should "parse an empty file" in {
     val str = ""

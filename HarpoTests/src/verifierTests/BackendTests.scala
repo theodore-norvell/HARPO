@@ -28,8 +28,7 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
 
   def getBoogie(fileName: String, fileContent: String) = {
     hb.addFile(fileName, fileContent)
-    hb.runHarpoToBoogieTrans(outputBuffer)
-    outputBuffer = hb.getBoogieOutput(outputBuffer)
+    val (errorRecorder, outputBuffer) = hb.runHarpoToBoogieTrans(true)
     val boogieCode: String = outputBuffer.result().mkString("\n")
     boogieCode
   }

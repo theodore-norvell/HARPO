@@ -17,7 +17,7 @@ import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
-class CounterSystemTest extends TestsBase {
+class CounterSystemTest extends VerifierTestBase {
   val out = new OutputStreamWriter(System.out)
   behavior of "The Boogie back end with Harpo 'Counter' class";
 

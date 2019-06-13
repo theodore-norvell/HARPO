@@ -15,7 +15,7 @@ import frontEnd.ErrorRecorder
 import frontEnd.AST
 
 @RunWith(classOf[JUnitRunner])
-class CheckerTests extends TestsBase {
+class CheckerTests extends VerifierTestBase {
 
   "The Checker" should "check an empty file" in {
     val str = ""

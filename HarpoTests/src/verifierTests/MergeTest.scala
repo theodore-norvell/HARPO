@@ -22,7 +22,7 @@ import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
-class Scenario3Test extends TestsBase {
+class Scenario3Test extends VerifierTestBase {
   
   behavior of "The Boogie back end with Harpo 'Counter' class";
   it should "generate Boogie code for Merge class" in {
