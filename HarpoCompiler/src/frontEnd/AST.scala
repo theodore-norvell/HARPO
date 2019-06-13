@@ -419,6 +419,10 @@ class AST{
     case class FloatLiteralExpNd( x: Double )( coord: AST.Coord ) extends ExpNd( coord ) {
         override def ppp = Pretty.func( "FloatLiteralExpNd", x.toString )
     }
+    
+    case class BooleanLiteralExpNd(x: String)(coord : AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("BooleanLiteralExpNd", x.toString())
+    }
 
     case class NameExpNd( name: NameNd )( coord: AST.Coord ) extends ExpNd( coord ) {
         override def ppp = Pretty.func( "NameExpNd", name )

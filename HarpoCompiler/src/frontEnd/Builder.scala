@@ -297,6 +297,10 @@ class Builder(val errorRecorder: ErrorRecorder) {
     var i = parseInt(str, base, coord)
     new IntLiteralExpNd(i)(coord)
   }
+  
+  def booleanLiteralExp(str: String, coord: AST.Coord) = {
+    new BooleanLiteralExpNd(str)(coord)
+  }
 
   def parseInt(str: String, base: Int, coord: frontEnd.AST.Coord) = {
     var i: Long = 0

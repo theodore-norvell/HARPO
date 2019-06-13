@@ -301,8 +301,14 @@ TOKEN :
 
 TOKEN :
 {
+ < BOOL_LITERAL : "true" | "TRUE" | "false" | "FALSE" >
+}
+
+TOKEN :
+{
   < NAME : [ "a"-"z", "A"-"Z", "_", "$" ] ([ "a"-"z", "A"-"Z", "_", "$", "0"-"9" ])* >
 }
+
 
 TOKEN :
 {	
@@ -1868,6 +1874,13 @@ ExpNd Exp8() :
   {
     return builder.realLiteralExp(tk.image, getCoord(tk));
   }
+
+| 
+  tk =  < BOOL_LITERAL >
+  {
+	return builder.booleanLiteralExp(tk.image, getCoord(tk));
+  }
+  
 | 
   tk = "canRead" "(" locSet = LocSet() ")"
   {
@@ -1883,7 +1896,8 @@ ExpNd Exp8() :
   {
     return builder.makePermissionOp(objId, getCoord(tk));
   }
-| 
+|
+ 
   "(" x = Exp() ")"
   {
     return x;

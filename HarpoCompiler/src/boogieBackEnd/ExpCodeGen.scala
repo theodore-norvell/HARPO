@@ -9,29 +9,33 @@ import util.OutputBuilder;
 
 class ExpCodeGen() {
 
-
-  
   def initExpCodeGen(init: InitExpNd): String = {
     val result: String = init match {
       case ValueInitExpNd(exp: ExpNd) => simpleExpCodeGen(exp)
-      case _ => init.toString() 
+      case NewInitExpNd(ty, args) => "TODO" //TODO
+      case ArrayInitExpNd(decl, bound, init) => "TODO" //TODO
+      case IfInitExpNd(guard, init_a, init_b) => "TODO" //TODO
+      case WidenInitExpNd(init) => initExpCodeGen(init) // TODO
+      case _ => contracts.Contracts.unreachable("Bad Initialization Expression Found")
     }
     result
   }
 
   // Generate the expression without augmenting heap(s)
-  
+
   def simpleExpCodeGen(exp: ExpNd): String = {
-    
+
     val result: String = exp match {
 
       case NoExpNd() => ""
-        
-      case IntLiteralExpNd(i: Long) => i.toString()
+
+      case BooleanLiteralExpNd(b : String) => b
       
+      case IntLiteralExpNd(i: Long) => i.toString()
+
       case FloatLiteralExpNd(x: Double) => x.toString()
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => simpleExpCodeGen(x) +" "+ resBiOp(op) +" "+ simpleExpCodeGen(y)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => simpleExpCodeGen(x) + " " + resBiOp(op) + " " + simpleExpCodeGen(y)
 
       case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + simpleExpCodeGen(x)
 
@@ -40,73 +44,74 @@ class ExpCodeGen() {
       case FetchExpNd(x: ExpNd) => simpleExpCodeGen(x)
 
       case AsExpNd(x: ExpNd, _) => simpleExpCodeGen(x)
-      
-      case NameExpNd( name : NameNd ) =>
+
+      case NameExpNd(name: NameNd) =>
         var expCode = ""
         name.decl.get.parent match {
-          case Some(nd) => expCode = nd.name + "." + name+ " "
+          case Some(nd) => expCode = nd.name + "." + name + " "
           case None => {}
         }
-      expCode
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => simpleExpCodeGen(operands(0)) + resOpChain(ops(0)) + simpleExpCodeGen(operands(1))
-       
+        expCode
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => simpleExpCodeGen(operands(0)) + resOpChain(ops(0)) + simpleExpCodeGen(operands(1))
+
       case PermissionOp(objId) => ""
-      
+
       case _ => exp.toString()
     }
-    result 
+    result
   }
 
   //Collect all the name nodes used in the expression, essentially needed before asserting the expressions are defined
-  
-  def nameExpCodeGen(expNd: ExpNd, nameExp : ArrayBuffer[String]): List [String] = { 
-      
-     expNd match {
+
+  def nameExpCodeGen(expNd: ExpNd, nameExp: ArrayBuffer[String]): List[String] = {
+
+    expNd match {
 
       case NoExpNd() => {}
-        
+
       case IntLiteralExpNd(i: Long) => {}
-      
+
       case FloatLiteralExpNd(x: Double) => {}
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => nameExpCodeGen(x,nameExp) ; nameExpCodeGen(y,nameExp)
-      
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => nameExpCodeGen(x,nameExp)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) =>
+        nameExpCodeGen(x, nameExp); nameExpCodeGen(y, nameExp)
 
-      case MemberExpNd(x: ExpNd, name: String) => nameExpCodeGen(x,nameExp)
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => nameExpCodeGen(x, nameExp)
 
-      case FetchExpNd(x: ExpNd) => nameExpCodeGen(x,nameExp)
+      case MemberExpNd(x: ExpNd, name: String) => nameExpCodeGen(x, nameExp)
 
-      case AsExpNd(x: ExpNd, _) => nameExpCodeGen(x,nameExp)
-      
-      case NameExpNd( name : NameNd ) =>  nameExp += name.decl.get.fqn.toString()
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => {
-        for(exp <- operands) 
-          nameExpCodeGen(exp,nameExp)
+      case FetchExpNd(x: ExpNd) => nameExpCodeGen(x, nameExp)
+
+      case AsExpNd(x: ExpNd, _) => nameExpCodeGen(x, nameExp)
+
+      case NameExpNd(name: NameNd) => nameExp += name.decl.get.fqn.toString()
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
+        for (exp <- operands)
+          nameExpCodeGen(exp, nameExp)
       }
-      
+
       case CanReadOp(x) => {}
-      
+
       case CanWriteOp(x) => {}
 
       case _ => ""
     }
-   nameExp.toList
+    nameExp.toList
   }
-  
-  def checkGuard(guard: ExpNd) : String = {
-    
+
+  def checkGuard(guard: ExpNd): String = {
+
     val result: String = guard match {
 
       case NoExpNd() => ""
-        
+
       case IntLiteralExpNd(i: Long) => i.toString()
-      
+
       case FloatLiteralExpNd(x: Double) => x.toString()
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => checkGuard(x) +" "+ resBiOp(op) +" "+ checkGuard(y)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => checkGuard(x) + " " + resBiOp(op) + " " + checkGuard(y)
 
       case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + checkGuard(x)
 
@@ -115,194 +120,190 @@ class ExpCodeGen() {
       case FetchExpNd(x: ExpNd) => checkGuard(x)
 
       case AsExpNd(x: ExpNd, _) => checkGuard(x)
-      
-      case NameExpNd( name : NameNd ) => name.toString()
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => checkGuard(operands(0)) + resOpChain(ops(0)) + checkGuard(operands(1))
-       
+
+      case NameExpNd(name: NameNd) => name.toString()
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => checkGuard(operands(0)) + resOpChain(ops(0)) + checkGuard(operands(1))
+
       case PermissionOp(objId) => ""
-      
+
       case _ => ""
     }
-    result 
-    
+    result
+
   }
 
   //Generate the expressions only for the locked objects
-  
-  def lockExpCodeGen(lock: ExpNd, transContext: TransContext, perVal : String): String = { 
-    
+
+  def lockExpCodeGen(lock: ExpNd, transContext: TransContext, perVal: String): String = {
+
     val result: String = lock match {
-      
-      case NameExpNd( name : NameNd ) => transContext.heap +"[" +transContext.objRef+"," + name.qn.toString() + "]" + perVal + ";" mkString
-      
-      case ThisExpNd(str: String) => transContext.heap +"[" +transContext.objRef+"," + str  + "]" + perVal + ";" mkString
-      
+
+      case NameExpNd(name: NameNd) => transContext.heap + "[" + transContext.objRef + "," + name.qn.toString() + "]" + perVal + ";" mkString
+
+      case ThisExpNd(str: String) => transContext.heap + "[" + transContext.objRef + "," + str + "]" + perVal + ";" mkString
+
       case _ => ""
     }
-    result 
+    result
   }
-  
+
   // Get the names for locked objects, particularly needed when more than one lock appears and need to differentiate different locks
-  
-  def getNamefromLockExp(lock: ExpNd) : String = {
+
+  def getNamefromLockExp(lock: ExpNd): String = {
     lock match {
-      case NameExpNd( name : NameNd ) => name.toString() + "_Lock"
-      
+      case NameExpNd(name: NameNd) => name.toString() + "_Lock"
+
       case ThisExpNd(str: String) => str + "_lock"
-      
-      case _ => "" 
+
+      case _ => ""
     }
   }
-  
+
   //Collect the amount of permission from invariant - locked objects need the invariant permissions
-  
+
   def getPerFromInvExp(exp: ExpNd, lock: ExpNd, lockTransContext: TransContext, baseTranContext: TransContext): String = {
 
-   val result : String =  exp match {
-      
+    val result: String = exp match {
+
       case NoExpNd() => ""
-        
+
       case IntLiteralExpNd(i: Long) => ""
-      
+
       case FloatLiteralExpNd(x: Double) => ""
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => getPerFromInvExp(x,lock,lockTransContext,baseTranContext) + getPerFromInvExp(y,lock,lockTransContext,baseTranContext) mkString
-      
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + getPerFromInvExp(x,lock,lockTransContext,baseTranContext) mkString
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => getPerFromInvExp(x, lock, lockTransContext, baseTranContext) + getPerFromInvExp(y, lock, lockTransContext, baseTranContext) mkString
 
-      case MemberExpNd(x: ExpNd, name: String) => getPerFromInvExp(x,lock,lockTransContext,baseTranContext) + "." + name mkString
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + getPerFromInvExp(x, lock, lockTransContext, baseTranContext) mkString
 
-      case FetchExpNd(x: ExpNd) => getPerFromInvExp(x,lock,lockTransContext,baseTranContext) mkString
+      case MemberExpNd(x: ExpNd, name: String) => getPerFromInvExp(x, lock, lockTransContext, baseTranContext) + "." + name mkString
 
-      case AsExpNd(x: ExpNd, _) => getPerFromInvExp(x,lock,lockTransContext,baseTranContext) mkString
-      
-      case NameExpNd( name : NameNd ) => ""
-      
+      case FetchExpNd(x: ExpNd) => getPerFromInvExp(x, lock, lockTransContext, baseTranContext) mkString
+
+      case AsExpNd(x: ExpNd, _) => getPerFromInvExp(x, lock, lockTransContext, baseTranContext) mkString
+
+      case NameExpNd(name: NameNd) => ""
+
       case CanReadOp(locSet) => {
-          "0.0 < " + lockTransContext.heap + "[" + lockTransContext.objRef+"," + locSet.getName().decl.get.fqn.toString()  + "] < 1.0 "  mkString
+        "0.0 < " + lockTransContext.heap + "[" + lockTransContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] < 1.0 " mkString
       }
-      
+
       case CanWriteOp(locSet) => { // need to recheck for the nested lock, because it needs tto check whether the thread has enough permission to give or not.
-        baseTranContext.heap + "[" +baseTranContext.objRef+ "," + locSet.getName().decl.get.fqn.toString() + "] := " + baseTranContext.heap + "[" +baseTranContext.objRef+ "," + locSet.getName().decl.get.fqn.toString() + "] - 1.0;\n" + lockTransContext.heap + "[" + lockTransContext.objRef+ "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0; \n"
+        baseTranContext.heap + "[" + baseTranContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] := " + baseTranContext.heap + "[" + baseTranContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] - 1.0;\n" + lockTransContext.heap + "[" + lockTransContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0; \n"
       }
-        
+
       case PermissionOp(objId) => "" // return the amount of permission
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => getPerFromInvExp(operands(0),lock,lockTransContext,baseTranContext) + getPerFromInvExp(operands(1),lock, lockTransContext,baseTranContext)
-      
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => getPerFromInvExp(operands(0), lock, lockTransContext, baseTranContext) + getPerFromInvExp(operands(1), lock, lockTransContext, baseTranContext)
+
       case _ => ""
 
     }
-   result
+    result
   }
-  
+
   // Generate only the Boogie expressions for the invariants
-  
-  def InvExpCodeGen(exp: ExpNd, fqn: String, transContext: TransContext) : String = {
-    
+
+  def InvExpCodeGen(exp: ExpNd, fqn: String, transContext: TransContext): String = {
+
     val result: String = exp match {
-    
+
       case NoExpNd() => ""
-        
+
       case IntLiteralExpNd(i: Long) => i.toString
-      
+
       case FloatLiteralExpNd(x: Double) => x.toString
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => InvExpCodeGen(x,fqn,transContext) + " " + resBiOp(op) + " " + InvExpCodeGen(y,fqn,transContext)
-      
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + InvExpCodeGen(x,fqn,transContext)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => InvExpCodeGen(x, fqn, transContext) + " " + resBiOp(op) + " " + InvExpCodeGen(y, fqn, transContext)
 
-      case MemberExpNd(x: ExpNd, name: String) => InvExpCodeGen(x,fqn,transContext) + "." + name
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + InvExpCodeGen(x, fqn, transContext)
 
-      case FetchExpNd(x: ExpNd) => InvExpCodeGen(x,fqn,transContext)
+      case MemberExpNd(x: ExpNd, name: String) => InvExpCodeGen(x, fqn, transContext) + "." + name
 
-      case AsExpNd(x: ExpNd, _) => InvExpCodeGen(x,fqn,transContext)
-      
-      case NameExpNd( name : NameNd ) =>
+      case FetchExpNd(x: ExpNd) => InvExpCodeGen(x, fqn, transContext)
+
+      case AsExpNd(x: ExpNd, _) => InvExpCodeGen(x, fqn, transContext)
+
+      case NameExpNd(name: NameNd) =>
         var expCode = ""
         name.decl.get.parent match {
-          case Some(nd) => expCode =  transContext.getHeap()+"["+transContext.getObjRef()+"," + name.decl.get.fqn.toString() +"] " mkString
+          case Some(nd) => expCode = transContext.getHeap() + "[" + transContext.getObjRef() + "," + name.decl.get.fqn.toString() + "] " mkString
           case None => {}
         }
-      expCode
-      
+        expCode
+
       case CanReadOp(locSet) => {
         val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        transContextPer.getHeap() + "[" + transContextPer.getObjRef()+"," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
       }
-      
+
       case CanWriteOp(locSet) => {
         val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        transContextPer.getHeap() + "[" +transContextPer.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
       }
-        
-      case PermissionOp(objId) => ""// return the amount of permission 
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => InvExpCodeGen(operands(0),fqn,transContext) + " " + resOpChain(ops(0)) + " " + InvExpCodeGen(operands(1),fqn, transContext)
-      
+
+      case PermissionOp(objId) => "" // return the amount of permission
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => InvExpCodeGen(operands(0), fqn, transContext) + " " + resOpChain(ops(0)) + " " + InvExpCodeGen(operands(1), fqn, transContext)
+
       case _ => exp.toString()
-    
-  }
+
+    }
     result
   }
-  
-  
-  
-  def InvExpCodeGen(exp: ExpNd, fqn: String, lockTransContext: TransContext, baseTransContext: TransContext) : String = {
-    
+
+  def InvExpCodeGen(exp: ExpNd, fqn: String, lockTransContext: TransContext, baseTransContext: TransContext): String = {
+
     val result: String = exp match {
-    
+
       case NoExpNd() => ""
-        
+
       case IntLiteralExpNd(i: Long) => i.toString
-      
+
       case FloatLiteralExpNd(x: Double) => x.toString
 
-      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext) + " " + resBiOp(op) + " " + InvExpCodeGen(y,fqn,lockTransContext,baseTransContext)
-      
-      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
+      case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => InvExpCodeGen(x, fqn, lockTransContext, baseTransContext) + " " + resBiOp(op) + " " + InvExpCodeGen(y, fqn, lockTransContext, baseTransContext)
 
-      case MemberExpNd(x: ExpNd, name: String) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext) + "." + name
+      case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + InvExpCodeGen(x, fqn, lockTransContext, baseTransContext)
 
-      case FetchExpNd(x: ExpNd) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
+      case MemberExpNd(x: ExpNd, name: String) => InvExpCodeGen(x, fqn, lockTransContext, baseTransContext) + "." + name
 
-      case AsExpNd(x: ExpNd, _) => InvExpCodeGen(x,fqn,lockTransContext,baseTransContext)
-      
-      case NameExpNd( name : NameNd ) =>
+      case FetchExpNd(x: ExpNd) => InvExpCodeGen(x, fqn, lockTransContext, baseTransContext)
+
+      case AsExpNd(x: ExpNd, _) => InvExpCodeGen(x, fqn, lockTransContext, baseTransContext)
+
+      case NameExpNd(name: NameNd) =>
         var expCode = ""
         name.decl.get.parent match {
-          case Some(nd) => expCode =  baseTransContext.getHeap()+"["+baseTransContext.getObjRef()+"," + name.decl.get.fqn.toString() +"] " mkString
+          case Some(nd) => expCode = baseTransContext.getHeap() + "[" + baseTransContext.getObjRef() + "," + name.decl.get.fqn.toString() + "] " mkString
           case None => {}
         }
-      expCode
-      
+        expCode
+
       case CanReadOp(locSet) => {
-//        val transContextPer = new TransContext("LockPermission", transContext.getObjRef())
-        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef()+"," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+        //        val transContextPer = new TransContext("LockPermission", transContext.getObjRef())
+        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
       }
-      
+
       case CanWriteOp(locSet) => {
-//        val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        lockTransContext.getHeap() + "[" +lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+        //        val transContextPer = new TransContext("Permission", transContext.getObjRef())
+        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
       }
-        
-      case PermissionOp(objId) => ""// return the amount of permission 
-      
-      case ChainExpNd( ops : List[ChainingOperator], operands : List[ExpNd]) => InvExpCodeGen(operands(0),fqn,lockTransContext,baseTransContext) + " " + resOpChain(ops(0)) + " " + InvExpCodeGen(operands(1),fqn, lockTransContext,baseTransContext)
-      
+
+      case PermissionOp(objId) => "" // return the amount of permission
+
+      case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => InvExpCodeGen(operands(0), fqn, lockTransContext, baseTransContext) + " " + resOpChain(ops(0)) + " " + InvExpCodeGen(operands(1), fqn, lockTransContext, baseTransContext)
+
       case _ => exp.toString()
-    
-  }
+
+    }
     result
   }
-  
-  
-  
+
   // Build the Simple Boogie equivalent expression.
-  
+
   def buildBoogieExp(exp: ExpNd, buildFor: TransContext): String = {
-    
+
     val result: String = exp match {
 
       case NoExpNd() => ""
@@ -311,23 +312,23 @@ class ExpCodeGen() {
 
       case FloatLiteralExpNd(x: Double) => x.toString()
 
-      case NameExpNd(name: NameNd) => { 
+      case NameExpNd(name: NameNd) => {
         buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() + "]" mkString
-        
+
       }
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => buildBoogieExp(x, buildFor) + " " + resBiOp(op) + " " + buildBoogieExp(y, buildFor)
 
       case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => {
-        if(resUnaOp(op) == "'")
+        if (resUnaOp(op) == "'")
           buildBoogieExp(x, buildFor) // Heap Switching
-          else
-            resUnaOp(op) + buildBoogieExp(x,buildFor)      
+        else
+          resUnaOp(op) + buildBoogieExp(x, buildFor)
       }
 
       case MemberExpNd(x: ExpNd, name: String) => buildBoogieExp(x, buildFor) + "." + name
 
       case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
-        buildBoogieExp(operands(0),buildFor) + " " + resOpChain(ops(0)) + " " + buildBoogieExp(operands(1),buildFor) mkString
+        buildBoogieExp(operands(0), buildFor) + " " + resOpChain(ops(0)) + " " + buildBoogieExp(operands(1), buildFor) mkString
       }
       case FetchExpNd(x: ExpNd) => buildBoogieExp(x, buildFor)
 
@@ -339,8 +340,8 @@ class ExpCodeGen() {
   }
 
   // only generate  the expressions having name permited to read, false work to implement reading and writing permissions in one sub routine
-  
-  def defExpGen(exp: ExpNd, buildFor: TransContext) : String = { 
+
+  def defExpGen(exp: ExpNd, buildFor: TransContext): String = {
     val result: String = exp match {
 
       case NoExpNd() => ""
@@ -349,9 +350,9 @@ class ExpCodeGen() {
 
       case FloatLiteralExpNd(x: Double) => ""
 
-      case NameExpNd(name: NameNd) => { 
-        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() +"]" mkString
-        
+      case NameExpNd(name: NameNd) => {
+        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() + "]" mkString
+
       }
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => buildBoogieExp(x, buildFor) + " " + resBiOp(op) + " " + buildBoogieExp(y, buildFor)
 
@@ -360,7 +361,7 @@ class ExpCodeGen() {
       case MemberExpNd(x: ExpNd, name: String) => buildBoogieExp(x, buildFor) + "." + name
 
       case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
-        buildBoogieExp(operands(0),buildFor) + " " + resOpChain(ops(0)) + " " + buildBoogieExp(operands(1),buildFor) mkString
+        buildBoogieExp(operands(0), buildFor) + " " + resOpChain(ops(0)) + " " + buildBoogieExp(operands(1), buildFor) mkString
       }
       case FetchExpNd(x: ExpNd) => buildBoogieExp(x, buildFor)
 
@@ -372,22 +373,22 @@ class ExpCodeGen() {
   }
 
   // Get the expressions to assert the reading permissions
-  
+
   def buildReadingPerExp(exp: ExpNd, buildFor: TransContext): String = { // Permission Greater than '0.0'
 
     val result: String = exp match {
 
       case NameExpNd(name: NameNd) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() + "] > 0.0 " mkString
-      
+
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => {
         val xExp = buildReadingPerExp(x, buildFor)
         val yExp = buildReadingPerExp(y, buildFor)
-        val result = (xExp.isEmpty(),yExp.isEmpty()) match {
-          case (true,true) => ""
-          case (true,false) => buildReadingPerExp(x, buildFor)
-          case (false,true) => buildReadingPerExp(y, buildFor)
-          case (false,false) => buildReadingPerExp(x, buildFor) + " && " + buildReadingPerExp(y, buildFor) mkString
-          
+        val result = (xExp.isEmpty(), yExp.isEmpty()) match {
+          case (true, true) => ""
+          case (true, false) => buildReadingPerExp(x, buildFor)
+          case (false, true) => buildReadingPerExp(y, buildFor)
+          case (false, false) => buildReadingPerExp(x, buildFor) + " && " + buildReadingPerExp(y, buildFor) mkString
+
         }
         result
       }
@@ -399,29 +400,29 @@ class ExpCodeGen() {
       case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
         val xExp = buildReadingPerExp(operands(0), buildFor)
         val yExp = buildReadingPerExp(operands(1), buildFor)
-        val result = (xExp.isEmpty(),yExp.isEmpty()) match {
-          case (true,true) => ""
-          case (true,false) => buildReadingPerExp(operands(0), buildFor)
-          case (false,true) => buildReadingPerExp(operands(1), buildFor)
-          case (false,false) => buildReadingPerExp(operands(0), buildFor) + " && " + buildReadingPerExp(operands(1), buildFor) mkString 
+        val result = (xExp.isEmpty(), yExp.isEmpty()) match {
+          case (true, true) => ""
+          case (true, false) => buildReadingPerExp(operands(0), buildFor)
+          case (false, true) => buildReadingPerExp(operands(1), buildFor)
+          case (false, false) => buildReadingPerExp(operands(0), buildFor) + " && " + buildReadingPerExp(operands(1), buildFor) mkString
         }
         result
-        }
+      }
       case FetchExpNd(x: ExpNd) => buildReadingPerExp(x, buildFor)
 
       case AsExpNd(x: ExpNd, _) => buildReadingPerExp(x, buildFor)
-      
+
       case CanReadOp(x) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + x.getName().qn.toString() + "] > 0.0 " mkString
-      
+
       case CanWriteOp(y) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + y.getName().qn.toString() + "] == 1.0 " mkString
 
       case _ => ""
     }
     result
-  
+
   }
-  
-  def assertReadingPerExp(exp: ExpNd, buildFor: => TransContext): String = { 
+
+  def assertReadingPerExp(exp: ExpNd, buildFor: => TransContext): String = {
     // For Defindness of the invariant expression, drop the CanRead,CanWrite operations
     val result: String = exp match {
 
@@ -430,25 +431,27 @@ class ExpCodeGen() {
       case IntLiteralExpNd(i: Long) => "true"
 
       case FloatLiteralExpNd(x: Double) => "true"
-      
-      case CanReadOp(loc) =>  {   "true"  
+
+      case CanReadOp(loc) => {
+        "true"
         //buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
       }
-        
-      case CanWriteOp(loc) => { "true"
+
+      case CanWriteOp(loc) => {
+        "true"
         //buildFor.getHeap() + "[" + buildFor.getObjRef()+"," + loc.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
       }
 
-      case NameExpNd(name: NameNd) => { 
-        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString()+ "] > 0.0 " mkString
-        
+      case NameExpNd(name: NameNd) => {
+        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() + "] > 0.0 " mkString
+
       }
       case BinaryOpExpNd(op: BinaryOperator, x: ExpNd, y: ExpNd) => assertReadingPerExp(x, buildFor) + " && " + assertReadingPerExp(y, buildFor)
 
       case UnaryOpExpNd(op: UnaryOperator, x: ExpNd) => resUnaOp(op) + assertReadingPerExp(x, buildFor)
 
       case ChainExpNd(ops: List[ChainingOperator], operands: List[ExpNd]) => {
-        assertReadingPerExp(operands(0),buildFor) + " && " + assertReadingPerExp(operands(1),buildFor) mkString
+        assertReadingPerExp(operands(0), buildFor) + " && " + assertReadingPerExp(operands(1), buildFor) mkString
       }
       case MemberExpNd(x: ExpNd, name: String) => assertReadingPerExp(x, buildFor) + "." + name
 
@@ -460,11 +463,11 @@ class ExpCodeGen() {
     }
     result
   }
-  
+
   //Used for the defindness check to produce the aseertions on writing permission in expressions
-  
+
   def buildWritingPerExp(exp: ExpNd, buildFor: TransContext): String = { // Permission must be equal to 1.0;
-    
+
     val result: String = exp match {
 
       case NoExpNd() => ""
@@ -473,9 +476,9 @@ class ExpCodeGen() {
 
       case FloatLiteralExpNd(x: Double) => ""
 
-      case NameExpNd(name: NameNd) => { 
-        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString()+ "] == 1.0 " mkString
-        
+      case NameExpNd(name: NameNd) => {
+        buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + name.decl.get.fqn.toString() + "] == 1.0 " mkString
+
       }
       case MemberExpNd(x: ExpNd, name: String) => buildWritingPerExp(x, buildFor) + "." + name
 
@@ -488,7 +491,7 @@ class ExpCodeGen() {
     result
   }
 
-   private def chainingOpTrans(op: ChainingOperator): String = {
+  private def chainingOpTrans(op: ChainingOperator): String = {
     op match {
       case EqualOp => return "=="
       case NotEqualOp => return "!="
@@ -498,8 +501,8 @@ class ExpCodeGen() {
       case GreaterOrEqualOp => return ">="
     }
   }
-   
-   private def biOpTrans(op: BinaryOperator): String = {
+
+  private def biOpTrans(op: BinaryOperator): String = {
     op match {
       case OrOp => return "||"
       case AndOp => return "&&"
@@ -512,7 +515,7 @@ class ExpCodeGen() {
       case _ => return ""
     }
   }
-  
+
   private def resBiOp(op: BinaryOperator) = {
     val result = op match {
       case ImpliesOp => "==>"

@@ -277,6 +277,7 @@ extends Contracts {
 
             exp match {
                 case NoExpNd() => {}
+                case BooleanLiteralExpNd(b) => {}
                 case IntLiteralExpNd(i) => {}
                 case FloatLiteralExpNd(x) => {}
                 case NameExpNd( name ) => 
