@@ -20,6 +20,9 @@ class TypeChecker(
     val ty: Option[Type] = exp match {
       case NoExpNd() => None
 
+      case BooleanLiteralExpNd (b) => {
+        Some(bool)
+      }
       case IntLiteralExpNd(i) =>
         if (i <= (1L << 31)) Some(int32)
         else Some(int64)

@@ -23,10 +23,6 @@ class HarpoToBoogieTranslator {
 
   def getErrorReport(): ErrorReport = errorRecorder
 
-  def getBoogieOutput(outputBuffer: OutputBuilder): OutputBuilder = {
-    outputBuffer
-  }
-
   private var files = new ArrayBuffer[(String, String)]
 
   def addFile(fileName: String, fileText: String) {
@@ -67,13 +63,14 @@ class HarpoToBoogieTranslator {
             null
           }
         }
-      println(fileName, fileText, dl)
+
       if (dl != null) {
         for (decl <- dl.decls) {
           masterDeclList.addDeclaration(decl)
         }
       }
     }
+    println(masterDeclList.format(100))
     if (errorRecorder.getFatalCount() == 0) {
       println("Checker Start");
       val checker = new Checker(errorRecorder)
@@ -85,15 +82,20 @@ class HarpoToBoogieTranslator {
     // The boogie code generator
     if (errorRecorder.getFatalCount() == 0) {
       println("Fetal Errors= ", errorRecorder.getFatalCount());
+      println()
       val boogieCodeGen = new BoogieBackEnd(masterDeclList, transOutBuffer)
       transOutBuffer = boogieCodeGen.getBoogieCode();
     }
+    println(masterDeclList.format(100))
     (errorRecorder, transOutBuffer)
   }
 
   def runVerifer(text: String, verbose: Boolean): VerificationReport = {
 
-    val command = "boogie " + text;
+    val writer = new PrintWriter(new File("BoogieOutputScript.bpl"))
+    writer.write(text)
+    writer.close()
+    val command = "boogie BoogieOutputScript.bpl";
     /*
    * without c process will hang
    * ! will give back result

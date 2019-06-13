@@ -50,4 +50,8 @@ axiom (forall x:int :: Isint32(x) <==> min32 <=x&&x<=max32);
 function Isint64(int) returns (bool);
 axiom (forall x:int :: Isint64(x) <==> min64 <= x && x <= max64);
 
+type ClassName;
+function dtype(Ref) returns (ClassName);
+
+
 // Prelude ends
