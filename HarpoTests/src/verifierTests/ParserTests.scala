@@ -140,5 +140,34 @@ class ParserTests extends VerifierTestBase {
                 class)"""
     tryWithParser(str)
   }
+  
+    it should "parse when count>_0 guard" in {
+    val str = """ 
+              (class Counter()
+	              
+                claim count@0.5
+	              invariant canRead(count) /\ count >_ 0
+	              
+                proc increment()
+	                takes count@0.5
+	                pre count>_0
+	                post count'>0
+	                gives count@0.5
+		
+	              obj count: Int32 := 0
+	
+	             (thread (*t0*)
+		              (while true
+		                do
+			              (accept increment() when count>_0
+					               count := count+1;
+			                accept)
+		              while)
+	            thread)
+            class)"""
+    tryWithParser(str)
+  }
+  
+  
 }
 

@@ -235,7 +235,6 @@ class BoogieBackEnd {
         }
         case ClassDeclNd() => {
           val classCode = new ClassCodeGen( dlNd, outputBuffer )
-          classCode.classCodeGen()
         }
         case _ => {
           val code = "No main declarations were found"

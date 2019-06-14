@@ -232,9 +232,9 @@ private class ClassCodeGen( val dlNd : DeclNd, val outputBuffer : OutputBuilder 
         val expPairs = lhs zip rhs
         for ( ( lhs, rhs ) <- expPairs ) {
           val lhs_result = expObj.buildWritingPerExp( lhs, localTransContext )
+          outputBuffer.setError( "Do not have enough permission(s) on LHS of assignment", lhs.coord )
           if ( !( lockExpList.isEmpty ) ) {
             for ( lockPer <- lockExpList ) {
-              outputBuffer.setError( "Do not have enough permission(s) on LHS of assignment", lhs.coord )
               outputBuffer.put( "assert " )
               outputBuffer.put( lockPer.toString() + " + " )
             }
