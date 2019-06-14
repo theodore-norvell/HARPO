@@ -301,7 +301,7 @@ TOKEN :
 
 TOKEN :
 {
- < BOOL_LITERAL : "true" | "TRUE" | "false" | "FALSE" >
+ < BOOL_LITERAL : "true" | "false" >
 }
 
 TOKEN :

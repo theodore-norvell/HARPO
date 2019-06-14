@@ -14,7 +14,6 @@ import boogieBackEnd.BoogieErrorParser;
 import scala.sys.process.ProcessLogger;
 import scala.sys.process.Process;
 
-
 class HarpoToBoogieTranslator {
 
   private var errorRecorder = new StandardErrorRecorder()
@@ -90,32 +89,67 @@ class HarpoToBoogieTranslator {
     (errorRecorder, transOutBuffer)
   }
 
-  def runVerifer(text: String, verbose: Boolean): VerificationReport = {
+  //  def runVerifer(text: String, verbose: Boolean): VerificationReport = {
 
+  //    val writer = new PrintWriter(new File("BoogieOutputScript.bpl"))
+  //    writer.write(text)
+  //    writer.close()
+  //    val command = "boogie BoogieOutputScript.bpl";
+  //    /*
+  //   * without c process will hang
+  //   * ! will give back result
+  //   * !! gives back output in result
+  //   */
+  //
+  //    var log: String = "";
+  //
+  //    var result: String = "";
+  //
+  //    val logger = ProcessLogger((out) => result = out, (err) => log = err)
+  //
+  //    val output = Process(command).!(logger)
+  //
+  //    val outputDes = Process(command).!!
+  //
+  //    val ep: BoogieErrorParser = new BoogieErrorParser;
+  //
+  //    println(outputDes)
+  //
+  //    ep.parseBoogieOutput(outputDes)
+
+  def runVerifer(text: String, verbose: Boolean): VerificationReport = {
+    if (verbose) {
+      println(" ================== Boogie to Verify======================")
+      println(text)
+      println(" ================== End of Boogie to Verify======================")
+    }
     val writer = new PrintWriter(new File("BoogieOutputScript.bpl"))
     writer.write(text)
     writer.close()
+
     val command = "boogie BoogieOutputScript.bpl";
-    /*
-   * without c process will hang
-   * ! will give back result
-   * !! gives back output in result
-   */
-
-    var log: String = "";
-
-    var result: String = "";
-
-    val logger = ProcessLogger((out) => result = out, (err) => log = err)
-
-    val output = Process(command).!(logger)
-
-    val outputDes = Process(command).!!
-
-    val ep: BoogieErrorParser = new BoogieErrorParser;
-
-    ep.parseBoogieOutput(outputDes)
-
+    val stdOut: ArrayBuffer[String] = new ArrayBuffer[String]
+    val stdErr: ArrayBuffer[String] = new ArrayBuffer[String]
+    val logger = ProcessLogger((line) => stdOut += line, (line) => stdErr += line)
+    if (verbose) { println("Running boogie verifier") }
+    val exitValue = try {
+      Process(command).!(logger)
+    } catch {
+      case e: Throwable =>
+        println("Boogie execution bombed: Error is ", e.getMessage())
+        println("PATH is " + System.getenv("PATH"))
+        throw e;
+    }
+    if (verbose) {
+      println("Exit value is " + exitValue)
+      println(" ================== Boogie Verifier Standard Output Begin======================")
+      println(stdOut.mkString("\n"))
+      println(" ================== Boogie Verifier Standard Error Begin======================")
+      println(stdErr.mkString("\n"))
+      println("================== Boogie Verifier Results End======================")
+    }
+    val parser = new BoogieErrorParser
+    parser.parseBoogieOutput(stdOut)
   }
 
 }
