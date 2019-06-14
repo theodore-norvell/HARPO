@@ -84,9 +84,6 @@ class BoogieLineMappingTest extends VerifierTestBase {
     assertResult(10)(err.lineNumber)
     assertResult(1)(err.associatedLineNumbers.length)
     assertResult(3)(err.associatedLineNumbers(0))
-    
-    val builder = new OutputBuilder()
-    builder.
   }
 
   it should "deal with boogie with no errors" in {
