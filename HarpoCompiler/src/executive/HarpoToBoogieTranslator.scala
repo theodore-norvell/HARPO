@@ -57,7 +57,6 @@ class HarpoToBoogieTranslator {
                         masterDeclList.addDeclaration(decl) 
                         } }
         }
-<<<<<<< HEAD
         if( verbose ) {
             println("================== Begin: Master Declaration List ====================== \n\n")
             println( masterDeclList.format(80) )
@@ -65,8 +64,6 @@ class HarpoToBoogieTranslator {
         }
         
         // Checker passes
-=======
->>>>>>> temp-afv-inaam
         if( errorRecorder.getFatalCount() == 0) {
             if( verbose ) println("Checker Start");
             val checker = new Checker( errorRecorder )
@@ -77,7 +74,6 @@ class HarpoToBoogieTranslator {
         
         // The boogie code generator
         if( errorRecorder.getFatalCount() == 0) {
-<<<<<<< HEAD
             if( verbose )  {
                 println("Fatal Errors= ", errorRecorder.getFatalCount());
                 println(" ================== Begin: Master Declaration List after Checking ====================== \n\n")
@@ -126,13 +122,6 @@ class HarpoToBoogieTranslator {
         }    
         val parser = new BoogieErrorParser
         parser.parseBoogieOutput( stdOut )
-=======
-           println("Fetal Errors= ", errorRecorder.getFatalCount());
-           val boogieCodeGen=new BoogieBackEnd(masterDeclList, outputBuffer)
-           transOutBuffer = boogieCodeGen.getBoogieCode();
-           }
-        transOutBuffer
->>>>>>> temp-afv-inaam
     }
 
 }
