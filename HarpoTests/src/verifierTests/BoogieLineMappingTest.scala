@@ -42,6 +42,18 @@ class BoogieLineMappingTest extends VerifierTestBase {
     call r := F(r);
   } /* Mising close brace */
 """
+  val hasNoError = """procedure F(n: int) returns (r: int)
+  ensures 100 < n ==> r == n - 10;  // This postcondition is easy to check by hand
+  ensures n <= 100 ==> r == 91;     // Do you believe this one is true?
+{
+  if (100 < n) {
+    r := n - 10;
+  } else {
+    call r := F(n + 11);
+    call r := F(r);
+  }
+}
+"""
   val hasVerificationError = new OutputBuilder() 
   hasVerificationError.put( "procedure F(n: int) returns (r: int)" ) ; hasVerificationError.newLine
   hasVerificationError.put( "ensures 100 < n ==> r == n - 10;" ) ; hasVerificationError.newLine
@@ -75,15 +87,16 @@ class BoogieLineMappingTest extends VerifierTestBase {
 
   it should "deal with boogie verification errors" in {
     var translator = new HarpoToBoogieTranslator()
-    val vr: VerificationReport = translator.runVerifer(hasVerificationError, true)
-    
-    assertResult(0)(vr.otherErrorCount)
-    assertResult(1)(vr.verificationErrorCount)
-    
-    val err = vr.getVerificationError(0);
-    assertResult(10)(err.lineNumber)
-    assertResult(1)(err.associatedLineNumbers.length)
-    assertResult(3)(err.associatedLineNumbers(0))
+    assert(false) ; // TODO.
+//    val vr: VerificationReport = translator.runVerifer(hasVerificationError, true)
+//    
+//    assertResult(0)(vr.otherErrorCount)
+//    assertResult(1)(vr.verificationErrorCount)
+//    
+//    val err = vr.getVerificationError(0);
+//    assertResult(10)(err.lineNumber)
+//    assertResult(1)(err.associatedLineNumbers.length)
+//    assertResult(3)(err.associatedLineNumbers(0))
   }
 
   it should "deal with boogie with no errors" in {
