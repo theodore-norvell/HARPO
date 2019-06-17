@@ -17,3 +17,4 @@ bin/
 =======
 BoogieOutputScript.bpl
 >>>>>>> origin/temp-afv-tsn
+*.rej
