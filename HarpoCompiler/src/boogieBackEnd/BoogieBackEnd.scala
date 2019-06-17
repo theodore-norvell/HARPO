@@ -201,6 +201,7 @@ import util.Format
 import scala.text.Document
 import util.OutputBuilder;
 
+<<<<<<< HEAD
 class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer: OutputBuilder) extends Format {
   
 	def getBoogieCode(): OutputBuilder = {
@@ -216,6 +217,50 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
           val contents = Source.fromFile(prelude)
           val boogiePrelude = try contents.mkString finally contents.close()
           return boogiePrelude
+=======
+class BoogieBackEnd {
+
+  def getBoogieCode( masterDeclList : frontEnd.AST.DeclList ) : OutputBuilder = {
+    val boogiePrelude = getBoogiePrelude()
+    val outputBuilder = new OutputBuilder
+    outputBuilder.put( boogiePrelude )
+    outputBuilder.newLine
+    genBoogieCode( masterDeclList, outputBuilder )
+    outputBuilder
+  }
+  private def getBoogiePrelude() : String = {
+    val preludeUrl : URL = this.getClass().getResource( "/boogieBackEnd/BoogiePrelude.txt" )
+    val prelude = new File( preludeUrl.toURI() )
+    val contents = Source.fromFile( prelude )
+    val boogiePrelude = try contents.mkString finally contents.close()
+    return boogiePrelude
+  }
+
+  private def genBoogieCode( dl : DeclList, outputBuffer : OutputBuilder ) : Unit = {
+
+    for ( dlNd : DeclNd <- dl.decls ) {
+      dlNd match {
+        case ObjDeclNd( isGhost, isConst, acc, ty, initExp ) => {
+          val objType : String = TypeCodeGen( ty )
+          val objInit : String = new ExpCodeGen().initExpCodeGen( initExp )
+          outputBuffer.newLine
+          outputBuffer.put( "\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";" )
+        }
+        case IntfDeclNd() => {
+          outputBuffer.newLine
+          outputBuffer.put( "\nconst unique " + dlNd.name + ": className;" )
+        }
+        case ClassDeclNd() => {
+          val classCode = new ClassCodeGen( dlNd, outputBuffer )
+        }
+        case _ => {
+          val code = "No main declarations were found"
+          outputBuffer
+        }
+      }
+    }
+  }
+>>>>>>> origin/temp-afv-tsn
 }
 
 	private def genBoogieCode( dl : DeclList) : OutputBuilder = {

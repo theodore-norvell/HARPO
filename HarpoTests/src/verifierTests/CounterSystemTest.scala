@@ -166,7 +166,10 @@ class CounterSystemTest extends VerifierTestBase {
 }
 }
  """)
+<<<<<<< HEAD
     val cmd = "Boogie " + BoogieSource + ".bpl" 
     val output = cmd.!!
+=======
+>>>>>>> origin/temp-afv-tsn
   }
 }

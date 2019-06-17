@@ -14,6 +14,7 @@ import scala.io.Source
 /**
  * @author nhacnguyen
  */
+<<<<<<< HEAD
 class CBackEnd(val dl : frontEnd.AST.DeclList) 
 {
 private val cfgBuilder = new CFGBuilder()
@@ -115,5 +116,108 @@ private def genDeclCode() = {
   }
   initializeCode = "void initialize(){\n" + initializeCode + "}\n"     
   cCode + initializeCode + "\n"
+=======
+class CBackEnd {
+ 
+  private val cfgBuilder = new CFGBuilder()
+  private val cfgFactory = new CFGFactory()
+  private val cfgDivider = new CFGDivider
+  private val codeGenerator = new CodeGenerator()
+
+  def getCCode( dl : frontEnd.AST.DeclList ) : String = {
+    val code = genHeaderCode() + genDeclCode( dl ) + genConcurentCode( dl )
+    NameManager.clear()
+    return code
+  }
+
+  private def genHeaderCode() : String = {
+    val headerUrl : URL = this.getClass().getResource( "/cBackEnd/harpoPrelude.h" )
+    val header = new File( headerUrl.toURI() )
+    val contents = Source.fromFile( header )
+    val str = try contents.mkString finally contents.close()
+
+    str
+  }
+
+  private def genConcurentCode( dl : frontEnd.AST.DeclList ) : String = {
+    for ( dlNd : DeclNd <- dl.decls ) {
+      dlNd match {
+        case dlNd : ClassDeclNd =>
+          for ( dllNd : DeclNd <- dlNd.directMembers ) {
+            dllNd match {
+              case ThreadDeclNd( claimList : List[ClaimNd], block : CommandNd ) =>
+                val threadName = dllNd.name.replace( "#", "" )
+                var startNd = cfgFactory.makeStartCfgNd( "FuncThread_" + dlNd.name + threadName, dlNd.name, 0 )
+                cfgBuilder.run( block, startNd )
+                //print first graph here
+                println( "\n________________________________________" )
+                println( "## Printing original CFG ###############\n" )
+                println( CFG.printCFG( startNd ) )
+
+                var resList = cfgDivider.divide( startNd, startNd, List() )
+                //print 2nd graph here
+                for ( node : CFGNd <- resList ) {
+                  println( "________________________________________" )
+                  println( "## Printing decomposed CFG #############\n" )
+                  println( CFG.printCFG( node ) )
+                }
+
+                for ( stNd : CFGNd <- resList ) {
+                  codeGenerator.runGenerateS( stNd )
+                }
+              case _ =>
+            }
+          }
+        case _ => {}
+      }
+    }
+    val concurentCode = codeGenerator.getCode()
+    concurentCode
+  }
+
+  private def genDeclCode( dl : frontEnd.AST.DeclList ) = {
+    var globalObjCode = ""
+    var initializeCode = ""
+    var nameTbl = HashMap[String, HashMap[String, String]]()
+    var cCode = ""
+
+    for ( dlNd <- dl.decls ) {
+      dlNd match {
+        case ObjDeclNd( isGhost, isConst, acc, ty, init ) => {
+          if ( dlNd.name != "true" && dlNd.name != "false" ) {
+            val code = ObjCodeGen( dlNd )
+            init match {
+              case NewInitExpNd( ty : TypeNd, args : List[ExpNd] ) =>
+                globalObjCode = code._1 + ";\n"
+                initializeCode += code._2
+              case ArrayInitExpNd( forDecl : ForDecl, bound : ExpNd, a : InitExpNd ) =>
+                globalObjCode = code._1 + ";\n"
+                initializeCode += code._2
+              case IfInitExpNd( guard : ExpNd, a : InitExpNd, b : InitExpNd ) =>
+                globalObjCode = code._1 + ";\n"
+                initializeCode += code._2
+              case _ => globalObjCode = code._1 + " = " + code._2 + ";\n"
+            }
+            cCode += globalObjCode
+          }
+        }
+        case IntfDeclNd() => {
+          nameTbl( dlNd.name ) = HashMap[String, String]()
+          val code = IntfCodeGen( dlNd, nameTbl )
+          cCode += code
+        }
+
+        case ClassDeclNd() => {
+          val code = ClassCodeGen( dlNd, nameTbl )
+          cCode += code
+        }
+
+        case _ => {}
+      }
+    }
+    initializeCode = "void initialize(){\n" + initializeCode + "}\n"
+    cCode + initializeCode + "\n"
+  }
+>>>>>>> origin/temp-afv-tsn
 }
 }

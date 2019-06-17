@@ -12,4 +12,8 @@ RemoteSystemsTempFiles/*
 bin/
 .DS_Store
 *.tex.Backup-*
+<<<<<<< HEAD
 *.bpl
+=======
+BoogieOutputScript.bpl
+>>>>>>> origin/temp-afv-tsn

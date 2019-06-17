@@ -301,7 +301,11 @@ TOKEN :
 
 TOKEN :
 {
+<<<<<<< HEAD
  < BOOL_LITERAL : "true" | "false" >
+=======
+ < BOOL_LITERAL : "true" | "TRUE" | "false" | "FALSE" >
+>>>>>>> origin/temp-afv-tsn
 }
 
 TOKEN :
