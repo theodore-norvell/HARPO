@@ -219,19 +219,26 @@ class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer
 }
 
 	private def genBoogieCode( dl : DeclList) : OutputBuilder = {
+			    
+	        var globalObjCode = ""
+					var initializeCode = ""
+					
+					var globalObjects = ""
+					var interfaces = ""
+					var classes = ""
 					
 				 for(dlNd : DeclNd <- dl.decls) {
 						dlNd match{ 						
 						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
 						  val objType: String = TypeCodeGen(ty)
 						  val objInit: String = new ExpCodeGen().initExpCodeGen(initExp)
-						  //outputBuffer.newLine
-						  //outputBuffer.put("\n const unique " + dlNd.fqn + ":" + "Field " + objType + ";") //TODO
+						  outputBuffer.newLine
+						  outputBuffer.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
 						}
 						case IntfDeclNd() => {
-						  if(dlNd != ()){
+						  interfaces += "\nconst unique " + dlNd.name + ": className;" 
 						  outputBuffer.newLine
-						  outputBuffer.put( "\nconst unique " + dlNd.name + ": className;")}
+						  outputBuffer.put( "\nconst unique " + dlNd.name + ": className;")
 						}	
 						case ClassDeclNd() => {
 						  val classCode=new ClassCodeGen(dlNd, outputBuffer)

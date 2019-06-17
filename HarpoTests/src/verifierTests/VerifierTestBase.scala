@@ -58,7 +58,7 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
     println("\n\n\nVerifier start")
     val verify = new HarpoToBoogieTranslator()
     verify.addFile("HarpoSourceCode.harpo", str)
-    val (errorRecorder, transBuffer): (ErrorRecorder, OutputBuilder) = verify.runHarpoToBoogieTrans(true) // for printing verbose
+    val (errorRecorder, transBuffer): (ErrorRecorder, OutputBuilder) = verify.runHarpoToBoogieTrans(true)
 
     assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
     assertResult(expectedWarningErrors)(errorRecorder.getWarningCount())
