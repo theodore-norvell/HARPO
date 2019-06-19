@@ -80,9 +80,9 @@ class HarpoToBoogieTranslator {
                 println( masterDeclList.format(80) )
                 println(" ================== End: Master Declaration List after Checking ======================\n\n")
             }
-            val boogieCodeGen=new BoogieBackEnd()
-            val transOutBuffer = boogieCodeGen.getBoogieCode(masterDeclList );
-            (errorRecorder, transOutBuffer) ;
+            val boogie_backEnd =new BoogieBackEnd()
+            boogie_backEnd.genBoogieCode(masterDeclList );
+            (errorRecorder, boogie_backEnd.getOutputBuilder)
         }
         else {
             (errorRecorder, null) 

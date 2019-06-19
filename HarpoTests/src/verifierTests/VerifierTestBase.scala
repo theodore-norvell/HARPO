@@ -62,16 +62,18 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
 
         assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
         assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
-
-        if ( errorRecorder.getFatalCount() == 0 ) {
+        
+        transBuffer.newLine
+        val text : String = transBuffer.result().mkString( "\n" )
+        val ret = if ( errorRecorder.getFatalCount() == 0 ) {
             transBuffer.newLine
-            val text : String = transBuffer.result().mkString( "\n" )
             val vr : VerificationReport = verify.runVerifer( text, true )    
             // TODO process the report.
             text 
         } else {
             "Fatal errors"
         }
+        text
     }
 
     def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean ) : StandardErrorRecorder = {
