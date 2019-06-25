@@ -206,6 +206,10 @@ class AST{
        override def pp = Pretty.func( "LocSetNd", nameExp )
        override def getName() = nameExp.name;
     }
+   case class ArrayExpLSN(arrayExp : ArrayExpNd)(coord: AST.Coord) extends LocSetNd(coord){
+      override def pp = Pretty.func("ArrayExpLSN", arrayExp)
+      override def getName() = arrayExp.name.name
+      }
     
     
     // Add LocSet
@@ -466,6 +470,9 @@ class AST{
         override def ppp = Pretty.func("ObjIdNd", x)
     }
     
+    case class ArrayExpNd(name : NameExpNd, defined_iterator: String, used_iterator: String, offSet: ExpNd, upperBound: ExpNd) (coord : AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("ArrayExpNd", name, defined_iterator, defined_iterator, offSet , upperBound )
+    }
     
    /**************************/
    /** Condition Operations**/

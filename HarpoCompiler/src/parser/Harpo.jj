@@ -301,14 +301,15 @@ TOKEN :
 
 TOKEN :
 {
- < BOOL_LITERAL : "true" | "TRUE" | "false" | "FALSE" >
+  < BOOL_LITERAL :
+    "true"
+  | "false" >
 }
 
 TOKEN :
 {
   < NAME : [ "a"-"z", "A"-"Z", "_", "$" ] ([ "a"-"z", "A"-"Z", "_", "$", "0"-"9" ])* >
 }
-
 
 TOKEN :
 {	
@@ -1027,15 +1028,29 @@ LocSetNd LocSet() :
   NameExpNd objId;
   Token tk = getToken(1);
   LocSetNd ls;
+  String name_Str;
+  NameExpNd arrayName;
+  String def_i, use_i;
+  ExpNd offSet, upperBound;
+  ArrayExpNd arrayExp;
 }
 {
-  objId = ObjectName()
-  {
-    ls = builder.makeObjectIdLSN(objId, getCoord(tk));
-  }
-  {
-    return ls;
-  }
+  LOOKAHEAD("{" Name() ":")
+  (
+    "{" def_i = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" tk = "." arrayName = ObjectName() "[" use_i = Name() "]" "}"
+    {
+      arrayExp = builder.makeArrayExpNd(arrayName, def_i, use_i, offSet, upperBound, getCoord(tk));
+      return builder.makeArrayExpLSN(arrayExp, getCoord(tk));
+    }
+  )
+|
+  LOOKAHEAD(ObjectName())
+  (
+    objId = ObjectName()
+    {
+      return builder.makeObjectIdLSN(objId, getCoord(tk));
+    }
+  )
 }
 
 ExpNd DefaultPermission() :
@@ -1874,13 +1889,11 @@ ExpNd Exp8() :
   {
     return builder.realLiteralExp(tk.image, getCoord(tk));
   }
-
 | 
-  tk =  < BOOL_LITERAL >
+  tk = < BOOL_LITERAL >
   {
-	return builder.booleanLiteralExp(tk.image, getCoord(tk));
+    return builder.booleanLiteralExp(tk.image, getCoord(tk));
   }
-  
 | 
   tk = "canRead" "(" locSet = LocSet() ")"
   {
@@ -1896,8 +1909,7 @@ ExpNd Exp8() :
   {
     return builder.makePermissionOp(objId, getCoord(tk));
   }
-|
- 
+| 
   "(" x = Exp() ")"
   {
     return x;
@@ -1968,6 +1980,23 @@ ExpNd Lock() :
   {
     return r;
   } // ObjectId is prioritized, 
+}
+
+ArrayExpNd ArrayExp() :
+{
+  String name_Str;
+  NameExpNd arrayName;
+  String def_i, use_i;
+  ExpNd offSet, upperBound;
+  ArrayExpNd arrayExp;
+  Token tk = getToken(1);
+}
+{
+  "{" def_i = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" tk = "." arrayName = ObjectName() "[" use_i = Name() "]" "}"
+  {
+    arrayExp = builder.makeArrayExpNd(arrayName, def_i, use_i, offSet, upperBound, getCoord(tk));
+    return arrayExp;
+  }
 }
 
 NameExpNd ObjectName() :

@@ -44,6 +44,10 @@ class Builder(val errorRecorder: ErrorRecorder) {
   def add(lsl: LocSetList, lsn: LocSetNd) { lsl += lsn; }
 
   def makeObjectIdLSN(objId: NameExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+  
+  def makeArrayExpNd (name : NameExpNd, def_i: String , use_i: String, offSet: ExpNd, upperBound: ExpNd, coord: AST.Coord) = new ArrayExpNd(name,def_i,use_i, offSet,upperBound)(coord)
+  
+  def makeArrayExpLSN (arrayExp : ArrayExpNd, coord: AST.Coord) = new ArrayExpLSN (arrayExp) (coord)
 
   // Sequence
 
