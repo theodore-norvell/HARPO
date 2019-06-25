@@ -124,6 +124,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put("var oldHeap, preHeap, tempHeap: HeapType;")
           outputBuilder.newLine
 
+          // get all the lock variables  declared here
           //Thread Claim Code Generation
           for (claim <- claimList) {
             claimCodeGen(claim)
@@ -345,12 +346,16 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       case WhileCmdNd(guard, lil, body) => { //TODO use the Loop Invariant
 
         var loopInvList = lil;
-        if ("true" == expObj.checkGuard(guard)) {
-          outputBuilder.newLine
-          outputBuilder.put("while(true)")
-        } else {
-          outputBuilder.newLine
-          outputBuilder.put("while(" + expObj.buildBoogieExp(guard, transContext) + ")") // build guard expression, definedness of exxpression
+
+        guard match {
+          case BooleanLiteralExpNd(b) => {
+            outputBuilder.newLine
+            outputBuilder.put("while( " + expObj.simpleExpCodeGen(guard) + ")")
+          }
+          case _ => {           // build guard expression, definedness of exxpression
+            outputBuilder.newLine
+            outputBuilder.put("while(" + expObj.buildBoogieExp(guard, transContext) + ")")
+          }
         }
         if (lil.isEmpty) {
           transContext.reset()
