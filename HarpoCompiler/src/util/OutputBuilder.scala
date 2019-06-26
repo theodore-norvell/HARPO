@@ -141,6 +141,11 @@ class OutputBuilder extends Contracts {
     }
     
     /** Obtain the string built so far. */
+    def resultAsString() : String =
+        pre( atNewLine )
+        .in{ builder.iterator.mkString( "\n" ) }
+    
+    /** Obtain the string built so far. */
     def result() : Iterator[String] =
         pre( atNewLine )
         .in{ builder.iterator }

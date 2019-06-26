@@ -11,6 +11,8 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
     private val fatals : Buffer[HarpoError] = new ArrayBuffer[HarpoError]() ;
     
     private val warnings : Buffer[HarpoError] = new ArrayBuffer[HarpoError]() ;
+    
+    private val verifications : Buffer[HarpoError] = new ArrayBuffer[HarpoError]() ;
   
     def reportFatal( mess : String, coord : AST.Coord ) {
         val err = new HarpoError( mess, coord )
@@ -22,6 +24,12 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
         val err = new HarpoError( mess, coord )
         errors.append(  err )
         warnings.append(  err )
+    }
+    
+    def reportVerification( mess : String, coord : AST.Coord ) {
+        val err = new HarpoError( mess, coord )
+        errors.append(  err )
+        verifications.append(  err )
     }
     
     def bailOut() : Nothing = throw new CompilerBailOutException() 
@@ -44,6 +52,12 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
     
     def getWarningCoord( i : Int ) : AST.Coord = warnings(i).coord
     
+    def getVerificationCount() : Int = verifications.length
+    
+    def getVerificationText( i : Int ) : String = verifications(i).text
+    
+    def getVerificationCoord( i : Int ) : AST.Coord = verifications(i).coord
+    
     def printErrors( out : java.io.PrintStream ) {
         out.println( "Fatal errors" );
         for( err <- fatals ) {
@@ -53,6 +67,12 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
         }
         out.println( "Warning errors" );
         for( err <- warnings ) {
+          out.print( err.coord )
+          out.print( " " )
+          out.println( err.text )
+        }
+        out.println( "Verification errors" );
+        for( err <- verifications ) {
           out.print( err.coord )
           out.print( " " )
           out.println( err.text )

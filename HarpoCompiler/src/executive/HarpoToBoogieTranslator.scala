@@ -21,7 +21,16 @@ class HarpoToBoogieTranslator {
         files += ((fileName, fileText))
     }
     
-    /** Translate the give files to Boogie.
+    def translateAndVerify( verbose : Boolean  ) : ErrorRecorder = {
+        val (errors, builder) = runHarpoToBoogieTrans( verbose )
+        if( errors.getFatalCount() == 0 ) {
+            val vr = runVerifier( builder, verbose )
+            vr.reportErrors( errors, builder ) 
+        }
+        errors
+    }
+    
+    /** Translate the given files to Boogie.
      *  Postcondition: If the number of fatal errors is 0, the outputbuilder will not be null.
      */
     def runHarpoToBoogieTrans( verbose : Boolean ) : (ErrorRecorder, OutputBuilder) = {
@@ -89,7 +98,7 @@ class HarpoToBoogieTranslator {
         }
     }
 
-    def runVerifer( text : String, verbose : Boolean ) : VerificationReport = {
+    def runVerifier( text : String, verbose : Boolean ) : VerificationReport = {
         if ( verbose ) {
             println( " ================== Boogie to Verify======================" )
             println( text )
@@ -122,6 +131,11 @@ class HarpoToBoogieTranslator {
         }    
         val parser = new BoogieErrorParser
         parser.parseBoogieOutput( stdOut )
+    }
+    
+    
+    def runVerifier( builder : OutputBuilder, verbose : Boolean ) : VerificationReport = {
+        runVerifier( builder.resultAsString(), verbose ) 
     }
 
 }
