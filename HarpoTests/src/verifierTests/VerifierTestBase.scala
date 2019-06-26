@@ -47,18 +47,12 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
         println( "<<<<<<<<<<<<<Finished " + td.name + " <<<<<<<<<<<<<<<<<" )
     }
 
-    def tryWithParser( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
-        tryWith( str, expectedFatalErrors, expectedWarningErrors, false )
-
-    def tryWithChecker( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) =
-        tryWith( str, expectedFatalErrors, expectedWarningErrors, true )
-
     def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) : String = {
 
-        println( "\n\n\nVerifier start" )
-        val verify = new HarpoToBoogieTranslator()
-        verify.addFile( "HarpoSourceCode.harpo", str )
-        val ( errorRecorder, transBuffer ) : (ErrorRecorder, OutputBuilder) = verify.runHarpoToBoogieTrans( true )
+        println( "\n\n\nTranslation start" )
+        val translator = new HarpoToBoogieTranslator()
+        translator.addFile( "HarpoSourceCode.harpo", str )
+        val ( errorRecorder, transBuffer ) : (ErrorRecorder, OutputBuilder) = translator.runHarpoToBoogieTrans( true )
 
         assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
         assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
@@ -66,74 +60,20 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
         if ( errorRecorder.getFatalCount() == 0 ) {
             transBuffer.newLine
             val text : String = transBuffer.result().mkString( "\n" )
-            val vr : VerificationReport = verify.runVerifer( text, true )    
-            // TODO process the report.
             text 
         } else {
             "Fatal errors"
         }
     }
-
-    def tryWith( str : String, expectedFatalErrors : Int, expectedWarningErrors : Int, runChecker : Boolean ) : StandardErrorRecorder = {
-
-        // Build the builder and the parser
-        val errorRecorder = new StandardErrorRecorder()
-        val reader = new StringReader( str )
-        val p : HarpoParser = new HarpoParser( reader )
-        val builder = new frontEnd.Builder( errorRecorder );
-        p.setBuilder( builder )
-
-        // Run the parser.
-
-        val dl : frontEnd.AST.DeclList =
-            try { p.Start().asInstanceOf[frontEnd.AST.DeclList] }
-            catch {
-                case ex : ParseException => {
-                    val coord = if ( ex.currentToken != null ) AST.Coord( "fileName", ex.currentToken.beginLine, ex.currentToken.beginColumn )
-                    else AST.Coord( "fileName" );
-                    errorRecorder.reportFatal( ex.getMessage(), coord )
-                    null
-                }
-                case ex : TokenMgrError => {
-                    val coord = AST.Coord( "fileName" )
-                    errorRecorder.reportFatal( ex.getMessage(), coord )
-                    null
-                }
-            }
-
-        // Output all errors
-        if ( errorRecorder.getTotalErrorCount() > 0 ) {
-            println( "-----------------------------" );
-            for ( i <- 0 until errorRecorder.getTotalErrorCount() )
-                println( errorRecorder.getErrorCoord( i ) + " " + errorRecorder.getErrorText( i ) );
-        }
-
-        if ( runChecker ) {
-            assert( errorRecorder.getFatalCount() == 0, "1st pass error prevents checker from running." )
-            val checker = new Checker( errorRecorder )
-            try {
-                checker.runChecker( dl )
-            } // The only exception that the checker should throw is a Bail.
-            catch {
-                case e : CompilerBailOutException =>
-                    println( "----The checker has bailed---" );
-            }
-
-            // Output the tree.
-            println( "----The AST after checking---" );
-            println( dl.format( 80 ) )
-            println
-            println( "---------------------------------------" );
-
-            // Output all errors
-            if ( errorRecorder.getTotalErrorCount() > 0 ) {
-                println( "-----------------------------" )
-                for ( i <- 0 until errorRecorder.getTotalErrorCount() )
-                    println( errorRecorder.getErrorCoord( i ) + " " + errorRecorder.getErrorText( i ) );
-            }
-        }
-        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
-        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
-        errorRecorder
+    
+    def translateAndVerify(
+        str : String,
+        expectedFatalErrors : Int = 0,
+        expectedWarningErrors : Int = 0,
+        expectedVerificationErrors : Int = 0 )
+    : ErrorRecorder = {
+        val translator = new HarpoToBoogieTranslator()
+        translator.addFile( "HarpoSourceCode.harpo", str )
+        translator.translateAndVerify( true ) 
     }
 }

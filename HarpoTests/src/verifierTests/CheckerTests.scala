@@ -14,8 +14,10 @@ import parser.TokenMgrError
 import frontEnd.ErrorRecorder
 import frontEnd.AST
 
+import tests.TestsBase
+
 @RunWith(classOf[JUnitRunner])
-class CheckerTests extends VerifierTestBase {
+class CheckerTests extends TestsBase {
 
   "The Checker" should "check an empty file" in {
     val str = ""
