@@ -13,23 +13,23 @@ import boogieBackEnd.VerificationReport;
 import boogieBackEnd.BoogieErrorParser;
 
 object HarpoVerifier extends App {
-    val verbose : Boolean = true
-    println( "\n\n\nVerifier start" )
-    var translator = new HarpoToBoogieTranslator()
-    translator.addFile( "HarpoSourceCode.harpo", getHarpoSource() )
-    val errorRecorder = translator.translateAndVerify( true )
 
-    errorRecorder.printErrors( System.out )
+  def getHarpoSource(): String = {
+    val sourceUrl: URL = this.getClass().getResource("/ioSourceFiles/HarpoSourceCode.text")
+    val harpoSource = new File(sourceUrl.toURI())
+    val contents = Source.fromFile(harpoSource)
+    val sourceString = try contents.mkString finally contents.close()
+    return sourceString
+  }
+  
+  
+  val verbose : Boolean = true
+  println( "\n\n\nVerifier start" )
+  var translator = new HarpoToBoogieTranslator()
+  translator.addFile( "HarpoSourceCode.harpo", getHarpoSource() )
+  val errorRecorder = translator.translateAndVerify( verbose )
     
-    println( "\n\n\nVerifier end" )
-
-    def getHarpoSource() : String = {
-        val sourceUrl : URL = this.getClass().getResource( "/ioSourceFiles/HarpoSourceCode.text" )
-        val harpoSource = new File( sourceUrl.toURI() )
-        val contents = Source.fromFile( harpoSource )
-        val sourceString = try contents.mkString finally contents.close()
-        return sourceString
-    }
+  errorRecorder.printErrors( System.out )
 }
 
 

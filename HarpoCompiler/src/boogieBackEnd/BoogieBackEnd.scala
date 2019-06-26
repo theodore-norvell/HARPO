@@ -203,42 +203,49 @@ import util.OutputBuilder;
 
 class BoogieBackEnd {
 
-  def getBoogieCode( masterDeclList : frontEnd.AST.DeclList ) : OutputBuilder = {
-    val boogiePrelude = getBoogiePrelude()
-    val outputBuilder = new OutputBuilder
-    outputBuilder.put( boogiePrelude )
-    outputBuilder.newLine
-    genBoogieCode( masterDeclList, outputBuilder )
-    outputBuilder
+  protected var outputBuilder = new OutputBuilder;
+
+  def getOutputBuilder: OutputBuilder = this.outputBuilder;
+
+  def genBoogieCode(masterDeclList: frontEnd.AST.DeclList): OutputBuilder = {
+    genBoogiePrelude("/boogieBackEnd/BoogiePrelude.txt")
+    genBoogieTranslation(masterDeclList)
+    this.outputBuilder
   }
-  private def getBoogiePrelude() : String = {
-    val preludeUrl : URL = this.getClass().getResource( "/boogieBackEnd/BoogiePrelude.txt" )
-    val prelude = new File( preludeUrl.toURI() )
-    val contents = Source.fromFile( prelude )
-    val boogiePrelude = try contents.mkString finally contents.close()
-    return boogiePrelude
+  private def genBoogiePrelude(fileName: String): Unit = {
+    val preludeUrl: URL = this.getClass().getResource(fileName)
+    val prelude = new File(preludeUrl.toURI())
+    val contents = Source.fromFile(prelude)
+    try {
+      for (line <- contents.getLines) {
+        outputBuilder.put(line)
+        outputBuilder.newLine
+      }
+    } finally contents.close()
   }
 
-  private def genBoogieCode( dl : DeclList, outputBuffer : OutputBuilder ) : Unit = {
-
-    for ( dlNd : DeclNd <- dl.decls ) {
+  private def genBoogieTranslation(dl: DeclList): Unit = {
+    //Iterate the top level declaration nodes
+    for (dlNd: DeclNd <- dl.decls) {
       dlNd match {
-        case ObjDeclNd( isGhost, isConst, acc, ty, initExp ) => {
-          val objType : String = TypeCodeGen( ty )
-          val objInit : String = new ExpCodeGen().initExpCodeGen( initExp )
-          outputBuffer.newLine
-          outputBuffer.put( "\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";" )
+        case ObjDeclNd(isGhost, isConst, acc, ty, initExp) => {
+          val objType: String = TypeCodeGen(ty)
+          val objInit: String = new ExpCodeGen().initExpCodeGen(initExp)
+          outputBuilder.newLine
+          outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
         }
         case IntfDeclNd() => {
-          outputBuffer.newLine
-          outputBuffer.put( "\nconst unique " + dlNd.name + ": className;" )
+          outputBuilder.newLine
+          outputBuilder.put("\nconst unique " + dlNd.name + ": className;")
         }
         case ClassDeclNd() => {
-          val classCode = new ClassCodeGen( dlNd, outputBuffer )
+          val classCode = new ClassCodeGen(dlNd, outputBuilder)
+          classCode.classCodeGen()
+          outputBuilder = classCode.getOutputBuilder()
+          outputBuilder.newLine
         }
         case _ => {
           val code = "No main declarations were found"
-          outputBuffer
         }
       }
     }
