@@ -56,10 +56,10 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
 
         assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
         assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
-
+        
         if ( errorRecorder.getFatalCount() == 0 ) {
             transBuffer.newLine
-            val text : String = transBuffer.result().mkString( "\n" )
+            val text : String = transBuffer.resultAsString()
             text 
         } else {
             "Fatal errors"
@@ -74,6 +74,10 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
     : ErrorRecorder = {
         val translator = new HarpoToBoogieTranslator()
         translator.addFile( "HarpoSourceCode.harpo", str )
-        translator.translateAndVerify( true ) 
+        val errorRecorder = translator.translateAndVerify( true ) 
+        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
+        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
+        assertResult( expectedVerificationErrors)( errorRecorder.getVerificationCount() )
+        errorRecorder
     }
 }
