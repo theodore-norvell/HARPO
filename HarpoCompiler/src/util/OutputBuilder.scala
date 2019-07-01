@@ -9,16 +9,57 @@ import scala.collection.mutable.ArrayBuffer ;
 
  */
 class OutputBuilder extends Contracts {
-    protected val builder = new ArrayBuffer[String]
-    protected val currentLine = new StringBuilder
+    // This is not pretty, but it seems to work.
+    // We use a doubly linked list with a sentinel at either end.
+    // Lines go through 3 stages of life.
+    //  * Not started (and not done)
+    //  * Started and not done
+    //  * Started and done
+    // Lines that are not started, don't contribute to the output.
+  
+    class Line {
+        protected[OutputBuilder] var indentLevel : Int = 0
+        protected[OutputBuilder] var text = "" 
+        protected[OutputBuilder] var error : Tuple2[String, Coord] = null ;
+        protected[OutputBuilder] var prev : Line = null 
+        protected[OutputBuilder] var next : Line = null 
+        protected[OutputBuilder] var started = false
+        protected[OutputBuilder] var done = false
+        protected[OutputBuilder] var errorSetOnThisLine = false 
+    }
     
-    protected var indentationLevel = 0 ;
-    protected val indentationString = "    " ;
-    protected var atNewLine = true ;
+    class MyIterator extends Iterator[String] {
+        var cursor = head.next ;
+        override def hasNext : Boolean = {
+            while( !cursor.started && cursor.next != null ) cursor = cursor.next 
+            cursor.next != null ; }
+        override def next() : String = pre( hasNext ).in{
+            val v = "    " * cursor.indentLevel + cursor.text
+            cursor = cursor.next ;
+            v }
+    }
     
-    protected val sourceMap = new ArrayBuffer[ Tuple2[String, Coord] ] ;
-    protected var currentPair : Tuple2[String, Coord] = null ;
-    protected var messageHasBeenSetOnThisLine = false ;
+    
+    protected val head = new Line() ;
+    protected var current = new Line() ;
+    protected val tail = new Line() ;
+    // Invariant. There is a sequence of distinct Line objects
+    // [ l(0), l(1), ..., l(n) ]
+    // such that n > 1 and l(0) == head and l(n) == tail
+    // and head.prev == null and tail.next == null
+    // and for all i, such that 0 < i _< n
+    //    l(i-1).next == l(i) and l(i).prev == l(l-1).next
+    // also head.started and head.done 
+    //  and ! tail.started and ! tail.done
+    // and there exists an i in {1,..,n-1} such that current == l(i)
+    head.started = true
+    head.done = true
+    head.next = current
+    current.next = tail
+    tail.prev = current 
+    current.prev = head
+    
+
     
     /** Adds a string to the output.
      *  
@@ -46,24 +87,47 @@ class OutputBuilder extends Contracts {
         addToLine( str ) 
     }
     
-    protected def addToLine( str : String ) : Unit = {
-        if( str.length() == 0 ) return 
-        if( atNewLine ) { 
-            for( i <- 0 until indentationLevel ) 
-                currentLine.append( indentationString ) 
-            atNewLine = false ;
-        }
-        currentLine.append( str ) 
+    protected def startNewLine : Unit = {
+        val newLine = new Line() ;
+        newLine.indentLevel = current.indentLevel 
+        newLine.error = current.error ;
+        newLine.prev = current
+        newLine.next = current.next
+        current.next = newLine
+        newLine.next.prev = newLine 
+        current = newLine 
     }
     
-    /** Add a newLine to the output.
+    protected def addToLine( str : String ) : Unit = {
+        if( str.length() > 0 ) {
+            current.text = current.text + str ;
+            current.started = true ;
+        }
+    }
+    
+    /** Add a new line to the output.
      */
     def newLine {
-        sourceMap += currentPair 
-        messageHasBeenSetOnThisLine = false
-        builder.append( currentLine.result() )
-        currentLine.clear() 
-        atNewLine = true ;
+        if( ! current.started ) current.started = true ;
+        current.done = true ;
+        startNewLine 
+    }
+    
+    def saveLine() : Line = { current ; }
+    
+    def goToAfter( savedLine : Line ) : Unit = {
+        current = savedLine ;
+        if( current.done ) newLine
+    }
+    
+    def goToBefore( savedLine : Line ) : Unit = {
+        current = savedLine.prev ;
+        if( current.done ) newLine
+    }
+    
+    def goToEnd() : Unit = {
+        current = tail.prev ;
+        if( current.done ) newLine
     }
     
     /** Set the current error message.
@@ -95,10 +159,10 @@ class OutputBuilder extends Contracts {
      */
     def setError( mess : String, coord : Coord ) : Unit = 
     pre( coord != null && mess != null)
-    .pre(! messageHasBeenSetOnThisLine, "Two errors on one line" )
+    .pre( ! current.errorSetOnThisLine, "Two errors on one line" )
     .in {
-        currentPair = ( mess, coord ) 
-        messageHasBeenSetOnThisLine = true
+        current.error = ( mess, coord )
+        current.errorSetOnThisLine = true
     }
     
     /** Clear the error message associated with a line
@@ -107,9 +171,9 @@ class OutputBuilder extends Contracts {
      *  and not associated with at least one line.
      */
     def clearError : Unit = 
-    pre(! messageHasBeenSetOnThisLine)
+    pre( ! current.errorSetOnThisLine )
     .in {
-        currentPair = null
+        current.error = null
     }
     
     /** Get the error (if any) associated with a given line of output
@@ -118,10 +182,19 @@ class OutputBuilder extends Contracts {
      *          with the line number if any. Otherwise None.
      *   */
     def getError( outputLineNumber : Int ) : Option[Tuple2[String, Coord]] = {
-        if( outputLineNumber < 1 ) return None
-        if( outputLineNumber > sourceMap.length ) return None
-        val pair = sourceMap( outputLineNumber-1 ) 
-        if( pair == null ) None else Some( pair ) 
+        // This isn't very efficient. But really, who cares?
+        var i = 1 ;
+        var line = head.next ;
+        def loop : Unit = {
+            while( !line.started && line != tail ) line = line.next 
+            if( line != tail && i != outputLineNumber ) {
+                line = line.next
+                i += 1 ;
+                loop ; } }
+        loop
+        if( line == tail ) None
+        else if( line.error == null ) None 
+        else Some( line.error ) 
     }
     
     /** Increase the amount of indentation at the start of the next line.
@@ -132,21 +205,18 @@ class OutputBuilder extends Contracts {
      *  will not indent the second line unless b is an empty string.
      */
     def indent {
-        indentationLevel += 1 
+        current.indentLevel += 1 
     }
     
     /** Decrease the amount of indentation at the start of the next line. */
     def dedent {
-        if( indentationLevel > 0 ) indentationLevel -= 1 
+        if( current.indentLevel > 0 ) current.indentLevel -= 1 
     }
     
     /** Obtain the string built so far. */
-    def resultAsString() : String =
-        pre( atNewLine )
-        .in{ builder.iterator.mkString( "\n" ) }
+    def resultAsString() : String = {
+        result.mkString( "\n" ) }
     
     /** Obtain the string built so far. */
-    def result() : Iterator[String] =
-        pre( atNewLine )
-        .in{ builder.iterator }
+    def result() : Iterator[String] ={ new MyIterator() ; }
 }

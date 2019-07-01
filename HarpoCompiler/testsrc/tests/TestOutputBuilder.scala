@@ -216,4 +216,51 @@ pqr
           assert( e.isInstanceOf[AssertionError] )
       }
     }
+    
+    "OutputBuilder" should "allow backpatching 0" in {
+      val out = new OutputBuilder
+   
+      val p0 = out.saveLine()
+      out.indent ; out.indent
+      out.put( "abc\n" )
+      out.dedent ; out.dedent
+      out.put( "uvw\n" )
+      out.goToAfter( p0 ) 
+      out.put( "def\n" )
+      out.goToEnd() 
+      out.put( "xyz\n" ) 
+      var result = "" 
+      for( line <- out.result() ) result += line + "\n" 
+      assertResult(
+"""        abc
+        def
+uvw
+xyz
+""" ) ( result )  
+    }
+    
+    "OutputBuilder" should "allow backpatching 1" in {
+      val out = new OutputBuilder
+   
+      val p0 = out.saveLine()
+      out.indent
+      out.indent
+      out.put( "abc\n" )
+      out.dedent
+      out.dedent
+      out.put( "uvw\n" )
+      val p1 : out.Line = out.saveLine()
+      out.goToBefore( p0 )
+      out.put( "def\n" )
+      out.goToAfter( p1 ) 
+      out.put( "xyz\n" ) 
+      var result = "" 
+      for( line <- out.result() ) result += line + "\n" 
+      assertResult(
+"""def
+        abc
+uvw
+xyz
+""" ) ( result )    
+    }
 }
