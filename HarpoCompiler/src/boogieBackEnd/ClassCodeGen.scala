@@ -16,7 +16,11 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 
   private var transContext = new TransContext("Heap", "This_" + dlNd.fqn.toString)
 
-  private val expObj = new ExpCodeGen;
+  private val ECG = new ExpCodeGen; // ECG: Expression Code Generation
+  
+  private val NM = new NameManager; // NM: Name Manager
+  
+  
 
   private var nameExp = ArrayBuffer[String]();
 
@@ -154,8 +158,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           for ((loc, amnt) <- perm_pairs) {
             loc match {
               case ObjectIdLSN(nameExp) => {
-                val fqn = dlNd.name + "." + nameExp.name.qn.toString
-                val amount: String = expObj.simpleExpCodeGen(amnt);
+                val fqn = NM.getFQN(loc)
+                val amount: String = ECG.simpleExpCodeGen(amnt);
                 outputBuilder.newLine
                 outputBuilder.put("//Claim")
                 outputBuilder.newLine
@@ -184,7 +188,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) => {
           objDecl = objDeclCodeGen(isConst, acc, ty, mem.fqn.toString)
           val objType: String = TypeCodeGen(ty)
-          val initExp: String = expObj.initExpCodeGen(init)
+          val initExp: String = ECG.initExpCodeGen(init)
           outputBuilder.newLine
           outputBuilder.put("//Initialize Heap")
           outputBuilder.newLine
@@ -214,7 +218,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       case LocalDeclCmdNd(decl) => {
         val objType: String = TypeCodeGen(decl.ty)
         outputBuilder.newLine
-        outputBuilder.put("Heap[" + transContext.objRef + "," + decl.fqn.toString() + "] := " + expObj.simpleExpCodeGen(decl.init) + ";")
+        outputBuilder.put("Heap[" + transContext.objRef + "," + decl.fqn.toString() + "] := " + ECG.simpleExpCodeGen(decl.init) + ";")
         outputBuilder.newLine
       }
 
@@ -232,7 +236,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         localTransContext.setHeap("Permission")
         val expPairs = lhs zip rhs
         for ((lhs, rhs) <- expPairs) {
-          val lhs_result = expObj.buildWritingPerExp(lhs, localTransContext)
+          val lhs_result = ECG.buildWritingPerExp(lhs, localTransContext)
           outputBuilder.setError("Do not have enough permission(s) on LHS of assignment", lhs.coord)
           if (!(lockExpList.isEmpty)) {
             for (lockPer <- lockExpList) {
@@ -248,7 +252,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
             outputBuilder.clearError
           }
           nameExp = new ArrayBuffer[String]()
-          val nameExps = expObj.nameExpCodeGen(rhs, nameExp)
+          val nameExps = ECG.nameExpCodeGen(rhs, nameExp)
           if (!(nameExps.isEmpty)) {
             outputBuilder.newLine
             outputBuilder.setError("Permission amount should be greater than 0.0", rhs.coord)
@@ -280,7 +284,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
             }
           }
         }
-        //val rhs_result = expObj.buildReadingPerExp(rhs, localTransContext)
+        //val rhs_result = ECG.buildReadingPerExp(rhs, localTransContext)
         // one glitch while translating the IntLiteralExpressionNode
         outputBuilder.newLine
         outputBuilder.put("//Check Assignment Defindness Ends")
@@ -291,19 +295,19 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.put("//Assignment Command")
         outputBuilder.newLine
         for (l_exp <- lhs.init) {
-          outputBuilder.put(expObj.buildBoogieExp(l_exp, transContext)) // build with TransContext
+          outputBuilder.put(ECG.buildBoogieExp(l_exp, transContext)) // build with TransContext
           if (!(l_exp.equals(lhs.last))) // Not to put comma for last expression in sequence
             outputBuilder.put(",")
         }
-        outputBuilder.put(expObj.buildBoogieExp(lhs.last, transContext))
+        outputBuilder.put(ECG.buildBoogieExp(lhs.last, transContext))
         outputBuilder.put(" := ")
 
         for (r_exp <- rhs.init) {
-          outputBuilder.put(expObj.buildBoogieExp(r_exp, transContext))
+          outputBuilder.put(ECG.buildBoogieExp(r_exp, transContext))
           if (!(r_exp.equals(rhs.last))) // Not to put comma for last expression in sequence
             outputBuilder.put(",")
         }
-        outputBuilder.put(expObj.buildBoogieExp(rhs.last, transContext))
+        outputBuilder.put(ECG.buildBoogieExp(rhs.last, transContext))
         outputBuilder.put(";")
         outputBuilder.newLine
         outputBuilder.put("//Assignment Command Ends")
@@ -326,9 +330,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.put("//assert guard is defined")
         outputBuilder.newLine
         outputBuilder.setError("Guard is not defined, do not have anough permission(s)", guard.coord)
-        outputBuilder.put("assert " + expObj.buildReadingPerExp(guard, transContext))
+        outputBuilder.put("assert " + ECG.buildReadingPerExp(guard, transContext))
         transContext.reset()
-        outputBuilder.put("if("+ expObj.buildBoogieExp(guard, transContext)+")")
+        outputBuilder.put("if("+ ECG.buildBoogieExp(guard, transContext)+")")
         outputBuilder.put("{")
         outputBuilder.indent
         commandCodeGen(thenCmd)
@@ -350,11 +354,11 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         guard match {
           case BooleanLiteralExpNd(b) => {
             outputBuilder.newLine
-            outputBuilder.put("while( " + expObj.simpleExpCodeGen(guard) + ")")
+            outputBuilder.put("while( " + ECG.simpleExpCodeGen(guard) + ")")
           }
           case _ => {           // build guard expression, definedness of exxpression
             outputBuilder.newLine
-            outputBuilder.put("while(" + expObj.buildBoogieExp(guard, transContext) + ")")
+            outputBuilder.put("while(" + ECG.buildBoogieExp(guard, transContext) + ")")
           }
         }
         if (lil.isEmpty) {
@@ -439,7 +443,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 
       case WithCmdNd(lock, tpl, guard, command, gpl) => {
 
-        val lockTransContext = new TransContext("LockPermission", expObj.getNamefromLockExp(lock))
+        val lockTransContext = new TransContext("LockPermission", ECG.getNamefromLockExp(lock))
         transContext.reset()
         transContext.setHeap("Permission")
         outputBuilder.indent
@@ -483,12 +487,12 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put("//assert guard is defined")
           outputBuilder.newLine
           outputBuilder.setError("Guard is not defined, do not have anough permission(s)", guard.coord)
-          outputBuilder.put("assert " + expObj.buildReadingPerExp(guard, transContext))
+          outputBuilder.put("assert " + ECG.buildReadingPerExp(guard, transContext))
 
           transContext.reset()
           //assume the guard
           transContext.setHeap("Heap")
-          val guardExp = expObj.buildBoogieExp(guard, transContext)
+          val guardExp = ECG.buildBoogieExp(guard, transContext)
           outputBuilder.newLine
           outputBuilder.put("//assume the guard expression")
           outputBuilder.newLine
@@ -501,7 +505,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           for ((lsn, amnt) <- tp.pmn.pm) {
             lsn match {
               case ObjectIdLSN(nameExp) => {
-                val amount: String = expObj.simpleExpCodeGen(amnt)
+                val amount: String = ECG.simpleExpCodeGen(amnt)
 
               }
               case _ => contracts.Contracts.toDo("Array Location Set Node")
@@ -521,7 +525,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           for ((lsn, amnt) <- gp.pmn.pm) {
             lsn match {
               case ObjectIdLSN(nameExp) => {
-                val amount: String = expObj.simpleExpCodeGen(amnt)
+                val amount: String = ECG.simpleExpCodeGen(amnt)
                 // not required this point
               }
               case _ => contracts.Contracts.toDo("Array Location Set Node")
@@ -534,7 +538,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       case AssertCmdNd(exp) => {
         transContext.reset()
         transContext.setHeap("Permission")
-        val expReadingPerCode = expObj.buildReadingPerExp(exp, transContext)
+        val expReadingPerCode = ECG.buildReadingPerExp(exp, transContext)
         outputBuilder.newLine
         outputBuilder.setError("Do not have enough permission(s)", exp.coord)
         outputBuilder.put("assert " + expReadingPerCode)
@@ -542,7 +546,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.clearError
         transContext.reset()
         transContext.setHeap("Heap")
-        val expCode = expObj.buildBoogieExp(exp, transContext)
+        val expCode = ECG.buildBoogieExp(exp, transContext)
         outputBuilder.newLine
         outputBuilder.setError("Assertion might not hold", exp.coord)
         outputBuilder.put("assert " + expCode)
@@ -553,7 +557,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       case AssumeCmdNd(exp) => {
         transContext.reset()
         transContext.setHeap("Permission")
-        val expReadingPerCode = expObj.buildReadingPerExp(exp, transContext)
+        val expReadingPerCode = ECG.buildReadingPerExp(exp, transContext)
         outputBuilder.newLine
         outputBuilder.setError("Do not have enough permission(s)", exp.coord)
         outputBuilder.put("assert " + expReadingPerCode)
@@ -561,7 +565,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.clearError
         transContext.reset()
         transContext.setHeap("Heap")
-        val expCode = expObj.buildBoogieExp(exp, transContext)
+        val expCode = ECG.buildBoogieExp(exp, transContext)
         outputBuilder.newLine
         outputBuilder.put("assume " + expCode)
         outputBuilder.newLine
@@ -583,7 +587,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     for (prc <- preCnds) {
       transContext.setHeap("Heap")
       outputBuilder.newLine
-      outputBuilder.put("assume " + expObj.buildBoogieExp(prc.condition, transContext) + ";")
+      outputBuilder.put("assume " + ECG.buildBoogieExp(prc.condition, transContext) + ";")
       outputBuilder.newLine
     }
   }
@@ -597,19 +601,19 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       for ((lsn, exp) <- tp.pmn.pm)
         lsn match {
           case ObjectIdLSN(nameExp) => {
-            val amount: String = expObj.simpleExpCodeGen(exp)
+            val amount: String = ECG.simpleExpCodeGen(exp)
             outputBuilder.newLine
-            outputBuilder.put("oldPermission := Permission;")
+            outputBuilder.put("oldPermission := Permission;") 
             outputBuilder.newLine
-            outputBuilder.put("if(Permission[" + transContext.objRef + "," + lsn.getName().decl.get.fqn.toString() + "] == 0.0)")
+            outputBuilder.put("if(Permission[" + transContext.objRef + "," + NM.getFQN(lsn) + "] == 0.0)")
             outputBuilder.newLine
             outputBuilder.put("{")
             outputBuilder.newLine
             outputBuilder.put("havoc tempHeap;")
             outputBuilder.newLine
-            outputBuilder.put("Heap[" + transContext.objRef + "," + dlNd.name + "." + lsn.getName() + "] := tempHeap[" + transContext.objRef + "," + dlNd.name + "." + lsn.getName() + "];")
+            outputBuilder.put("Heap[" + transContext.objRef + "," + NM.getFQN(lsn) + "] := tempHeap[" + transContext.objRef + "," + dlNd.name + "." + NM.getFQN(lsn) + "];")
             outputBuilder.newLine
-            outputBuilder.put("Permission[" + transContext.objRef + "," + dlNd.name + "." + lsn.getName() + "] := " + "Permission[" + transContext.objRef + "," + dlNd.name + "." + lsn.getName() + "]+" + amount + ";")
+            outputBuilder.put("Permission[" + transContext.objRef + "," + NM.getFQN(lsn) + "] := " + "Permission[" + transContext.objRef + "," + dlNd.name + "." + NM.getFQN(lsn)  + "]+" + amount + ";")
             outputBuilder.newLine
             outputBuilder.put("}")
           }
@@ -637,7 +641,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       }
       outputBuilder.newLine
       outputBuilder.setError("Post Condition does not satisfy", poc.condition.coord)
-      outputBuilder.put("assert " + expObj.buildBoogieExp(poc.condition, transContext) + ";") // assume and assert
+      outputBuilder.put("assert " + ECG.buildBoogieExp(poc.condition, transContext) + ";") // assume and assert
       outputBuilder.newLine
       outputBuilder.clearError
     }
@@ -654,15 +658,15 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       for ((lsn, amnt) <- tp.pmn.pm)
         lsn match {
           case ObjectIdLSN(nameExp) => {
-            val amount = expObj.simpleExpCodeGen(amnt)
+            val amount = ECG.simpleExpCodeGen(amnt)
             // Assert at least permission, and then the subtract the permission
             outputBuilder.newLine
             //assert the amount of permission at least the amount going to subtract
-            outputBuilder.setError("Can not give permission(s)", lsn.getName().coord)
-            outputBuilder.put("assert " + expObj.buildBoogieExp(nameExp, transContext) + " >= " + amount + ";")
+            outputBuilder.setError("Can not give permission(s)", lsn.getCoord())
+            outputBuilder.put("assert " + ECG.buildBoogieExp(nameExp, transContext) + " >= " + amount + ";")
             // Subtract the Permission
             outputBuilder.newLine
-            outputBuilder.put(expObj.buildBoogieExp(nameExp, transContext) + " := " + expObj.buildBoogieExp(nameExp, transContext) + " - " + amount + ";");
+            outputBuilder.put(ECG.buildBoogieExp(nameExp, transContext) + " := " + ECG.buildBoogieExp(nameExp, transContext) + " - " + amount + ";");
             outputBuilder.newLine
             outputBuilder.clearError
           }
@@ -676,7 +680,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ClassInvNd(exp) => {
-          val invString = expObj.InvExpCodeGen(exp, mem.fqn.toString, transContext)
+          val invString = ECG.InvExpCodeGen(exp, mem.fqn.toString, transContext)
           outputBuilder.newLine
           outputBuilder.setError("Invariant does not hold", exp.coord)
           outputBuilder.put("assert " + invString)
@@ -695,7 +699,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ClassInvNd(exp) => {
-          val invString = expObj.InvExpCodeGen(exp, mem.fqn.toString, transContext)
+          val invString = ECG.InvExpCodeGen(exp, mem.fqn.toString, transContext)
           outputBuilder.newLine
           outputBuilder.put("assume " + invString)
           outputBuilder.newLine
@@ -714,12 +718,12 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     for ((loc, amnt) <- perm_pairs) {
       var name = "";
       loc match {
-        case ObjectIdLSN(nen) => {
-          name = dlNd.name + "." + nen.name.toString();
+        case ObjectIdLSN(exp) => {
+          name = NM.getFQN(exp)
         }
         case _ => contracts.Contracts.toDo("Location Set Node with Array")
       }
-      val amount: String = expObj.simpleExpCodeGen(amnt)
+      val amount: String = ECG.simpleExpCodeGen(amnt)
       outputBuilder.newLine
       outputBuilder.put("//Claim")
       outputBuilder.newLine
@@ -734,7 +738,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       mem match {
         case ClassInvNd(exp) => {
           classInvList :+ mem;
-          val invString = expObj.InvExpCodeGen(exp, dlNd.fqn.toString, transContext)
+          val invString = ECG.InvExpCodeGen(exp, dlNd.fqn.toString, transContext)
           outputBuilder.newLine
           outputBuilder.setError("Invariant does not hold", exp.coord)
           outputBuilder.put("assert " + invString + ";")
@@ -750,7 +754,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     transContext.reset()
     outputBuilder.newLine
     outputBuilder.put("//loop Invariant")
-    val invString = expObj.InvExpCodeGen(loopInv.exp, dlNd.fqn.toString, transContext)
+    val invString = ECG.InvExpCodeGen(loopInv.exp, dlNd.fqn.toString, transContext)
     outputBuilder.newLine
     outputBuilder.setError("Invariant does not hold", loopInv.exp.coord)
     outputBuilder.put("assert " + invString)
@@ -766,7 +770,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     localTransContext.setHeap("Permission")
     val expPairs = lhsList zip rhsList
     for ((lhs, rhs) <- expPairs) {
-      val lhs_result = expObj.buildWritingPerExp(lhs, localTransContext)
+      val lhs_result = ECG.buildWritingPerExp(lhs, localTransContext)
       outputBuilder.newLine
       outputBuilder.setError("Do not have enough permission(s) on LHS of assignment", lhs.coord)
       outputBuilder.put("assert " + lhs_result) // Two asserts instead of one
@@ -774,7 +778,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       outputBuilder.clearError
       nameExp = new ArrayBuffer[String]()
 
-      val nameExps = expObj.nameExpCodeGen(rhs, nameExp)
+      val nameExps = ECG.nameExpCodeGen(rhs, nameExp)
       for (name <- nameExps) {
         outputBuilder.newLine
         outputBuilder.setError("Permission amount should be greater than 0.0", rhs.coord)
@@ -783,7 +787,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.clearError
       }
     }
-    //val rhs_result = expObj.buildReadingPerExp(rhs, localTransContext)
+    //val rhs_result = ECG.buildReadingPerExp(rhs, localTransContext)
     // one glitch while translating the IntLiteralExpressionNode
     outputBuilder.newLine
     outputBuilder.put("//Check Assignment Defindness Ends")
@@ -818,7 +822,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 
   }
   def assumeClassInv(lock: ExpNd) { // For locked objects
-    val lockContext = new TransContext("LockPermission", expObj.getNamefromLockExp(lock));
+    val lockContext = new TransContext("LockPermission", ECG.getNamefromLockExp(lock));
     transContext.reset()
     val baseContext = new TransContext(transContext.getHeap(), transContext.getObjRef())
     for (classInv <- dlNd.asInstanceOf[ClassLike].directMembers) {
@@ -829,7 +833,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put("//Assert defindness of object invariant and assume object invariance")
           outputBuilder.newLine
           nameExp = new ArrayBuffer[String]()
-          val nameExps = expObj.nameExpCodeGen(exp, nameExp)
+          val nameExps = ECG.nameExpCodeGen(exp, nameExp)
           if (!(nameExps.isEmpty)) {
             outputBuilder.setError("Does not have enough permission(0)", exp.coord)
             outputBuilder.newLine
@@ -843,7 +847,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           //assume invariant
           transContext.reset()
           outputBuilder.newLine
-          outputBuilder.put("assume " + expObj.InvExpCodeGen(exp, classInv.fqn.toString, lockContext, transContext) + ";") // due to lock we need different invariant generation
+          outputBuilder.put("assume " + ECG.InvExpCodeGen(exp, classInv.fqn.toString, lockContext, transContext) + ";") // due to lock we need different invariant generation
           outputBuilder.newLine
 
         }
@@ -853,7 +857,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
   }
 
   def assertClassInv(lock: ExpNd) { //For Locked objects
-    val lockContext = new TransContext("LockPermission", expObj.getNamefromLockExp(lock));
+    val lockContext = new TransContext("LockPermission", ECG.getNamefromLockExp(lock));
     transContext.reset()
     val baseContext = new TransContext(transContext.getHeap(), transContext.getObjRef())
     for (classInv <- dlNd.asInstanceOf[ClassLike].directMembers) {
@@ -864,7 +868,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put("//Assert defindness of object invariant and assert object invariance")
           outputBuilder.newLine
           nameExp = new ArrayBuffer[String]()
-          val nameExps = expObj.nameExpCodeGen(exp, nameExp)
+          val nameExps = ECG.nameExpCodeGen(exp, nameExp)
           if (!(nameExps.isEmpty)) {
             outputBuilder.setError("Does not have enough permission(0)", exp.coord)
             outputBuilder.newLine
@@ -877,7 +881,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           //assert invariant
           transContext.reset()
           outputBuilder.newLine
-          outputBuilder.put("assert " + expObj.InvExpCodeGen(exp, classInv.fqn.toString, lockContext, transContext) + ";") // due to lock we need different invariant generation
+          outputBuilder.put("assert " + ECG.InvExpCodeGen(exp, classInv.fqn.toString, lockContext, transContext) + ";") // due to lock we need different invariant generation
           outputBuilder.newLine
         }
         case _ =>

@@ -9,6 +9,8 @@ import util.OutputBuilder;
 
 class ExpCodeGen() {
 
+  private val NM = new NameManager;
+  
   def initExpCodeGen(init: InitExpNd): String = {
     val result: String = init match {
       case ValueInitExpNd(exp: ExpNd) => simpleExpCodeGen(exp)
@@ -185,11 +187,11 @@ class ExpCodeGen() {
       case NameExpNd(name: NameNd) => ""
 
       case CanReadOp(locSet) => {
-        "0.0 < " + lockTransContext.heap + "[" + lockTransContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] < 1.0 " mkString
+        "0.0 < " + lockTransContext.heap + "[" + lockTransContext.objRef + "," + NM.getFQN(locSet) + "] < 1.0 " mkString
       }
 
       case CanWriteOp(locSet) => { // need to recheck for the nested lock, because it needs tto check whether the thread has enough permission to give or not.
-        baseTranContext.heap + "[" + baseTranContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] := " + baseTranContext.heap + "[" + baseTranContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] - 1.0;\n" + lockTransContext.heap + "[" + lockTransContext.objRef + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0; \n"
+        baseTranContext.heap + "[" + baseTranContext.objRef + "," + NM.getFQN(locSet) + "] := " + baseTranContext.heap + "[" + baseTranContext.objRef + "," + NM.getFQN(locSet) + "] - 1.0;\n" + lockTransContext.heap + "[" + lockTransContext.objRef + "," + NM.getFQN(locSet) + "] == 1.0; \n"
       }
 
       case PermissionOp(objId) => "" // return the amount of permission
@@ -234,12 +236,12 @@ class ExpCodeGen() {
 
       case CanReadOp(locSet) => {
         val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + NM.getFQN(locSet) + "] > 0.0 " mkString
       }
 
       case CanWriteOp(locSet) => {
         val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+        transContextPer.getHeap() + "[" + transContextPer.getObjRef() + "," + NM.getFQN(locSet) + "] == 1.0 " mkString
       }
 
       case PermissionOp(objId) => "" // return the amount of permission
@@ -282,12 +284,12 @@ class ExpCodeGen() {
 
       case CanReadOp(locSet) => {
         //        val transContextPer = new TransContext("LockPermission", transContext.getObjRef())
-        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] > 0.0 " mkString
+        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + NM.getFQN(locSet) + "] > 0.0 " mkString
       }
 
       case CanWriteOp(locSet) => {
         //        val transContextPer = new TransContext("Permission", transContext.getObjRef())
-        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + locSet.getName().decl.get.fqn.toString() + "] == 1.0 " mkString
+        lockTransContext.getHeap() + "[" + lockTransContext.getObjRef() + "," + NM.getFQN(locSet) + "] == 1.0 " mkString
       }
 
       case PermissionOp(objId) => "" // return the amount of permission
@@ -412,9 +414,9 @@ class ExpCodeGen() {
 
       case AsExpNd(x: ExpNd, _) => buildReadingPerExp(x, buildFor)
 
-      case CanReadOp(x) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + x.getName().qn.toString() + "] > 0.0 " mkString
+      case CanReadOp(x) =>  buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + NM.getFQN(x) + "] > 0.0 " mkString
 
-      case CanWriteOp(y) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + y.getName().qn.toString() + "] == 1.0 " mkString
+      case CanWriteOp(y) => buildFor.getHeap() + "[" + buildFor.getObjRef() + "," + NM.getFQN(y) + "] == 1.0 " mkString
 
       case _ => ""
     }
