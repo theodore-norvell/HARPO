@@ -128,14 +128,16 @@ class CounterTests extends VerifierTestBase {
 		                (while true
 		                  do
 			                  (accept increment()
-					                  count := count+1; 
+                        (with this
+                          do
+					                  count := count+1;
+                          with) 
 				                accept)
 		                while)
 	                thread)
              class)"""
 
     val BoogieSource = tryWithBoogieBackEnd(str)
-    
-    println(BoogieSource)
+
   }
 }

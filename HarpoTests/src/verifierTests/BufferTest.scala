@@ -41,9 +41,9 @@ class BufferTest extends VerifierTestBase {
 	          obj rear : Int32 :=0
 	          obj full : Int32 :=0
 
-	          (thread (*t0*) claim front, rear, full//, {i:{0,..size}.buf[i]}
+	          (thread (*t0*) claim front, rear, full, {i:{0,..size} do buf[i]}
 		          (while true
-			          invariant canWrite(front) /\ canWrite(rear) /\ canWrite(full) ///\ canWrite({i:{0,..size}.buf[i]})
+			          invariant canWrite(front) /\ canWrite(rear) /\ canWrite(full) /\ canWrite({i:{0,..size} do buf[i]})
 			          invariant (0 _< front /\ front < size) /\ (0 _< rear /\ rear < size) /\ (0 _< full /\ full < size)
 			          invariant ((front + full) mod size = rear)
                 do

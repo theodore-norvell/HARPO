@@ -116,10 +116,50 @@ class CheckerTests extends VerifierTestBase {
                 (class Test()
 	                ghost obj c: Int32:=0;
 	                ghost const x: Int32:=9;
-	                (thread(*t0*) claim c@0.5 claim x
+	                (thread(*t0*) claim c@0.5, x
 	                thread) 
                 class)"""
     tryWithChecker(str)
   }
+  
+  
+  it should "parse when Array Initialization" in {
+    val str = """ 
+  (class Buffer()
+
+	          proc deposit(in value : Real64)
+
+	          proc fetch(out value :  Real64)
+
+	          const size : Int32 := 10 
+	          obj buf : Int32[size] := (for i:size do 0 for)
+	          obj front : Int32 :=0
+	          obj rear : Int32 :=0
+	          obj full : Int32 :=0
+
+	          (thread (*t0*) claim {i:{0,..size} do buf[i]},front, rear, full 
+		          (while (true)
+			          invariant canWrite(front) /\ canWrite(rear) /\ canWrite(full) /\ canWrite({i:{0,..size} do buf[i]})
+			          invariant (0 _< front /\ front < size) /\ (0 _< rear /\ rear < size) /\ (0 _< full /\ full < size)
+			          invariant ((front + full) mod size = rear)
+                do
+				          (accept deposit(in value : Real64) when (full < size)
+				               buf[rear] := value
+				               rear := (rear+1) mod size
+				               full := full+1
+				            |
+                       fetch(out value: Real64) when (0 < full)
+				               value := buf[front]
+				               front := (front+1) mod size
+				               full := full-1
+				          accept)
+		            while)
+	          thread)
+        class)"""
+    tryWithChecker(str)
+  }
+
+  
+  
 }
 
