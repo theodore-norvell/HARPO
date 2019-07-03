@@ -43,11 +43,15 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def add(lsl: LocSetList, lsn: LocSetNd) { lsl += lsn; }
 
-  def makeObjectIdLSN(objId: NameExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
+  def makeObjectIdLSN(objId: ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
   
-  def makeArrayExpNd (name : NameExpNd, def_i: String , use_i: String, offSet: ExpNd, upperBound: ExpNd, coord: AST.Coord) = new ArrayExpNd(name,def_i,use_i, offSet,upperBound)(coord)
+  def makeArrayExpNd (forVar: String, offSet: ExpNd, upperBound: ExpNd, objId: ExpNd, coord: Coord) = {
+    val fvd = new ForVarDecl()(forVar, coord)
+    val forDecl = new ForDecl(fvd)(nextForName(), coord)
+    new ArrayExpNd(forDecl,offSet,upperBound,objId)(coord)
+  }
   
-  def makeArrayExpLSN (arrayExp : ArrayExpNd, coord: AST.Coord) = new ArrayExpLSN (arrayExp) (coord)
+  def makeArrayLSN (arrayExp : ArrayExpNd, coord: AST.Coord) = new ArrayLSN (arrayExp) (coord)
 
   // Sequence
 
@@ -174,6 +178,8 @@ class Builder(val errorRecorder: ErrorRecorder) {
     ThreadDeclNd(claimList.toList, bl)(name, coord)
   }
   def objDeclNd(isGhost: Boolean, isConst: Boolean, name: String, acc: Access, ty: TypeNd, init: InitExpNd, coord: Coord) = ObjDeclNd(isGhost, isConst, acc, ty, init)(name, coord)
+  
+  def makeforVarDecl(name : String, ty: TypeNd , coord: Coord) = ForVarDecl ()(name, coord)
 
   def paramDeclNd(isGhost: Boolean, name: String, ty: TypeNd, paramCategory: ParamCategory, coord: Coord) = ParamDeclNd(isGhost, ty, paramCategory)(name, coord)
 

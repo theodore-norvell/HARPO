@@ -1025,28 +1025,28 @@ PermissionMapNd PermissionMap() :
 
 LocSetNd LocSet() :
 {
-  NameExpNd objId;
-  Token tk = getToken(1);
   LocSetNd ls;
   String name_Str;
   NameExpNd arrayName;
-  String def_i, use_i;
+  ExpNd objId;
+  String forVar;
   ExpNd offSet, upperBound;
   ArrayExpNd arrayExp;
+  Token tk = getToken(1);
 }
 {
   LOOKAHEAD("{" Name() ":")
   (
-    "{" def_i = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" tk = "." arrayName = ObjectName() "[" use_i = Name() "]" "}"
+    "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" "do" objId = ObjectId() "}"
     {
-      arrayExp = builder.makeArrayExpNd(arrayName, def_i, use_i, offSet, upperBound, getCoord(tk));
-      return builder.makeArrayExpLSN(arrayExp, getCoord(tk));
+      arrayExp = builder.makeArrayExpNd(forVar, offSet, upperBound, initExp, getCoord(tk));
+      return builder.makeArrayLSN(arrayExp, getCoord(tk));
     }
   )
-|
-  LOOKAHEAD(ObjectName())
+| 
+  LOOKAHEAD(ObjectId())
   (
-    objId = ObjectName()
+    objId = ObjectId()
     {
       return builder.makeObjectIdLSN(objId, getCoord(tk));
     }
@@ -1982,40 +1982,17 @@ ExpNd Lock() :
   } // ObjectId is prioritized, 
 }
 
-ArrayExpNd ArrayExp() :
-{
-  String name_Str;
-  NameExpNd arrayName;
-  String def_i, use_i;
-  ExpNd offSet, upperBound;
-  ArrayExpNd arrayExp;
-  Token tk = getToken(1);
-}
-{
-  "{" def_i = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" tk = "." arrayName = ObjectName() "[" use_i = Name() "]" "}"
-  {
-    arrayExp = builder.makeArrayExpNd(arrayName, def_i, use_i, offSet, upperBound, getCoord(tk));
-    return arrayExp;
-  }
-}
-
-NameExpNd ObjectName() :
+ExpNd ObjectName() :
 {
   String str;
   NameNd name;
-  NameExpNd r;
   Token tk = getToken(1);
 }
 {
   str = Name()
   {
     name = builder.simpleName(str, getCoord(tk));
-  }
-  {
-    r = builder.nameExp(name, getCoord(tk));
-  }
-  {
-    return r;
+    return builder.nameExp(name, getCoord(tk));
   }
 }
 

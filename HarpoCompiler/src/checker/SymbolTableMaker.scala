@@ -68,7 +68,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromClassLike(d, containingFQN)
         case ObjDeclNd(isGhost: Boolean, isConst: Boolean, acc: Access, ty: TypeNd, init: InitExpNd) =>
           buildSTFromInitExp(init, containingFQN)
-        case ClaimNd(perMapNd) => buildSTFromClaimNd(perMapNd, containingFQN)
+        case ClaimNd(perMapNd) => buildSTFromPermissonMap(perMapNd, containingFQN)
         case ClassInvNd(exp) => buildSTFromClassInv(exp, containingFQN)
         case ParamDeclNd(isGhost: Boolean, ty: TypeNd, paramCategory: ParamCategory) => () // we don't need to make symbol table for parameter declarations
         case MethodDeclNd(_, params, preCndList, postCndList, givesPerList, takesPerList, borrowsPerList) =>
@@ -129,13 +129,28 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           unreachable()
       }
     }
-    def buildSTFromClaimNdList(claimNds: List[ClaimNd], containingFQN: FQN) {
-      for (claim <- claimNds) {
-        buildSTFromClaimNd(claim.pmn, containingFQN)
+    def buildSTFromClaimNdList(claimList: List[ClaimNd], containingFQN: FQN) {
+      for (claim <- claimList) {
+        buildSTFromClaimNd(claim, containingFQN)
       }
     }
-    def buildSTFromClaimNd(perMapNd: PermissionMapNd, containingFQN: FQN) {
-      ()
+    def buildSTFromClaimNd(claimNd: ClaimNd, containingFQN: FQN) {
+      buildSTFromPermissonMap(claimNd.pmn, containingFQN)
+    }
+    
+    def buildSTFromPermissonMap (pmn: PermissionMapNd, containingFQN: FQN) {
+      
+      for(lsn <- pmn.lsn)
+        lsn match {
+          case ObjectIdLSN(objId) => ()
+          case ArrayLSN(arrayExp) => {
+            buildSTFromArrayExp(arrayExp.forDecl, containingFQN)
+          }
+        }  
+    }
+    
+    def buildSTFromArrayExp(fd: ForDecl, containingFQN: FQN) {
+      buildSTFromDecl(fd,containingFQN)
     }
     def buildSTFromClassInv(exp: ExpNd, containingFQN: FQN) {
       ()
@@ -195,12 +210,12 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         case CoForCmdNd(forDecl, repetitions, cl, body) => {
           buildSTFromDecl(forDecl, containingFQN)
           buildSTfromCommand(body, forDecl.fvd.fqn)
-          for (cn <- cl) buildSTFromClaimNd(cn.pmn, containingFQN)
+          for (cn <- cl) buildSTFromClaimNd(cn, containingFQN)
         }
         case CoCmdNd(cl, fstCmd, sndCmd) => {
           buildSTfromCommand(fstCmd, containingFQN)
           buildSTfromCommand(sndCmd, containingFQN)
-          for (cn <- cl) buildSTFromClaimNd(cn.pmn, containingFQN)
+          for (cn <- cl) buildSTFromClaimNd(cn, containingFQN)
         }
         case AcceptCmdNd(methodImplementationList) =>
           for (methImpl <- methodImplementationList) {

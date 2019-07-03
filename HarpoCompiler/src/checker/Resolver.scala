@@ -189,7 +189,7 @@ extends Contracts {
         {
           lsn match { 
             case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
-            //TODO Add other Cases later
+            case ArrayLSN(ae) => resolveExp(ae, containingFQN, containingDecl)
         }
         }
 
@@ -285,6 +285,11 @@ extends Contracts {
                 case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case PermissionOp(exp) => resolveExp(exp, containingFQN, containingDecl)
+                case ArrayExpNd(forVar: ForDecl,offSet: ExpNd,upperBound: ExpNd,objId: ExpNd) => {
+                  resolveExp(objId,containingFQN,containingDecl) 
+                  resolveExp(offSet, containingFQN,containingDecl)
+                  resolveExp(upperBound, containingFQN,containingDecl)
+                }
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )

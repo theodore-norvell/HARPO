@@ -197,18 +197,17 @@ class AST{
         def setAmounts(newAmounts: List[ExpNd]) { amounts = newAmounts }
    }
        
-    abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty
-    {
-     def getName() : NameNd; 
+    abstract sealed class LocSetNd(coord: AST.Coord) extends Pretty {
+      def getCoord() = coord
     }
    
-    case class ObjectIdLSN(nameExp: NameExpNd)(coord: AST.Coord) extends LocSetNd(coord){
-       override def pp = Pretty.func( "LocSetNd", nameExp )
-       override def getName() = nameExp.name;
+    case class ObjectIdLSN(exp: ExpNd)(coord: AST.Coord) extends LocSetNd(coord){
+       override def pp = Pretty.func( "LocSetNd", exp )
+       override def getCoord() = coord
     }
-   case class ArrayExpLSN(arrayExp : ArrayExpNd)(coord: AST.Coord) extends LocSetNd(coord){
+   case class ArrayLSN(arrayExp : ArrayExpNd)(coord: AST.Coord) extends LocSetNd(coord){
       override def pp = Pretty.func("ArrayExpLSN", arrayExp)
-      override def getName() = arrayExp.name.name
+      override def getCoord() = coord
       }
     
     
@@ -236,6 +235,7 @@ class AST{
         extends DeclNd( name, coord ) {
         override def pp = Pretty.func( "ForVarDecl[" :: name :: "]" )
     }
+    
 
     // A for loop, co loop, or array initialization.
     // These get their own FQN and so have their own "dummy" declaration
@@ -403,7 +403,7 @@ class AST{
     abstract sealed class ExpNd( val coord: AST.Coord ) extends Pretty {
         // The tipe field is set during checking.
         var tipe: Option[ Type ] = None;
-
+        
         def ppp: Document 
         
         override def pp = tipe match {
@@ -470,8 +470,8 @@ class AST{
         override def ppp = Pretty.func("ObjIdNd", x)
     }
     
-    case class ArrayExpNd(name : NameExpNd, defined_iterator: String, used_iterator: String, offSet: ExpNd, upperBound: ExpNd) (coord : AST.Coord) extends ExpNd(coord) {
-      override def ppp = Pretty.func("ArrayExpNd", name, defined_iterator, defined_iterator, offSet , upperBound )
+    case class ArrayExpNd(forDecl: ForDecl,offSet: ExpNd,upperBound: ExpNd, objId: ExpNd) (coord : AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("ArrayExpNd", forDecl, offSet, upperBound , objId )
     }
     
    /**************************/

@@ -30,6 +30,12 @@ class TypeChecker(
       case FloatLiteralExpNd(x) =>
         Some(real64)
 
+      case ArrayExpNd(forVar: ForDecl,offSet: ExpNd,upperBound: ExpNd,objId: ExpNd) => {     
+        typeCheck(forVar)
+        typeCheck(offSet)
+        typeCheck(upperBound)
+        typeCheck(objId)
+      }
       case CanReadOp(lsn) =>
         typeCheckLocSet(lsn)
 
@@ -336,6 +342,7 @@ class TypeChecker(
   def typeCheck(lsn: LocSetNd) {
     lsn match {
       case ObjectIdLSN(i) => typeCheck(i)
+      case ArrayLSN(ae) => typeCheck(ae)
       case _ => println("Type Not Allowed")
       //TODO need to check that it actually represent a location,
       // Convert from location to set of location, insert a cast, if necessary
@@ -1011,7 +1018,24 @@ class TypeChecker(
   }
 
   private def isElaborationTimeConstant(exp: ExpNd): Boolean = {
-    assert(false, "TODO"); // TODO
-    false
+     exp match {
+      case NameExpNd(name) => {
+        val decl = name.decl.getOrElse {
+          contracts.Contracts.unreachable("array bound not resolved by type creation time.")
+        }
+        decl match {
+          case ObjDeclNd(isGhost, isConst, acc, ty, init) => if(isConst) true else false //check further what elaboration time constant means for HARPO
+          case LocalDeclNd(isGhost, isConst, ty, init, cmd) => if(isConst) true else false
+          case _ =>
+            errorRecorder.reportFatal(name + " does not represent an object or location.", name.coord)
+            false //TODO check remaining cases
+        }
+      }
+      case IntLiteralExpNd(i) => true
+      case FloatLiteralExpNd(l) => false
+      case BooleanLiteralExpNd(x) => false
+      case UnaryOpExpNd(op, x) => isElaborationTimeConstant(x)
+      case _ => false
+    }
   }
 }
