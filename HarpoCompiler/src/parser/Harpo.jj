@@ -1039,7 +1039,7 @@ LocSetNd LocSet() :
   (
     "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" "do" objId = ObjectId() "}"
     {
-      arrayExp = builder.makeArrayExpNd(forVar, offSet, upperBound, initExp, getCoord(tk));
+      arrayExp = builder.makeArrayExpNd(forVar, offSet, upperBound, objId, getCoord(tk));
       return builder.makeArrayLSN(arrayExp, getCoord(tk));
     }
   )
