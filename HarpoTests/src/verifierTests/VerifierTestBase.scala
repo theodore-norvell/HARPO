@@ -84,6 +84,7 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
     } else {
       "Fatal errors"
     }
+<<<<<<< HEAD
     text
   }
 
@@ -149,6 +150,45 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
         for (i <- 0 until errorRecorder.getTotalErrorCount())
           println(errorRecorder.getErrorCoord(i) + " " + errorRecorder.getErrorText(i));
       }
+=======
+
+    override def afterEach( td : TestData ) {
+        println( "<<<<<<<<<<<<<Finished " + td.name + " <<<<<<<<<<<<<<<<<" )
+    }
+
+    def tryWithBoogieBackEnd( str : String, expectedFatalErrors : Int = 0, expectedWarningErrors : Int = 0 ) : String = {
+
+        println( "\n\n\nTranslation start" )
+        val translator = new HarpoToBoogieTranslator()
+        translator.addFile( "HarpoSourceCode.harpo", str )
+        val ( errorRecorder, transBuffer ) : (ErrorRecorder, OutputBuilder) = translator.runHarpoToBoogieTrans( true )
+
+        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
+        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
+        
+        if ( errorRecorder.getFatalCount() == 0 ) {
+            transBuffer.newLine
+            val text : String = transBuffer.resultAsString()
+            text 
+        } else {
+            "Fatal errors"
+        }
+    }
+    
+    def translateAndVerify(
+        str : String,
+        expectedFatalErrors : Int = 0,
+        expectedWarningErrors : Int = 0,
+        expectedVerificationErrors : Int = 0 )
+    : ErrorRecorder = {
+        val translator = new HarpoToBoogieTranslator()
+        translator.addFile( "HarpoSourceCode.harpo", str )
+        val errorRecorder = translator.translateAndVerify( true ) 
+        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
+        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
+        assertResult( expectedVerificationErrors)( errorRecorder.getVerificationCount() )
+        errorRecorder
+>>>>>>> b0364bacaeaf859a85c62a1142d8700cbc8cd763
     }
     assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
     assertResult(expectedWarningErrors)(errorRecorder.getWarningCount())

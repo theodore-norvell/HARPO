@@ -20,5 +20,11 @@ trait ErrorReport {
     
     def getWarningCoord( i : Int ) : AST.Coord 
     
+    def getVerificationCount() : Int
+    
+    def getVerificationText( i : Int ) : String
+    
+    def getVerificationCoord( i : Int ) : AST.Coord 
+    
     def printErrors( stream : java.io.PrintStream ) 
 }
