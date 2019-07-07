@@ -635,9 +635,7 @@ ObjDeclNd ObjDecl(Access acc) :
   Token tk;
 }
 {
-  (
-    isGhost = Ghost()
-  )?
+  (isGhost = Ghost())?
   (
     "obj"
     {
@@ -1029,18 +1027,17 @@ LocSetNd LocSet() :
   String name_Str;
   NameExpNd arrayName;
   ExpNd objId;
+  LocSetNd locSet;
   String forVar;
-  ExpNd offSet, upperBound;
-  ArrayExpNd arrayExp;
+  ExpNd offSet, bound;
   Token tk = getToken(1);
 }
 {
   LOOKAHEAD("{" Name() ":")
   (
-    "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." upperBound = Exp() "}" "do" objId = ObjectId() "}"
+    "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." bound = Exp() "}" "do" locSet = LocSet() "}"
     {
-      arrayExp = builder.makeArrayExpNd(forVar, offSet, upperBound, objId, getCoord(tk));
-      return builder.makeArrayLSN(arrayExp, getCoord(tk));
+      return builder.makeArrayLSN(forVar, offSet, bound, locSet, getCoord(tk));
     }
   )
 | 
@@ -1855,7 +1852,6 @@ ExpNd Exp8() :
   CanWriteOp canWrite;
   PermissionOp permissionOp;
   LocSetNd locSet;
-  ExpNd objId;
   ExpNd x = null;
   Token tk;
 }
@@ -1905,9 +1901,9 @@ ExpNd Exp8() :
     return builder.makeCanWriteOp(locSet, getCoord(tk));
   }
 | 
-  tk = "permission" "(" objId = ObjectId() ")"
+  tk = "permission" "(" locSet = LocSet() ")"
   {
-    return builder.makePermissionOp(objId, getCoord(tk));
+    return builder.makePermissionOp(locSet, getCoord(tk));
   }
 | 
   "(" x = Exp() ")"

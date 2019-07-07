@@ -44,16 +44,12 @@ class Builder(val errorRecorder: ErrorRecorder) {
   def add(lsl: LocSetList, lsn: LocSetNd) { lsl += lsn; }
 
   def makeObjectIdLSN(objId: ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
-  
-  def makeArrayExpNd (forVar: String, offSet: ExpNd, upperBound: ExpNd, objId: ExpNd, coord: Coord) = {
-    val fvd = new ForVarDecl()(forVar, coord)
-    val forDecl = new ForDecl(fvd)(nextForName(), coord)
-    new ArrayExpNd(forDecl,offSet,upperBound,objId)(coord)
-  }
-  
-  def makeArrayLSN (arrayExp : ArrayExpNd, coord: AST.Coord) = new ArrayLSN (arrayExp) (coord)
 
-  // Sequence
+  def makeArrayLSN(name: String, offSet: ExpNd, bound: ExpNd, locSet: LocSetNd, coord: Coord) = {
+    val fvd = new ForVarDecl()(name, coord)
+    val forDecl = new ForDecl(fvd)(nextForName(), coord)
+    new ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd)(coord)
+  }
 
 /*************************/
   /** PermissionMapNd lists **/
@@ -169,7 +165,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   //Get amount of 'Permission' Operation
 
-  def makePermissionOp(x: ExpNd, coord: AST.Coord) = new PermissionOp(x)(coord)
+  def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
   
   var next = 0
 

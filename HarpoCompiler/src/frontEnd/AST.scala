@@ -205,13 +205,13 @@ class AST{
        override def pp = Pretty.func( "LocSetNd", exp )
        override def getCoord() = coord
     }
-   case class ArrayLSN(arrayExp : ArrayExpNd)(coord: AST.Coord) extends LocSetNd(coord){
-      override def pp = Pretty.func("ArrayExpLSN", arrayExp)
+   case class ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd)(coord: AST.Coord) extends LocSetNd(coord){
+      override def pp = Pretty.func("ArrayLSN", forDecl, offSet,bound,locSet)
       override def getCoord() = coord
-      }
+      } 
     
     
-    // Add LocSet
+    // Add LocSet 
     
     case class LocalDeclNd( isGhost: Boolean, isConst: Boolean, ty: TypeNd, var init: ExpNd, cmd: CommandNd )( name: String, coord: AST.Coord )
         extends DeclNd( name, coord ) {
@@ -470,9 +470,7 @@ class AST{
         override def ppp = Pretty.func("ObjIdNd", x)
     }
     
-    case class ArrayExpNd(forDecl: ForDecl,offSet: ExpNd,upperBound: ExpNd, objId: ExpNd) (coord : AST.Coord) extends ExpNd(coord) {
-      override def ppp = Pretty.func("ArrayExpNd", forDecl, offSet, upperBound , objId )
-    }
+
     
    /**************************/
    /** Condition Operations**/
@@ -486,7 +484,7 @@ class AST{
       override def ppp = Pretty.func("CanWriteOp", x)
     }
   
-    case class PermissionOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
+    case class PermissionOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
       override def ppp = Pretty.func("PermissionOp", x)
     }
 
