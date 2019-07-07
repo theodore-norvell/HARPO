@@ -110,9 +110,12 @@ object CheckerTypes extends Contracts {
     case class LocationType( base: PrimitiveType ) extends Type {
         override def toString = s"loc{${base}}"
     }
-    // need set of location type
+    
+    case class ArrayLocationType( base: ArrayType ) extends Type {
+        override def toString = s"loc{${base}}"
+    }
 
-    val int8FQN = new FQN( "Int8" )
+    val int8FQN = new FQN( "Int8" ) 
 
     val int8 = PrimitiveType( int8FQN )( 0 )
     

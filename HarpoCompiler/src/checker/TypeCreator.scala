@@ -76,6 +76,7 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
       case ArrayTypeNd(baseType, bound) =>
         val base = extractTypeFromTypeNode(baseType)
         ArrayType(base, bound)
+        println("Bound is Integeral Type: " + isIntegralConstant(bound))
         if (isIntegralConstant(bound)) {
           ArrayType(base, bound)
         } else {
@@ -89,24 +90,26 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
 
   }
 
-  private def isIntegralConstant(x: ExpNd): Boolean = {
-    x match {
+  private def isIntegralConstant(exp: ExpNd): Boolean = {
+    exp match {
+      case IntLiteralExpNd(i) => true
+      case FloatLiteralExpNd(l) => false //TODO convert float into integer
+      case UnaryOpExpNd(op, x) => isIntegralConstant(x) // Ignore the signed index
       case NameExpNd(name) => {
         val decl = name.decl.getOrElse {
           contracts.Contracts.unreachable("array bound not resolved by type creation time.")
         }
         decl match {
-          case ObjDeclNd(isGhost, isConst, acc, ty, init) => isIntegralConstant(init)
+          case ObjDeclNd(isGhost, isConst, acc, ty, init) => {
+            isIntegralConstant(init)
+          }
           case LocalDeclNd(isGhost, isConst, ty, init, cmd) => isIntegralConstant(init)
+          case ForVarDecl() => true
           case _ =>
             errorRecorder.reportFatal(name + " does not represent an object or location.", name.coord)
             false
         }
       }
-      case IntLiteralExpNd(i) => true
-      case FloatLiteralExpNd(l) => false
-      case BooleanLiteralExpNd(x) => false
-      case UnaryOpExpNd(op, x) => isIntegralConstant(x) // Check with language definitions if we have signed bounds
       case _ => false
     }
   }
@@ -115,13 +118,14 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
 
     init match {
 
-      case ValueInitExpNd(exp) => { isIntegralConstant(exp)
+      case ValueInitExpNd(exp) => {
+        isIntegralConstant(exp)
       }
 
-      case NewInitExpNd(ty: TypeNd, args: List[ExpNd]) => false //TODO 
+      case NewInitExpNd(ty: TypeNd, args: List[ExpNd]) => false //TODO
 
       case ArrayInitExpNd(decl: ForDecl, bound: ExpNd, a: InitExpNd) => {
-        isIntegralConstant(a)
+        isIntegralConstant(bound)
       }
 
       case IfInitExpNd(guard: ExpNd, a: InitExpNd, b: InitExpNd) => {
@@ -162,6 +166,7 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
         ty.tipe match {
           case Some(tipe @ PrimitiveType(_)) =>
             ty.tipe = Some(LocationType(tipe))
+          case Some(tipe @ ArrayType(base, bound)) => ty.tipe = Some(ArrayLocationType(tipe))
           case _ => {}
         };
       }
@@ -177,8 +182,11 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
           ty match {
             case NoTypeNd() => {}
             case _ => {
+              println("Type before creation for : " + decl.name + " " + ty.tipe)
               createTypeFromTypeNd(ty)
+              println("Type after creation for : " + decl.name + " " +ty.tipe)
               promoteToLoc(ty)
+              println("Type Promoted for : " + decl.name + " is " + ty.tipe)
             }
           }
         case ClaimNd(lpmn: PermissionMapNd) => {}

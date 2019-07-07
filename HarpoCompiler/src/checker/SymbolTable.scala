@@ -41,7 +41,7 @@ class SymbolTable( private val errorRecorder : ErrorRecorder,
         // pre: the baseFQN should be for a class or an interface at some level.
         lookUpMember( baseFQN, name ) match {
             case Some( decl ) => Some(decl)
-            case None => errorRecorder.reportFatal("Could not find " +name, coord)
+            case None => errorRecorder.reportFatal("Could not find " +name, coord) 
                          None
         }
     
@@ -105,7 +105,7 @@ class SymbolTable( private val errorRecorder : ErrorRecorder,
         case fqn : FQN =>
             lookupAbsolute( fqn, nameNd.coord )
         case rqn : RQN =>  
-    			  lookUpRelative( baseFQN, rqn ) match {
+    			  lookUpRelative( baseFQN, rqn ) match { 
     			      case Some(decl) => Some(decl)
     			      case None =>
                           errorRecorder.reportFatal("Could not find " +nameNd.toString, nameNd.coord) ;

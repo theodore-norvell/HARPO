@@ -46,8 +46,8 @@ extends Contracts {
                 case ClaimNd(pmn) => {
                   // TODO Compare Length - toDo("LocSetNd list and ExpNd list's lengths varies")
                   if (pmn.locExp.length == pmn.locSet.length){
-                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
                   for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}                  
                   }
                 }
                 case ClassInvNd(exp) =>
@@ -70,7 +70,7 @@ extends Contracts {
                      for(clmNd <- claimList){ 
                        if (clmNd.pmn.locExp.length == clmNd.pmn.locSet.length){
                        for(len <- clmNd.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
-                       for(lsn <- clmNd.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                       for(lsn <- clmNd.pmn.locSet) { resolveLocSetNd(lsn,fqn, Some(decl))}
                       }
                      }
                 }
@@ -79,8 +79,9 @@ extends Contracts {
                     resolveExp( init, containingFQN, containingDecl )
                     resolveCommand( stmt, fqn, Some(decl) )
                 case GenericParamDeclNd( ty : TypeNd) =>
-                    resolveType( ty, containingFQN, containingDecl ) 
-                case ForVarDecl() => {}
+                    resolveType( ty, containingFQN, containingDecl )
+                case ForDecl(fvd) => resolveDecl(fvd,containingFQN, containingDecl)
+                case ForVarDecl() => ()
                 case MethodImplementationDeclNd( nameNd : NameNd,
                                        paramList : List[ParamDeclNd],
                                        guard : ExpNd,
@@ -188,8 +189,15 @@ extends Contracts {
         def resolveLocSetNd (lsn: LocSetNd, containingFQN: FQN, containingDecl: Option[DeclNd])
         {
           lsn match { 
-            case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
-            case ArrayLSN(ae) => resolveExp(ae, containingFQN, containingDecl)
+            case ObjectIdLSN(en) => {
+              resolveExp(en, containingFQN, containingDecl)
+            }
+            case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd) => {  
+              val fvd = forDecl.fvd 
+                    resolveLocSetNd( locSet, fvd.fqn, Some(fvd) )
+                    resolveExp( offSet, containingFQN, containingDecl )
+                    resolveExp( bound, containingFQN, containingDecl )                    
+               }
         }
         }
 
@@ -198,7 +206,7 @@ extends Contracts {
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             command match {
-                case SkipCmdNd() => {}
+                case SkipCmdNd() => {} 
                 
                 case SeqCommandNd( fstCmd, sndCmd ) =>
                     resolveCommand( fstCmd, containingFQN, containingDecl )
@@ -271,8 +279,8 @@ extends Contracts {
             }
         }
         
-        def resolveExp( exp : ExpNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
-            check(  containingDecl == None && containingFQN.names.length == 0 
+        def resolveExp( exp : ExpNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {        
+          check(  containingDecl == None && containingFQN.names.length == 0 
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             exp match {
@@ -284,12 +292,7 @@ extends Contracts {
                     name.decl = symTab.lookUp( containingFQN, name )
                 case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
-                case PermissionOp(exp) => resolveExp(exp, containingFQN, containingDecl)
-                case ArrayExpNd(forVar: ForDecl,offSet: ExpNd,upperBound: ExpNd,objId: ExpNd) => {
-                  resolveExp(objId,containingFQN,containingDecl) 
-                  resolveExp(offSet, containingFQN,containingDecl)
-                  resolveExp(upperBound, containingFQN,containingDecl)
-                }
+                case PermissionOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )
@@ -321,7 +324,7 @@ extends Contracts {
         }
         def resolveClassInvariantList(classInvList : List[ClassInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
           for(classInv <- classInvList)
-            resolveExp(classInv.exp, containingFQN, containingDecl)
+            resolveExp(classInv.exp, containingFQN, containingDecl) 
         }        
         
         
