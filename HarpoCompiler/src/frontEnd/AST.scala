@@ -487,6 +487,10 @@ class AST{
     case class PermissionOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
       override def ppp = Pretty.func("PermissionOp", x)
     }
+    
+    case class LengthOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("PermissionOp", x)
+    }
 
     /*******************/
     /** Operators    **/

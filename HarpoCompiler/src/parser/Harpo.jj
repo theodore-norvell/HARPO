@@ -297,6 +297,7 @@ TOKEN :
 | 	"while"
 | 	"with"
 | 	"this"
+|    "length"
 }
 
 TOKEN :
@@ -1916,6 +1917,11 @@ ExpNd Exp8() :
   tk = "permission" "(" locSet = LocSet() ")"
   {
     return builder.makePermissionOp(locSet, getCoord(tk));
+  }
+| 
+  tk = "length" "(" objId = ObjectId() ")"
+  {
+    return builder.makeLengthOp(objId, getCoord(tk));
   }
 | 
   "(" x = Exp() ")"

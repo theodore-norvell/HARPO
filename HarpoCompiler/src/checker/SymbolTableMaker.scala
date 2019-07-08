@@ -169,6 +169,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
                 case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
                 case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
                 case PermissionOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+                case LengthOp(exp) => {}
                 case BinaryOpExpNd( op, x, y ) =>
                     buildSTFromInvariantExp( x, containingFQN)
                     buildSTFromInvariantExp( y, containingFQN)

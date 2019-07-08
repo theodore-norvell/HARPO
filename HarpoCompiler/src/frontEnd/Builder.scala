@@ -167,6 +167,8 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
   
+  def makeLengthOp(x: ExpNd, coord: AST.Coord) = new LengthOp(x)(coord)
+  
   var next = 0
 
   def threadDeclNd(claimList: ClaimList, bl: CommandNd, coord: Coord) = {

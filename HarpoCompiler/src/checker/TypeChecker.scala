@@ -39,6 +39,9 @@ class TypeChecker(
       case PermissionOp(lsn) =>
         typeCheckLocSet(lsn)
 
+      case LengthOp(exp) => 
+        typeCheck(exp)
+      
       case NameExpNd(name) =>{
         val decl = name.decl.getOrElse {
           Contracts.unreachable("Name not resolved by type checking time.")
@@ -342,7 +345,6 @@ class TypeChecker(
         typeCheck(forDecl)
         typeCheck(offSet)
         typeCheck(bound)
-        
         typeCheck(locSet)
       }
       case _ => println("Type Not Allowed")
