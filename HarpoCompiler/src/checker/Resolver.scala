@@ -293,6 +293,7 @@ extends Contracts {
                 case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case PermissionOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case LengthOp(exp) => resolveExp(exp, containingFQN,containingDecl)
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )
