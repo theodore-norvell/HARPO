@@ -1030,14 +1030,25 @@ LocSetNd LocSet() :
   LocSetNd locSet;
   String forVar;
   ExpNd offSet, bound;
+  boolean boundInclusive;
   Token tk = getToken(1);
 }
 {
-  LOOKAHEAD("{" Name() ":")
+  LOOKAHEAD("{" Name() ":" "{" Exp() "," "." "."Exp() "}")
   (
+    { boundInclusive = false; }
     "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." bound = Exp() "}" "do" locSet = LocSet() "}"
     {
-      return builder.makeArrayLSN(forVar, offSet, bound, locSet, getCoord(tk));
+      return builder.makeArrayLSN(forVar, offSet, bound, boundInclusive, locSet, getCoord(tk));
+    }
+  )
+|
+  LOOKAHEAD("{" Name() ":" "{" Exp() "," "." "." "," Exp() "}")
+  (
+    { boundInclusive = true; }
+    "{" forVar = Name() ":" "{" offSet = Exp() "," "." "." "," bound = Exp() "}" "do" locSet = LocSet() "}"
+    {
+      return builder.makeArrayLSN(forVar, offSet, bound, boundInclusive, locSet, getCoord(tk));
     }
   )
 | 
@@ -1851,6 +1862,7 @@ ExpNd Exp8() :
   CanReadOp canRead;
   CanWriteOp canWrite;
   PermissionOp permissionOp;
+  ExpNd objId;
   LocSetNd locSet;
   ExpNd x = null;
   Token tk;

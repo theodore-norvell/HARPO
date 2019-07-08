@@ -45,10 +45,10 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makeObjectIdLSN(objId: ExpNd, coord: AST.Coord) = new ObjectIdLSN(objId)(coord)
 
-  def makeArrayLSN(name: String, offSet: ExpNd, bound: ExpNd, locSet: LocSetNd, coord: Coord) = {
+  def makeArrayLSN(name: String, offSet: ExpNd, bound: ExpNd,boundInclusive: Boolean, locSet: LocSetNd, coord: Coord) = {
     val fvd = new ForVarDecl()(name, coord)
     val forDecl = new ForDecl(fvd)(nextForName(), coord)
-    new ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd)(coord)
+    new ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd)(coord)
   }
 
 /*************************/

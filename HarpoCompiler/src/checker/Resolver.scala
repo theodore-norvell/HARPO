@@ -192,7 +192,7 @@ extends Contracts {
             case ObjectIdLSN(en) => {
               resolveExp(en, containingFQN, containingDecl)
             }
-            case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd) => {  
+            case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean ,locSet: LocSetNd) => {  
               val fvd = forDecl.fvd 
                     resolveLocSetNd( locSet, fvd.fqn, Some(fvd) )
                     resolveExp( offSet, containingFQN, containingDecl )

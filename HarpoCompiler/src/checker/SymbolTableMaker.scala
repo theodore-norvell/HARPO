@@ -142,7 +142,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
       for(lsn <- pmn.lsn)
         lsn match {
           case ObjectIdLSN(objId) => ()
-          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd) => {
+          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => {
             buildSTFromDecl(forDecl, containingFQN)
             buildSTFromLocSet(locSet, forDecl.fvd.fqn)
           }
@@ -152,7 +152,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
    def buildSTFromLocSet(locSet: LocSetNd, fqn: FQN){
      locSet match {
           case ObjectIdLSN(objId) => ()
-          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd) => {
+          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean , locSet: LocSetNd) => {
             buildSTFromDecl(forDecl, fqn)
             buildSTFromLocSet(locSet, forDecl.fvd.fqn)
           }

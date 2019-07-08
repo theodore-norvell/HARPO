@@ -338,10 +338,11 @@ class TypeChecker(
   def typeCheck(lsn: LocSetNd) {
     lsn match {
       case ObjectIdLSN(i) => typeCheck(i)
-      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd) => {     
+      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd,boundInclusive: Boolean , locSet: LocSetNd) => {     
         typeCheck(forDecl)
         typeCheck(offSet)
         typeCheck(bound)
+        
         typeCheck(locSet)
       }
       case _ => println("Type Not Allowed")
@@ -587,7 +588,7 @@ class TypeChecker(
   private def typeCheckLocSet(lsn: LocSetNd): Option[Type] = {
     val resultType: Option[Type] = lsn match {
       case ObjectIdLSN(i) => typeCheck(i)
-      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,upperBound: ExpNd, locSet: LocSetNd) => typeCheckLocSet(locSet)
+      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,upperBound: ExpNd, boundInclusive: Boolean , locSet: LocSetNd) => typeCheckLocSet(locSet)
       //TODO need to check that it actually represent a location,
       // Convert from location to set of location, insert a cast, if necessary
       // location holding int to set of int

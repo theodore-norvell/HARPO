@@ -205,7 +205,7 @@ class AST{
        override def pp = Pretty.func( "LocSetNd", exp )
        override def getCoord() = coord
     }
-   case class ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, locSet: LocSetNd)(coord: AST.Coord) extends LocSetNd(coord){
+   case class ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd)(coord: AST.Coord) extends LocSetNd(coord){
       override def pp = Pretty.func("ArrayLSN", forDecl, offSet,bound,locSet)
       override def getCoord() = coord
       } 
