@@ -441,12 +441,6 @@ ClassDeclNd ClassDecl() :
     preCnd = PreCond() { p.addConstructorSpec(preCnd); }
   | 
     postCnd = PostCond() { p.addConstructorSpec(postCnd); }
-  | 
-    givesPer = GivesPer() { p.addConstructorPer(givesPer); }
-  | 
-    takesPer = TakesPer()  { p.addConstructorPer(takesPer); }
-  | 
-    borrowsPer = BorrowsPer() { p.addConstructorPer(borrowsPer);}
   )*
   
   (
