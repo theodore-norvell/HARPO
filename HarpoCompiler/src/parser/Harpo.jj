@@ -15,6 +15,8 @@ This file is importing packages written in Scala
 		- setBuilder() -  called by builder
 		- setFileName() - 
 		- getCoord(with token)
+
+		
 		- getCoord(with Integer-token)
 	TOKEN_MGR_DECL
 	SPECIAL TOKENS - for single line and multiline comment
@@ -403,6 +405,11 @@ ClassDeclNd ClassDecl() :
   TypeNd t;
   ParamDeclNd par;
   DeclNd d;
+  PreCndNd preCnd;
+  PostCndNd postCnd;
+  GivesPerNd givesPer;
+  TakesPerNd takesPer;
+  BorrowsPerNd borrowsPer;
   String name;
   Token tk;
 }
@@ -427,7 +434,21 @@ ClassDeclNd ClassDecl() :
       }
     )*
   )?
+  
   ")"
+
+  (
+    preCnd = PreCond() { p.addConstructorSpec(preCnd); }
+  | 
+    postCnd = PostCond() { p.addConstructorSpec(postCnd); }
+  | 
+    givesPer = GivesPer() { p.addConstructorPer(givesPer); }
+  | 
+    takesPer = TakesPer()  { p.addConstructorPer(takesPer); }
+  | 
+    borrowsPer = BorrowsPer() { p.addConstructorPer(borrowsPer);}
+  )*
+  
   (
     "implements"
     (

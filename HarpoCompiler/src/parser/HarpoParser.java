@@ -89,6 +89,11 @@ public class HarpoParser implements HarpoParserConstants {
   TypeNd t;
   ParamDeclNd par;
   DeclNd d;
+  PreCndNd preCnd;
+  PostCndNd postCnd;
+  GivesPerNd givesPer;
+  TakesPerNd takesPer;
+  BorrowsPerNd borrowsPer;
   String name;
   Token tk;
     jj_consume_token(11);
@@ -130,10 +135,51 @@ public class HarpoParser implements HarpoParserConstants {
       ;
     }
     jj_consume_token(12);
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 47:
+      case 59:
+      case 71:
+      case 72:
+      case 76:
+        ;
+        break;
+      default:
+        jj_la1[6] = jj_gen;
+        break label_3;
+      }
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case 71:
+        preCnd = PreCond();
+                         p.addConstructorSpec(preCnd);
+        break;
+      case 72:
+        postCnd = PostCond();
+                           p.addConstructorSpec(postCnd);
+        break;
+      case 59:
+        givesPer = GivesPer();
+                            p.addConstructorPer(givesPer);
+        break;
+      case 76:
+        takesPer = TakesPer();
+                             p.addConstructorPer(takesPer);
+        break;
+      case 47:
+        borrowsPer = BorrowsPer();
+                                p.addConstructorPer(borrowsPer);
+        break;
+      default:
+        jj_la1[7] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 62:
       jj_consume_token(62);
-      label_3:
+      label_4:
       while (true) {
         t = Type();
         p.addSuperType(t);
@@ -142,16 +188,16 @@ public class HarpoParser implements HarpoParserConstants {
           ;
           break;
         default:
-          jj_la1[6] = jj_gen;
-          break label_3;
+          jj_la1[8] = jj_gen;
+          break label_4;
         }
       }
       break;
     default:
-      jj_la1[7] = jj_gen;
+      jj_la1[9] = jj_gen;
       ;
     }
-    label_4:
+    label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 11:
@@ -167,8 +213,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[8] = jj_gen;
-        break label_4;
+        jj_la1[10] = jj_gen;
+        break label_5;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 11:
@@ -187,7 +233,7 @@ public class HarpoParser implements HarpoParserConstants {
         jj_consume_token(34);
         break;
       default:
-        jj_la1[9] = jj_gen;
+        jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -201,12 +247,12 @@ public class HarpoParser implements HarpoParserConstants {
         p.checkName(tk.image, getCoord(tk));
         break;
       default:
-        jj_la1[10] = jj_gen;
+        jj_la1[12] = jj_gen;
         ;
       }
       break;
     default:
-      jj_la1[11] = jj_gen;
+      jj_la1[13] = jj_gen;
       ;
     }
     jj_consume_token(12);
@@ -249,13 +295,13 @@ public class HarpoParser implements HarpoParserConstants {
       GParams(p);
       break;
     default:
-      jj_la1[12] = jj_gen;
+      jj_la1[14] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 57:
       jj_consume_token(57);
-      label_5:
+      label_6:
       while (true) {
         t = Type();
         p.addSuperType(t);
@@ -264,16 +310,16 @@ public class HarpoParser implements HarpoParserConstants {
           ;
           break;
         default:
-          jj_la1[13] = jj_gen;
-          break label_5;
+          jj_la1[15] = jj_gen;
+          break label_6;
         }
       }
       break;
     default:
-      jj_la1[14] = jj_gen;
+      jj_la1[16] = jj_gen;
       ;
     }
-    label_6:
+    label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 34:
@@ -286,8 +332,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[15] = jj_gen;
-        break label_6;
+        jj_la1[17] = jj_gen;
+        break label_7;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 53:
@@ -303,7 +349,7 @@ public class HarpoParser implements HarpoParserConstants {
         jj_consume_token(34);
         break;
       default:
-        jj_la1[16] = jj_gen;
+        jj_la1[18] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -317,12 +363,12 @@ public class HarpoParser implements HarpoParserConstants {
         p.checkName(tk.image, getCoord(tk));
         break;
       default:
-        jj_la1[17] = jj_gen;
+        jj_la1[19] = jj_gen;
         ;
       }
       break;
     default:
-      jj_la1[18] = jj_gen;
+      jj_la1[20] = jj_gen;
       ;
     }
     jj_consume_token(12);
@@ -333,15 +379,15 @@ public class HarpoParser implements HarpoParserConstants {
   final public void GParams(ClassLike p) throws ParseException {
     jj_consume_token(15);
     GParam(p);
-    label_7:
+    label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 35:
         ;
         break;
       default:
-        jj_la1[19] = jj_gen;
-        break label_7;
+        jj_la1[21] = jj_gen;
+        break label_8;
       }
       jj_consume_token(35);
       GParam(p);
@@ -362,7 +408,7 @@ public class HarpoParser implements HarpoParserConstants {
       ty = Type();
       break;
     default:
-      jj_la1[20] = jj_gen;
+      jj_la1[22] = jj_gen;
       ty = builder.topTypeNd(getCoord(tk));
     }
     p.addGeneric(name, ty, getCoord(tk));
@@ -394,7 +440,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return builder.publicAccess();}
       break;
     default:
-      jj_la1[21] = jj_gen;
+      jj_la1[23] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -411,7 +457,7 @@ public class HarpoParser implements HarpoParserConstants {
       acc = Access();
       break;
     default:
-      jj_la1[22] = jj_gen;
+      jj_la1[24] = jj_gen;
       ;
     }
     p = ObjDecl(acc);
@@ -439,7 +485,7 @@ public class HarpoParser implements HarpoParserConstants {
       isGhost = Ghost();
       break;
     default:
-      jj_la1[23] = jj_gen;
+      jj_la1[25] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -452,7 +498,7 @@ public class HarpoParser implements HarpoParserConstants {
       isConst = true;
       break;
     default:
-      jj_la1[24] = jj_gen;
+      jj_la1[26] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -464,7 +510,7 @@ public class HarpoParser implements HarpoParserConstants {
       ty = Type();
       break;
     default:
-      jj_la1[25] = jj_gen;
+      jj_la1[27] = jj_gen;
       ty = builder.noTypeNd(getCoord(tk));
     }
     jj_consume_token(36);
@@ -496,7 +542,7 @@ public class HarpoParser implements HarpoParserConstants {
       acc = Access();
       break;
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[28] = jj_gen;
       ;
     }
     jj_consume_token(74);
@@ -509,7 +555,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 69:
       param = MParam();
       builder.add(paramList, param);
-      label_8:
+      label_9:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 35:
@@ -519,15 +565,15 @@ public class HarpoParser implements HarpoParserConstants {
           ;
           break;
         default:
-          jj_la1[27] = jj_gen;
-          break label_8;
+          jj_la1[29] = jj_gen;
+          break label_9;
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 35:
           jj_consume_token(35);
           break;
         default:
-          jj_la1[28] = jj_gen;
+          jj_la1[30] = jj_gen;
           ;
         }
         param = MParam();
@@ -535,11 +581,11 @@ public class HarpoParser implements HarpoParserConstants {
       }
       break;
     default:
-      jj_la1[29] = jj_gen;
+      jj_la1[31] = jj_gen;
       ;
     }
     jj_consume_token(12);
-    label_9:
+    label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 47:
@@ -550,8 +596,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[30] = jj_gen;
-        break label_9;
+        jj_la1[32] = jj_gen;
+        break label_10;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 71:
@@ -575,7 +621,7 @@ public class HarpoParser implements HarpoParserConstants {
       builder.add(borrowsPerList, borrowsPer);
         break;
       default:
-        jj_la1[31] = jj_gen;
+        jj_la1[33] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -640,15 +686,15 @@ public class HarpoParser implements HarpoParserConstants {
   Token tk = getToken(1);
     tk = jj_consume_token(11);
     jj_consume_token(78);
-    label_10:
+    label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 51:
         ;
         break;
       default:
-        jj_la1[32] = jj_gen;
-        break label_10;
+        jj_la1[34] = jj_gen;
+        break label_11;
       }
       claim = Claim();
         builder.add(claimList, claim);
@@ -659,7 +705,7 @@ public class HarpoParser implements HarpoParserConstants {
       jj_consume_token(78);
       break;
     default:
-      jj_la1[33] = jj_gen;
+      jj_la1[35] = jj_gen;
       ;
     }
     jj_consume_token(12);
@@ -708,7 +754,7 @@ public class HarpoParser implements HarpoParserConstants {
       isGhost = Ghost();
       break;
     default:
-      jj_la1[34] = jj_gen;
+      jj_la1[36] = jj_gen;
       ;
     }
     jj_consume_token(63);
@@ -725,7 +771,7 @@ public class HarpoParser implements HarpoParserConstants {
       isGhost = Ghost();
       break;
     default:
-      jj_la1[35] = jj_gen;
+      jj_la1[37] = jj_gen;
       ;
     }
     jj_consume_token(69);
@@ -742,7 +788,7 @@ public class HarpoParser implements HarpoParserConstants {
       isGhost = Ghost();
       break;
     default:
-      jj_la1[36] = jj_gen;
+      jj_la1[38] = jj_gen;
       ;
     }
     jj_consume_token(68);
@@ -793,23 +839,23 @@ public class HarpoParser implements HarpoParserConstants {
         builder.add(explst, exp);
       break;
     default:
-      jj_la1[37] = jj_gen;
+      jj_la1[39] = jj_gen;
       exp = DefaultPermission();
         builder.add(explst, exp);
     }
-    label_11:
+    label_12:
     while (true) {
       if (jj_2_14(2147483647)) {
         ;
       } else {
-        break label_11;
+        break label_12;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 35:
         jj_consume_token(35);
         break;
       default:
-        jj_la1[38] = jj_gen;
+        jj_la1[40] = jj_gen;
         ;
       }
       locSet = LocSet();
@@ -821,7 +867,7 @@ public class HarpoParser implements HarpoParserConstants {
           builder.add(explst, exp);
         break;
       default:
-        jj_la1[39] = jj_gen;
+        jj_la1[41] = jj_gen;
         exp = DefaultPermission();
           builder.add(explst, exp);
       }
@@ -838,8 +884,10 @@ public class HarpoParser implements HarpoParserConstants {
   LocSetNd locSet;
   String forVar;
   ExpNd offSet, bound;
+  boolean boundInclusive;
   Token tk = getToken(1);
     if (jj_2_15(2147483647)) {
+      boundInclusive = false;
       jj_consume_token(15);
       forVar = Name();
       jj_consume_token(17);
@@ -853,8 +901,25 @@ public class HarpoParser implements HarpoParserConstants {
       jj_consume_token(54);
       locSet = LocSet();
       jj_consume_token(16);
-      {if (true) return builder.makeArrayLSN(forVar, offSet, bound, locSet, getCoord(tk));}
+      {if (true) return builder.makeArrayLSN(forVar, offSet, bound, boundInclusive, locSet, getCoord(tk));}
     } else if (jj_2_16(2147483647)) {
+      boundInclusive = true;
+      jj_consume_token(15);
+      forVar = Name();
+      jj_consume_token(17);
+      jj_consume_token(15);
+      offSet = Exp();
+      jj_consume_token(35);
+      jj_consume_token(39);
+      jj_consume_token(39);
+      jj_consume_token(35);
+      bound = Exp();
+      jj_consume_token(16);
+      jj_consume_token(54);
+      locSet = LocSet();
+      jj_consume_token(16);
+      {if (true) return builder.makeArrayLSN(forVar, offSet, bound, boundInclusive, locSet, getCoord(tk));}
+    } else if (jj_2_17(2147483647)) {
       objId = ObjectId();
       {if (true) return builder.makeObjectIdLSN(objId, getCoord(tk));}
     } else {
@@ -909,7 +974,7 @@ public class HarpoParser implements HarpoParserConstants {
     coord = getCoord(tk);
     nameNd = builder.simpleName(name, coord);
     ty = builder.namedTypeNd(nameNd, getCoord(tk));
-    label_12:
+    label_13:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 13:
@@ -917,8 +982,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[40] = jj_gen;
-        break label_12;
+        jj_la1[42] = jj_gen;
+        break label_13;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 15:
@@ -933,7 +998,7 @@ public class HarpoParser implements HarpoParserConstants {
       ty = builder.arrayTypeNd(ty, bound, getCoord(tk));
         break;
       default:
-        jj_la1[41] = jj_gen;
+        jj_la1[43] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -948,15 +1013,15 @@ public class HarpoParser implements HarpoParserConstants {
     jj_consume_token(15);
     ty = Type();
     builder.add(ga, ty);
-    label_13:
+    label_14:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 35:
         ;
         break;
       default:
-        jj_la1[42] = jj_gen;
-        break label_13;
+        jj_la1[44] = jj_gen;
+        break label_14;
       }
       jj_consume_token(35);
       ty = Type();
@@ -995,7 +1060,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return p;}
       break;
     default:
-      jj_la1[43] = jj_gen;
+      jj_la1[45] = jj_gen;
     {if (true) return builder.skip(getCoord(1));}
     }
     throw new Error("Missing return statement in function");
@@ -1014,7 +1079,7 @@ public class HarpoParser implements HarpoParserConstants {
       isGhost = Ghost();
       break;
     default:
-      jj_la1[44] = jj_gen;
+      jj_la1[46] = jj_gen;
       ;
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1027,7 +1092,7 @@ public class HarpoParser implements HarpoParserConstants {
       isConst = true;
       break;
     default:
-      jj_la1[45] = jj_gen;
+      jj_la1[47] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1038,7 +1103,7 @@ public class HarpoParser implements HarpoParserConstants {
       ty = Type();
       break;
     default:
-      jj_la1[46] = jj_gen;
+      jj_la1[48] = jj_gen;
       ty = builder.noTypeNd(getCoord(tk));
     }
     jj_consume_token(36);
@@ -1081,18 +1146,18 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return builder.makeAssumeCmd(x, getCoord(tk));}
       break;
     default:
-      jj_la1[63] = jj_gen;
-      if (jj_2_18(2147483647)) {
+      jj_la1[65] = jj_gen;
+      if (jj_2_19(2147483647)) {
         vl = NonemptyVarList();
         tk = jj_consume_token(36);
         el = NonemptyExpList();
     {if (true) return builder.assignment(vl, el, getCoord(tk));}
-      } else if (jj_2_19(2147483647)) {
+      } else if (jj_2_20(2147483647)) {
         x = ObjectId();
         tk = jj_consume_token(36);
         y = Exp();
     {if (true) return builder.assignment(builder.expList(x), builder.expList(y), getCoord(tk));}
-      } else if (jj_2_20(2147483647)) {
+      } else if (jj_2_21(2147483647)) {
         // The object id needs to end with a name. The builder will check this.
           lhs = ObjectId();
         jj_consume_token(11);
@@ -1112,37 +1177,6 @@ public class HarpoParser implements HarpoParserConstants {
           case 81:
             jj_consume_token(81);
             x = Exp();
-            label_14:
-            while (true) {
-              switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-              case 65:
-                ;
-                break;
-              default:
-                jj_la1[47] = jj_gen;
-                break label_14;
-              }
-              loopInv = LoopInvariant();
-        builder.add(wlil, loopInv);
-            }
-            jj_consume_token(54);
-            p = Block();
-            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-            case 81:
-              jj_consume_token(81);
-              break;
-            default:
-              jj_la1[48] = jj_gen;
-              ;
-            }
-            jj_consume_token(12);
-      {if (true) return builder.makeWhile(x, wlil, p, getCoord(tk));}
-            break;
-          case 58:
-            jj_consume_token(58);
-            name = Name();
-            jj_consume_token(17);
-            x = Exp();
             label_15:
             while (true) {
               switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1154,6 +1188,37 @@ public class HarpoParser implements HarpoParserConstants {
                 break label_15;
               }
               loopInv = LoopInvariant();
+        builder.add(wlil, loopInv);
+            }
+            jj_consume_token(54);
+            p = Block();
+            switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+            case 81:
+              jj_consume_token(81);
+              break;
+            default:
+              jj_la1[50] = jj_gen;
+              ;
+            }
+            jj_consume_token(12);
+      {if (true) return builder.makeWhile(x, wlil, p, getCoord(tk));}
+            break;
+          case 58:
+            jj_consume_token(58);
+            name = Name();
+            jj_consume_token(17);
+            x = Exp();
+            label_16:
+            while (true) {
+              switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+              case 65:
+                ;
+                break;
+              default:
+                jj_la1[51] = jj_gen;
+                break label_16;
+              }
+              loopInv = LoopInvariant();
         builder.add(flil, loopInv);
             }
             jj_consume_token(54);
@@ -1163,28 +1228,28 @@ public class HarpoParser implements HarpoParserConstants {
               jj_consume_token(58);
               break;
             default:
-              jj_la1[50] = jj_gen;
+              jj_la1[52] = jj_gen;
               ;
             }
             jj_consume_token(12);
       {if (true) return builder.makeFor(name, x, flil, p, getCoord(tk));}
             break;
           default:
-            jj_la1[61] = jj_gen;
-            if (jj_2_17(2147483647)) {
+            jj_la1[63] = jj_gen;
+            if (jj_2_18(2147483647)) {
               jj_consume_token(52);
               name = Name();
               jj_consume_token(17);
               x = Exp();
-              label_16:
+              label_17:
               while (true) {
                 switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
                 case 51:
                   ;
                   break;
                 default:
-                  jj_la1[51] = jj_gen;
-                  break label_16;
+                  jj_la1[53] = jj_gen;
+                  break label_17;
                 }
                 claim = Claim();
         builder.add(cl1, claim);
@@ -1196,7 +1261,7 @@ public class HarpoParser implements HarpoParserConstants {
                 jj_consume_token(52);
                 break;
               default:
-                jj_la1[52] = jj_gen;
+                jj_la1[54] = jj_gen;
                 ;
               }
               jj_consume_token(12);
@@ -1205,21 +1270,21 @@ public class HarpoParser implements HarpoParserConstants {
               switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
               case 52:
                 jj_consume_token(52);
-                label_17:
+                label_18:
                 while (true) {
                   switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
                   case 51:
                     ;
                     break;
                   default:
-                    jj_la1[53] = jj_gen;
-                    break label_17;
+                    jj_la1[55] = jj_gen;
+                    break label_18;
                   }
                   claim = Claim();
         builder.add(cl2, claim);
                 }
                 p = Block();
-                label_18:
+                label_19:
                 while (true) {
                   jj_consume_token(38);
                   q = Block();
@@ -1229,8 +1294,8 @@ public class HarpoParser implements HarpoParserConstants {
                     ;
                     break;
                   default:
-                    jj_la1[54] = jj_gen;
-                    break label_18;
+                    jj_la1[56] = jj_gen;
+                    break label_19;
                   }
                 }
                 switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1238,7 +1303,7 @@ public class HarpoParser implements HarpoParserConstants {
                   jj_consume_token(52);
                   break;
                 default:
-                  jj_la1[55] = jj_gen;
+                  jj_la1[57] = jj_gen;
                   ;
                 }
                 jj_consume_token(12);
@@ -1249,15 +1314,15 @@ public class HarpoParser implements HarpoParserConstants {
                 mi = MethodImpl();
       mis = builder.methodImplementationList();
       builder.add(mis, mi);
-                label_19:
+                label_20:
                 while (true) {
                   switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
                   case 37:
                     ;
                     break;
                   default:
-                    jj_la1[56] = jj_gen;
-                    break label_19;
+                    jj_la1[58] = jj_gen;
+                    break label_20;
                   }
                   jj_consume_token(37);
                   mi = MethodImpl();
@@ -1268,7 +1333,7 @@ public class HarpoParser implements HarpoParserConstants {
                   jj_consume_token(42);
                   break;
                 default:
-                  jj_la1[57] = jj_gen;
+                  jj_la1[59] = jj_gen;
                   ;
                 }
                 jj_consume_token(12);
@@ -1277,15 +1342,15 @@ public class HarpoParser implements HarpoParserConstants {
               case 82:
                 jj_consume_token(82);
                 lock = Lock();
-                label_20:
+                label_21:
                 while (true) {
                   switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
                   case 76:
                     ;
                     break;
                   default:
-                    jj_la1[58] = jj_gen;
-                    break label_20;
+                    jj_la1[60] = jj_gen;
+                    break label_21;
                   }
                   takesPer = TakesPer();
         builder.add(tpl, takesPer);
@@ -1293,15 +1358,15 @@ public class HarpoParser implements HarpoParserConstants {
                 y = OptGuard();
                 jj_consume_token(54);
                 p = Block();
-                label_21:
+                label_22:
                 while (true) {
                   switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
                   case 59:
                     ;
                     break;
                   default:
-                    jj_la1[59] = jj_gen;
-                    break label_21;
+                    jj_la1[61] = jj_gen;
+                    break label_22;
                   }
                   givesPer = GivesPer();
         builder.add(gpl, givesPer);
@@ -1311,14 +1376,14 @@ public class HarpoParser implements HarpoParserConstants {
                   jj_consume_token(82);
                   break;
                 default:
-                  jj_la1[60] = jj_gen;
+                  jj_la1[62] = jj_gen;
                   ;
                 }
                 jj_consume_token(12);
       {if (true) return builder.makeWith(lock, tpl, y, p, gpl, getCoord(tk));}
                 break;
               default:
-                jj_la1[62] = jj_gen;
+                jj_la1[64] = jj_gen;
                 jj_consume_token(-1);
                 throw new ParseException();
               }
@@ -1326,7 +1391,7 @@ public class HarpoParser implements HarpoParserConstants {
           }
           break;
         default:
-          jj_la1[64] = jj_gen;
+          jj_la1[66] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1340,15 +1405,15 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd lhs;
     lhs = ObjectId();
     builder.add(r, lhs);
-    label_22:
+    label_23:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 35:
         ;
         break;
       default:
-        jj_la1[65] = jj_gen;
-        break label_22;
+        jj_la1[67] = jj_gen;
+        break label_23;
       }
       jj_consume_token(35);
       lhs = ObjectId();
@@ -1363,15 +1428,15 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd rhs;
     rhs = Exp();
     builder.add(r, rhs);
-    label_23:
+    label_24:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 35:
         ;
         break;
       default:
-        jj_la1[66] = jj_gen;
-        break label_23;
+        jj_la1[68] = jj_gen;
+        break label_24;
       }
       jj_consume_token(35);
       rhs = Exp();
@@ -1391,6 +1456,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 48:
     case 49:
     case 70:
+    case 84:
     case BOOL_LITERAL:
     case NAME:
     case DEC_LITERAL:
@@ -1400,15 +1466,15 @@ public class HarpoParser implements HarpoParserConstants {
     case REAL_LITERAL:
       rhs = Exp();
       builder.add(r, rhs);
-      label_24:
+      label_25:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 35:
           ;
           break;
         default:
-          jj_la1[67] = jj_gen;
-          break label_24;
+          jj_la1[69] = jj_gen;
+          break label_25;
         }
         jj_consume_token(35);
         rhs = Exp();
@@ -1416,7 +1482,7 @@ public class HarpoParser implements HarpoParserConstants {
       }
       break;
     default:
-      jj_la1[68] = jj_gen;
+      jj_la1[70] = jj_gen;
       ;
     }
     {if (true) return r;}
@@ -1438,7 +1504,7 @@ public class HarpoParser implements HarpoParserConstants {
         jj_consume_token(61);
         break;
       default:
-        jj_la1[69] = jj_gen;
+        jj_la1[71] = jj_gen;
         ;
       }
       tk = jj_consume_token(12);
@@ -1446,11 +1512,11 @@ public class HarpoParser implements HarpoParserConstants {
       break;
     case 56:
       jj_consume_token(56);
-      if (jj_2_21(2147483647)) {
+      if (jj_2_22(2147483647)) {
         jj_consume_token(61);
         tk = jj_consume_token(12);
         q = builder.skip(getCoord(tk));
-      } else if (jj_2_22(2147483647)) {
+      } else if (jj_2_23(2147483647)) {
         jj_consume_token(61);
         q = MoreIf();
       } else {
@@ -1471,20 +1537,20 @@ public class HarpoParser implements HarpoParserConstants {
             jj_consume_token(61);
             break;
           default:
-            jj_la1[70] = jj_gen;
+            jj_la1[72] = jj_gen;
             ;
           }
           jj_consume_token(12);
           break;
         default:
-          jj_la1[71] = jj_gen;
+          jj_la1[73] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
       }
       break;
     default:
-      jj_la1[72] = jj_gen;
+      jj_la1[74] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1509,7 +1575,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 69:
       param = MParam();
       builder.add(paramList, param);
-      label_25:
+      label_26:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 35:
@@ -1519,15 +1585,15 @@ public class HarpoParser implements HarpoParserConstants {
           ;
           break;
         default:
-          jj_la1[73] = jj_gen;
-          break label_25;
+          jj_la1[75] = jj_gen;
+          break label_26;
         }
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 35:
           jj_consume_token(35);
           break;
         default:
-          jj_la1[74] = jj_gen;
+          jj_la1[76] = jj_gen;
           ;
         }
         param = MParam();
@@ -1535,7 +1601,7 @@ public class HarpoParser implements HarpoParserConstants {
       }
       break;
     default:
-      jj_la1[75] = jj_gen;
+      jj_la1[77] = jj_gen;
       ;
     }
     jj_consume_token(12);
@@ -1547,7 +1613,7 @@ public class HarpoParser implements HarpoParserConstants {
       q = Block();
       break;
     default:
-      jj_la1[76] = jj_gen;
+      jj_la1[78] = jj_gen;
       q = builder.skip(getCoord(1));
     }
     nameNd = builder.simpleName(name, coord);
@@ -1576,8 +1642,8 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return builder.newInitExp(t, args, coord);}
       break;
     default:
-      jj_la1[78] = jj_gen;
-      if (jj_2_23(2147483647)) {
+      jj_la1[80] = jj_gen;
+      if (jj_2_24(2147483647)) {
         jj_consume_token(11);
         jj_consume_token(58);
         name = Name();
@@ -1590,12 +1656,12 @@ public class HarpoParser implements HarpoParserConstants {
           jj_consume_token(58);
           break;
         default:
-          jj_la1[77] = jj_gen;
+          jj_la1[79] = jj_gen;
           ;
         }
         jj_consume_token(12);
     {if (true) return builder.arrayInitExp(name, x, a, coord);}
-      } else if (jj_2_24(2147483647)) {
+      } else if (jj_2_25(2147483647)) {
         jj_consume_token(11);
         jj_consume_token(61);
         a = MoreIfInitExp();
@@ -1608,6 +1674,7 @@ public class HarpoParser implements HarpoParserConstants {
         case 48:
         case 49:
         case 70:
+        case 84:
         case BOOL_LITERAL:
         case NAME:
         case DEC_LITERAL:
@@ -1619,7 +1686,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return builder.valueInitExp(x, x.coord());}
           break;
         default:
-          jj_la1[79] = jj_gen;
+          jj_la1[81] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1648,6 +1715,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 49:
     case 67:
     case 70:
+    case 84:
     case BOOL_LITERAL:
     case NAME:
     case DEC_LITERAL:
@@ -1661,13 +1729,13 @@ public class HarpoParser implements HarpoParserConstants {
         jj_consume_token(61);
         break;
       default:
-        jj_la1[80] = jj_gen;
+        jj_la1[82] = jj_gen;
         ;
       }
       jj_consume_token(12);
       break;
     default:
-      jj_la1[81] = jj_gen;
+      jj_la1[83] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1683,7 +1751,7 @@ public class HarpoParser implements HarpoParserConstants {
   Token tk;
   TypeNd ty;
     x = Exp0();
-    label_26:
+    label_27:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case IMPLIES:
@@ -1692,8 +1760,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[82] = jj_gen;
-        break label_26;
+        jj_la1[84] = jj_gen;
+        break label_27;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case IMPLIES:
@@ -1712,7 +1780,7 @@ public class HarpoParser implements HarpoParserConstants {
         x = builder.binaryOp("<=>", x, y, getCoord(tk));
         break;
       default:
-        jj_la1[83] = jj_gen;
+        jj_la1[85] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1724,7 +1792,7 @@ public class HarpoParser implements HarpoParserConstants {
       x = builder.asExp(x, ty, getCoord(tk));
       break;
     default:
-      jj_la1[84] = jj_gen;
+      jj_la1[86] = jj_gen;
       ;
     }
     {if (true) return x;}
@@ -1735,15 +1803,15 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd x, y;
   Token tk;
     x = Exp1();
-    label_27:
+    label_28:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OR:
         ;
         break;
       default:
-        jj_la1[85] = jj_gen;
-        break label_27;
+        jj_la1[87] = jj_gen;
+        break label_28;
       }
       tk = jj_consume_token(OR);
       y = Exp1();
@@ -1757,15 +1825,15 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd x, y;
   Token tk;
     x = Exp2();
-    label_28:
+    label_29:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case AND:
         ;
         break;
       default:
-        jj_la1[86] = jj_gen;
-        break label_28;
+        jj_la1[88] = jj_gen;
+        break label_29;
       }
       tk = jj_consume_token(AND);
       y = Exp2();
@@ -1789,6 +1857,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 48:
     case 49:
     case 70:
+    case 84:
     case BOOL_LITERAL:
     case NAME:
     case DEC_LITERAL:
@@ -1800,7 +1869,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return x;}
       break;
     default:
-      jj_la1[87] = jj_gen;
+      jj_la1[89] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1820,7 +1889,7 @@ public class HarpoParser implements HarpoParserConstants {
     case GE:
     case 29:
       x = builder.startComparison(y);
-      label_29:
+      label_30:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case 24:
@@ -1854,7 +1923,7 @@ public class HarpoParser implements HarpoParserConstants {
         x = builder.comparisonOp(">_", x, y);
           break;
         default:
-          jj_la1[88] = jj_gen;
+          jj_la1[90] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1868,14 +1937,14 @@ public class HarpoParser implements HarpoParserConstants {
           ;
           break;
         default:
-          jj_la1[89] = jj_gen;
-          break label_29;
+          jj_la1[91] = jj_gen;
+          break label_30;
         }
       }
       {if (true) return builder.finishComparisonOp(x, getCoord(tk));}
       break;
     default:
-      jj_la1[90] = jj_gen;
+      jj_la1[92] = jj_gen;
       {if (true) return y;}
     }
     throw new Error("Missing return statement in function");
@@ -1885,7 +1954,7 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd x, y;
   Token tk;
     x = Exp5();
-    label_30:
+    label_31:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 30:
@@ -1893,8 +1962,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[91] = jj_gen;
-        break label_30;
+        jj_la1[93] = jj_gen;
+        break label_31;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 30:
@@ -1908,7 +1977,7 @@ public class HarpoParser implements HarpoParserConstants {
         x = builder.binaryOp("-", x, y, getCoord(tk));
         break;
       default:
-        jj_la1[92] = jj_gen;
+        jj_la1[94] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1921,7 +1990,7 @@ public class HarpoParser implements HarpoParserConstants {
   ExpNd x, y;
   Token tk;
     x = Exp6();
-    label_31:
+    label_32:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 32:
@@ -1931,8 +2000,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[93] = jj_gen;
-        break label_31;
+        jj_la1[95] = jj_gen;
+        break label_32;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 32:
@@ -1956,7 +2025,7 @@ public class HarpoParser implements HarpoParserConstants {
         x = builder.binaryOp("mod", x, y, getCoord(tk));
         break;
       default:
-        jj_la1[94] = jj_gen;
+        jj_la1[96] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1978,6 +2047,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 48:
     case 49:
     case 70:
+    case 84:
     case BOOL_LITERAL:
     case NAME:
     case DEC_LITERAL:
@@ -1989,7 +2059,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return x;}
       break;
     default:
-      jj_la1[95] = jj_gen;
+      jj_la1[97] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2006,7 +2076,7 @@ public class HarpoParser implements HarpoParserConstants {
       x = builder.unaryOp("'", x, getCoord(tk));
       break;
     default:
-      jj_la1[96] = jj_gen;
+      jj_la1[98] = jj_gen;
       ;
     }
     {if (true) return x;}
@@ -2017,6 +2087,7 @@ public class HarpoParser implements HarpoParserConstants {
   CanReadOp canRead;
   CanWriteOp canWrite;
   PermissionOp permissionOp;
+  ExpNd objId;
   LocSetNd locSet;
   ExpNd x = null;
   Token tk;
@@ -2070,6 +2141,13 @@ public class HarpoParser implements HarpoParserConstants {
       jj_consume_token(12);
     {if (true) return builder.makePermissionOp(locSet, getCoord(tk));}
       break;
+    case 84:
+      tk = jj_consume_token(84);
+      jj_consume_token(11);
+      objId = ObjectId();
+      jj_consume_token(12);
+    {if (true) return builder.makeLengthOp(objId, getCoord(tk));}
+      break;
     case 11:
       jj_consume_token(11);
       x = Exp();
@@ -2077,7 +2155,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return x;}
       break;
     default:
-      jj_la1[97] = jj_gen;
+      jj_la1[99] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2093,7 +2171,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return x;}
       break;
     default:
-      jj_la1[98] = jj_gen;
+      jj_la1[100] = jj_gen;
     {if (true) return builder.noExp(getCoord(1));}
     }
     throw new Error("Missing return statement in function");
@@ -2107,7 +2185,7 @@ public class HarpoParser implements HarpoParserConstants {
     str = Name();
     name = builder.simpleName(str, getCoord(tk));
     r = builder.nameExp(name, getCoord(tk));
-    label_32:
+    label_33:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 13:
@@ -2115,8 +2193,8 @@ public class HarpoParser implements HarpoParserConstants {
         ;
         break;
       default:
-        jj_la1[99] = jj_gen;
-        break label_32;
+        jj_la1[101] = jj_gen;
+        break label_33;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case 13:
@@ -2131,7 +2209,7 @@ public class HarpoParser implements HarpoParserConstants {
       r = builder.memberExp(r, str, getCoord(tk));
         break;
       default:
-        jj_la1[100] = jj_gen;
+        jj_la1[102] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2143,7 +2221,7 @@ public class HarpoParser implements HarpoParserConstants {
   final public ExpNd Lock() throws ParseException {
   ExpNd r;
   Token tk = getToken(1);
-    if (jj_2_25(2147483647)) {
+    if (jj_2_26(2147483647)) {
       tk = jj_consume_token(83);
       r = builder.makeThis("this", getCoord(tk));
     } else {
@@ -2152,7 +2230,7 @@ public class HarpoParser implements HarpoParserConstants {
         r = ObjectId();
         break;
       default:
-        jj_la1[101] = jj_gen;
+        jj_la1[103] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -2353,185 +2431,59 @@ public class HarpoParser implements HarpoParserConstants {
     finally { jj_save(24, xla); }
   }
 
-  private boolean jj_3R_109() {
-    if (jj_scan_token(70)) return true;
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_43()) return true;
-    if (jj_scan_token(12)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_75() {
-    Token xsp;
-    if (jj_3R_80()) return true;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_80()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_71() {
-    if (jj_scan_token(13)) return true;
-    if (jj_3R_53()) return true;
-    if (jj_scan_token(14)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_72() {
-    if (jj_3R_74()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_75()) {
-    jj_scanpos = xsp;
-    if (jj_3R_76()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_108() {
-    if (jj_scan_token(49)) return true;
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_43()) return true;
-    if (jj_scan_token(12)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_107() {
-    if (jj_scan_token(48)) return true;
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_43()) return true;
-    if (jj_scan_token(12)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_67() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_70()) {
-    jj_scanpos = xsp;
-    if (jj_3R_71()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_70() {
-    if (jj_3R_73()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_106() {
-    if (jj_scan_token(BOOL_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_69() {
-    if (jj_3R_72()) return true;
-    return false;
-  }
-
-  private boolean jj_3_22() {
-    if (jj_scan_token(61)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_105() {
-    if (jj_scan_token(REAL_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_65() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_68()) {
-    jj_scanpos = xsp;
-    if (jj_3R_69()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_68() {
-    if (jj_scan_token(NOT)) return true;
-    if (jj_3R_65()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_64() {
-    if (jj_3R_44()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_67()) { jj_scanpos = xsp; break; }
-    }
-    return false;
+  private boolean jj_2_26(int xla) {
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return !jj_3_26(); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(25, xla); }
   }
 
   private boolean jj_3_21() {
-    if (jj_scan_token(61)) return true;
-    if (jj_scan_token(12)) return true;
+    if (jj_3R_47()) return true;
+    if (jj_scan_token(11)) return true;
     return false;
   }
 
   private boolean jj_3R_104() {
-    if (jj_scan_token(HEX_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_103() {
-    if (jj_scan_token(OCT_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3_20() {
-    if (jj_3R_45()) return true;
-    if (jj_scan_token(11)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_102() {
     if (jj_scan_token(BIN_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_66() {
+  private boolean jj_3R_68() {
     if (jj_scan_token(AND)) return true;
-    if (jj_3R_65()) return true;
+    if (jj_3R_67()) return true;
     return false;
   }
 
-  private boolean jj_3_19() {
-    if (jj_3R_45()) return true;
-    if (jj_scan_token(36)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_101() {
+  private boolean jj_3R_103() {
     if (jj_scan_token(DEC_LITERAL)) return true;
     return false;
   }
 
+  private boolean jj_3_20() {
+    if (jj_3R_47()) return true;
+    if (jj_scan_token(36)) return true;
+    return false;
+  }
+
   private boolean jj_3R_59() {
-    if (jj_3R_65()) return true;
+    if (jj_3R_67()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_66()) { jj_scanpos = xsp; break; }
+      if (jj_3R_68()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_100() {
-    if (jj_3R_45()) return true;
+  private boolean jj_3R_102() {
+    if (jj_3R_47()) return true;
     return false;
   }
 
-  private boolean jj_3R_98() {
+  private boolean jj_3R_100() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_100()) {
-    jj_scanpos = xsp;
-    if (jj_3R_101()) {
-    jj_scanpos = xsp;
     if (jj_3R_102()) {
     jj_scanpos = xsp;
     if (jj_3R_103()) {
@@ -2548,7 +2500,14 @@ public class HarpoParser implements HarpoParserConstants {
     jj_scanpos = xsp;
     if (jj_3R_109()) {
     jj_scanpos = xsp;
-    if (jj_3R_110()) return true;
+    if (jj_3R_110()) {
+    jj_scanpos = xsp;
+    if (jj_3R_111()) {
+    jj_scanpos = xsp;
+    if (jj_3R_112()) {
+    jj_scanpos = xsp;
+    if (jj_3R_113()) return true;
+    }
     }
     }
     }
@@ -2562,8 +2521,8 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3_18() {
-    if (jj_3R_45()) return true;
+  private boolean jj_3_19() {
+    if (jj_3R_47()) return true;
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(36)) {
@@ -2579,7 +2538,7 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_56() {
+  private boolean jj_3R_53() {
     if (jj_3R_59()) return true;
     Token xsp;
     while (true) {
@@ -2589,47 +2548,85 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_99() {
+  private boolean jj_3R_101() {
     if (jj_scan_token(PRIME)) return true;
     return false;
   }
 
-  private boolean jj_3R_97() {
-    if (jj_3R_98()) return true;
+  private boolean jj_3R_99() {
+    if (jj_3R_100()) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_99()) jj_scanpos = xsp;
+    if (jj_3R_101()) jj_scanpos = xsp;
     return false;
   }
 
-  private boolean jj_3R_42() {
-    if (jj_3R_47()) return true;
+  private boolean jj_3R_55() {
+    if (jj_scan_token(44)) return true;
+    if (jj_3R_64()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_94() {
+    if (jj_3R_99()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_43() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_63() {
+    if (jj_scan_token(BICOND)) return true;
+    if (jj_3R_53()) return true;
     return false;
   }
 
   private boolean jj_3_13() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_42()) jj_scanpos = xsp;
+    if (jj_3R_43()) jj_scanpos = xsp;
     if (jj_scan_token(63)) return true;
     return false;
   }
 
-  private boolean jj_3R_41() {
+  private boolean jj_3R_93() {
+    if (jj_scan_token(31)) return true;
+    if (jj_3R_83()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_83() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_93()) {
+    jj_scanpos = xsp;
+    if (jj_3R_94()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_42() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3_17() {
     if (jj_3R_47()) return true;
     return false;
   }
 
-  private boolean jj_3R_58() {
-    if (jj_scan_token(44)) return true;
-    if (jj_3R_64()) return true;
+  private boolean jj_3R_62() {
+    if (jj_scan_token(FOLLOWS_FROM)) return true;
+    if (jj_3R_53()) return true;
     return false;
   }
 
   private boolean jj_3_12() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_41()) jj_scanpos = xsp;
+    if (jj_3R_42()) jj_scanpos = xsp;
     if (jj_scan_token(69)) return true;
     return false;
   }
@@ -2639,8 +2636,8 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_92() {
-    if (jj_3R_97()) return true;
+  private boolean jj_3R_45() {
+    if (jj_scan_token(NAME)) return true;
     return false;
   }
 
@@ -2649,14 +2646,14 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_63() {
-    if (jj_scan_token(BICOND)) return true;
-    if (jj_3R_56()) return true;
+  private boolean jj_3R_61() {
+    if (jj_scan_token(IMPLIES)) return true;
+    if (jj_3R_53()) return true;
     return false;
   }
 
-  private boolean jj_3R_35() {
-    if (jj_3R_46()) return true;
+  private boolean jj_3R_36() {
+    if (jj_3R_48()) return true;
     return false;
   }
 
@@ -2666,85 +2663,7 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_91() {
-    if (jj_scan_token(31)) return true;
-    if (jj_3R_81()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_81() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_91()) {
-    jj_scanpos = xsp;
-    if (jj_3R_92()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_35()) jj_scanpos = xsp;
-    if (jj_scan_token(74)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_33() {
-    if (jj_3R_46()) return true;
-    return false;
-  }
-
-  private boolean jj_3_16() {
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_62() {
-    if (jj_scan_token(FOLLOWS_FROM)) return true;
-    if (jj_3R_56()) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_33()) jj_scanpos = xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(60)) {
-    jj_scanpos = xsp;
-    if (jj_3R_34()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_40() {
-    if (jj_3R_47()) return true;
-    return false;
-  }
-
-  private boolean jj_3_11() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_40()) jj_scanpos = xsp;
-    if (jj_scan_token(63)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_61() {
-    if (jj_scan_token(IMPLIES)) return true;
-    if (jj_3R_56()) return true;
-    return false;
-  }
-
-  private boolean jj_3_15() {
-    if (jj_scan_token(15)) return true;
-    if (jj_3R_44()) return true;
-    if (jj_scan_token(17)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_57() {
+  private boolean jj_3R_54() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_3R_61()) {
@@ -2757,36 +2676,132 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_39() {
+  private boolean jj_3_4() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_36()) jj_scanpos = xsp;
+    if (jj_scan_token(74)) return true;
+    return false;
+  }
+
+  private boolean jj_3_16() {
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_45()) return true;
+    if (jj_scan_token(17)) return true;
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(35)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_scan_token(35)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(16)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_52() {
     if (jj_3R_47()) return true;
     return false;
   }
 
-  private boolean jj_3R_44() {
-    if (jj_scan_token(NAME)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_49() {
-    if (jj_3R_45()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_96() {
+  private boolean jj_3R_98() {
     if (jj_scan_token(66)) return true;
-    if (jj_3R_81()) return true;
-    return false;
-  }
-
-  private boolean jj_3_10() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_39()) jj_scanpos = xsp;
-    if (jj_scan_token(68)) return true;
+    if (jj_3R_83()) return true;
     return false;
   }
 
   private boolean jj_3R_34() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_46() {
+    if (jj_3R_53()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_54()) { jj_scanpos = xsp; break; }
+    }
+    xsp = jj_scanpos;
+    if (jj_3R_55()) jj_scanpos = xsp;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_34()) jj_scanpos = xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(60)) {
+    jj_scanpos = xsp;
+    if (jj_3R_35()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_41() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_97() {
+    if (jj_scan_token(55)) return true;
+    if (jj_3R_83()) return true;
+    return false;
+  }
+
+  private boolean jj_3_11() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_41()) jj_scanpos = xsp;
+    if (jj_scan_token(63)) return true;
+    return false;
+  }
+
+  private boolean jj_3_15() {
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_45()) return true;
+    if (jj_scan_token(17)) return true;
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(35)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(16)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_51() {
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_45()) return true;
+    if (jj_scan_token(17)) return true;
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(35)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_scan_token(39)) return true;
+    if (jj_scan_token(35)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(16)) return true;
+    if (jj_scan_token(54)) return true;
+    if (jj_3R_44()) return true;
+    if (jj_scan_token(16)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_40() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_96() {
+    if (jj_scan_token(33)) return true;
+    if (jj_3R_83()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_35() {
     Token xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(68)) {
@@ -2796,243 +2811,274 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_53() {
-    if (jj_3R_56()) return true;
+  private boolean jj_3_10() {
     Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_57()) { jj_scanpos = xsp; break; }
-    }
     xsp = jj_scanpos;
-    if (jj_3R_58()) jj_scanpos = xsp;
+    if (jj_3R_40()) jj_scanpos = xsp;
+    if (jj_scan_token(68)) return true;
+    return false;
+  }
+
+  private boolean jj_3_26() {
+    if (jj_scan_token(83)) return true;
     return false;
   }
 
   private boolean jj_3R_95() {
-    if (jj_scan_token(55)) return true;
-    if (jj_3R_81()) return true;
+    if (jj_scan_token(32)) return true;
+    if (jj_3R_83()) return true;
     return false;
   }
 
-  private boolean jj_3R_43() {
+  private boolean jj_3R_44() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_48()) {
+    if (jj_3R_50()) {
     jj_scanpos = xsp;
-    if (jj_3R_49()) return true;
+    if (jj_3R_51()) {
+    jj_scanpos = xsp;
+    if (jj_3R_52()) return true;
+    }
     }
     return false;
   }
 
-  private boolean jj_3R_48() {
+  private boolean jj_3R_50() {
     if (jj_scan_token(15)) return true;
-    if (jj_3R_44()) return true;
+    if (jj_3R_45()) return true;
     if (jj_scan_token(17)) return true;
     if (jj_scan_token(15)) return true;
-    if (jj_3R_53()) return true;
+    if (jj_3R_46()) return true;
     if (jj_scan_token(35)) return true;
     if (jj_scan_token(39)) return true;
     if (jj_scan_token(39)) return true;
-    if (jj_3R_53()) return true;
+    if (jj_3R_46()) return true;
     if (jj_scan_token(16)) return true;
     if (jj_scan_token(54)) return true;
-    if (jj_3R_43()) return true;
+    if (jj_3R_44()) return true;
     if (jj_scan_token(16)) return true;
     return false;
   }
 
-  private boolean jj_3R_94() {
-    if (jj_scan_token(33)) return true;
-    if (jj_3R_81()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_93() {
-    if (jj_scan_token(32)) return true;
-    if (jj_3R_81()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_82() {
+  private boolean jj_3R_84() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_93()) {
-    jj_scanpos = xsp;
-    if (jj_3R_94()) {
-    jj_scanpos = xsp;
     if (jj_3R_95()) {
     jj_scanpos = xsp;
-    if (jj_3R_96()) return true;
+    if (jj_3R_96()) {
+    jj_scanpos = xsp;
+    if (jj_3R_97()) {
+    jj_scanpos = xsp;
+    if (jj_3R_98()) return true;
     }
     }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_80() {
+    if (jj_3R_83()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_84()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
   private boolean jj_3_25() {
-    if (jj_scan_token(83)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_scan_token(61)) return true;
     return false;
   }
 
-  private boolean jj_3R_78() {
-    if (jj_3R_81()) return true;
+  private boolean jj_3R_86() {
+    if (jj_scan_token(31)) return true;
+    if (jj_3R_80()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_66() {
+    if (jj_scan_token(39)) return true;
+    if (jj_3R_45()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_85() {
+    if (jj_scan_token(30)) return true;
+    if (jj_3R_80()) return true;
+    return false;
+  }
+
+  private boolean jj_3_24() {
+    if (jj_scan_token(11)) return true;
+    if (jj_scan_token(58)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_81() {
     Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_82()) { jj_scanpos = xsp; break; }
+    xsp = jj_scanpos;
+    if (jj_3R_85()) {
+    jj_scanpos = xsp;
+    if (jj_3R_86()) return true;
     }
     return false;
   }
 
   private boolean jj_3_14() {
     if (jj_scan_token(35)) return true;
-    if (jj_3R_43()) return true;
-    return false;
-  }
-
-  private boolean jj_3_24() {
-    if (jj_scan_token(11)) return true;
-    if (jj_scan_token(61)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_84() {
-    if (jj_scan_token(31)) return true;
-    if (jj_3R_78()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_83() {
-    if (jj_scan_token(30)) return true;
-    if (jj_3R_78()) return true;
-    return false;
-  }
-
-  private boolean jj_3_23() {
-    if (jj_scan_token(11)) return true;
-    if (jj_scan_token(58)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_47() {
-    if (jj_scan_token(60)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_79() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_83()) {
-    jj_scanpos = xsp;
-    if (jj_3R_84()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_55() {
-    if (jj_scan_token(39)) return true;
     if (jj_3R_44()) return true;
     return false;
   }
 
-  private boolean jj_3R_74() {
-    if (jj_3R_78()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_79()) { jj_scanpos = xsp; break; }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_50() {
+  private boolean jj_3R_56() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_54()) {
+    if (jj_3R_65()) {
     jj_scanpos = xsp;
-    if (jj_3R_55()) return true;
+    if (jj_3R_66()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_54() {
+  private boolean jj_3R_65() {
     if (jj_scan_token(13)) return true;
-    if (jj_3R_53()) return true;
+    if (jj_3R_46()) return true;
     if (jj_scan_token(14)) return true;
     return false;
   }
 
   private boolean jj_3R_76() {
-    return false;
-  }
-
-  private boolean jj_3R_45() {
-    if (jj_3R_44()) return true;
+    if (jj_3R_80()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_50()) { jj_scanpos = xsp; break; }
+      if (jj_3R_81()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_37() {
-    if (jj_3R_47()) return true;
+  private boolean jj_3R_49() {
+    if (jj_scan_token(60)) return true;
     return false;
   }
 
-  private boolean jj_3R_90() {
+  private boolean jj_3R_47() {
+    if (jj_3R_45()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_56()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_78() {
+    return false;
+  }
+
+  private boolean jj_3R_92() {
     if (jj_scan_token(GE)) return true;
-    if (jj_3R_74()) return true;
+    if (jj_3R_76()) return true;
     return false;
   }
 
-  private boolean jj_3R_89() {
+  private boolean jj_3R_91() {
     if (jj_scan_token(29)) return true;
-    if (jj_3R_74()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_52() {
-    if (jj_scan_token(75)) return true;
+    if (jj_3R_76()) return true;
     return false;
   }
 
   private boolean jj_3R_38() {
+    if (jj_3R_49()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_90() {
+    if (jj_scan_token(LE)) return true;
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_79() {
+    if (jj_scan_token(35)) return true;
+    if (jj_3R_64()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_89() {
+    if (jj_scan_token(26)) return true;
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_58() {
+    if (jj_scan_token(75)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_88() {
+    if (jj_scan_token(NE)) return true;
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_39() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  private boolean jj_3_18() {
+    if (jj_scan_token(52)) return true;
+    if (jj_3R_45()) return true;
+    if (jj_scan_token(17)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_113() {
+    if (jj_scan_token(11)) return true;
     if (jj_3R_46()) return true;
+    if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_75() {
+    if (jj_scan_token(15)) return true;
+    if (jj_3R_64()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_79()) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(16)) return true;
     return false;
   }
 
   private boolean jj_3_9() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_38()) jj_scanpos = xsp;
+    if (jj_3R_39()) jj_scanpos = xsp;
     if (jj_scan_token(74)) return true;
     return false;
   }
 
-  private boolean jj_3R_88() {
-    if (jj_scan_token(LE)) return true;
-    if (jj_3R_74()) return true;
+  private boolean jj_3R_37() {
+    if (jj_3R_48()) return true;
     return false;
   }
 
-  private boolean jj_3R_36() {
-    if (jj_3R_46()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_46() {
+  private boolean jj_3R_48() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_51()) {
+    if (jj_3R_57()) {
     jj_scanpos = xsp;
-    if (jj_3R_52()) return true;
+    if (jj_3R_58()) return true;
     }
     return false;
   }
 
-  private boolean jj_3R_51() {
+  private boolean jj_3R_57() {
     if (jj_scan_token(73)) return true;
     return false;
   }
@@ -3040,9 +3086,9 @@ public class HarpoParser implements HarpoParserConstants {
   private boolean jj_3_8() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_36()) jj_scanpos = xsp;
-    xsp = jj_scanpos;
     if (jj_3R_37()) jj_scanpos = xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_38()) jj_scanpos = xsp;
     xsp = jj_scanpos;
     if (jj_scan_token(68)) {
     jj_scanpos = xsp;
@@ -3051,15 +3097,111 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_77() {
-    if (jj_scan_token(35)) return true;
-    if (jj_3R_64()) return true;
+  private boolean jj_3R_112() {
+    if (jj_scan_token(84)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_47()) return true;
+    if (jj_scan_token(12)) return true;
     return false;
   }
 
   private boolean jj_3R_87() {
-    if (jj_scan_token(26)) return true;
-    if (jj_3R_74()) return true;
+    if (jj_scan_token(24)) return true;
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_82() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_87()) {
+    jj_scanpos = xsp;
+    if (jj_3R_88()) {
+    jj_scanpos = xsp;
+    if (jj_3R_89()) {
+    jj_scanpos = xsp;
+    if (jj_3R_90()) {
+    jj_scanpos = xsp;
+    if (jj_3R_91()) {
+    jj_scanpos = xsp;
+    if (jj_3R_92()) return true;
+    }
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_111() {
+    if (jj_scan_token(70)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_44()) return true;
+    if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_77() {
+    Token xsp;
+    if (jj_3R_82()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_82()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_73() {
+    if (jj_scan_token(13)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(14)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_110() {
+    if (jj_scan_token(49)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_44()) return true;
+    if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_74() {
+    if (jj_3R_76()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_77()) {
+    jj_scanpos = xsp;
+    if (jj_3R_78()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_109() {
+    if (jj_scan_token(48)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_44()) return true;
+    if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_69() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_72()) {
+    jj_scanpos = xsp;
+    if (jj_3R_73()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_72() {
+    if (jj_3R_75()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_108() {
+    if (jj_scan_token(BOOL_LITERAL)) return true;
     return false;
   }
 
@@ -3069,8 +3211,7 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_86() {
-    if (jj_scan_token(NE)) return true;
+  private boolean jj_3R_71() {
     if (jj_3R_74()) return true;
     return false;
   }
@@ -3081,57 +3222,55 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3_17() {
-    if (jj_scan_token(52)) return true;
-    if (jj_3R_44()) return true;
-    if (jj_scan_token(17)) return true;
+  private boolean jj_3R_107() {
+    if (jj_scan_token(REAL_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_73() {
-    if (jj_scan_token(15)) return true;
-    if (jj_3R_64()) return true;
+  private boolean jj_3_23() {
+    if (jj_scan_token(61)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_67() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_70()) {
+    jj_scanpos = xsp;
+    if (jj_3R_71()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_70() {
+    if (jj_scan_token(NOT)) return true;
+    if (jj_3R_67()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_64() {
+    if (jj_3R_45()) return true;
     Token xsp;
     while (true) {
       xsp = jj_scanpos;
-      if (jj_3R_77()) { jj_scanpos = xsp; break; }
-    }
-    if (jj_scan_token(16)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_85() {
-    if (jj_scan_token(24)) return true;
-    if (jj_3R_74()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_80() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_85()) {
-    jj_scanpos = xsp;
-    if (jj_3R_86()) {
-    jj_scanpos = xsp;
-    if (jj_3R_87()) {
-    jj_scanpos = xsp;
-    if (jj_3R_88()) {
-    jj_scanpos = xsp;
-    if (jj_3R_89()) {
-    jj_scanpos = xsp;
-    if (jj_3R_90()) return true;
-    }
-    }
-    }
-    }
+      if (jj_3R_69()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
 
-  private boolean jj_3R_110() {
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_53()) return true;
+  private boolean jj_3R_106() {
+    if (jj_scan_token(HEX_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3_22() {
+    if (jj_scan_token(61)) return true;
     if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_105() {
+    if (jj_scan_token(OCT_LITERAL)) return true;
     return false;
   }
 
@@ -3146,7 +3285,7 @@ public class HarpoParser implements HarpoParserConstants {
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[102];
+  final private int[] jj_la1 = new int[104];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -3156,15 +3295,15 @@ public class HarpoParser implements HarpoParserConstants {
       jj_la1_init_2();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x800,0x0,0x800,0x8000,0x0,0x0,0x0,0x0,0x800,0x800,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xa000,0xa000,0x0,0x800,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x80800800,0x0,0x0,0x1800,0x1000,0x0,0x0,0x0,0x0,0x0,0x0,0x80800800,0x0,0x80800800,0x1c0000,0x1c0000,0x0,0x200000,0x400000,0x80800800,0x3f000000,0x3f000000,0x3f000000,0xc0000000,0xc0000000,0x0,0x0,0x80000800,0x0,0x800,0x0,0x2000,0x2000,0x0,};
+      jj_la1_0 = new int[] {0x800,0x0,0x800,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xa000,0xa000,0x0,0x800,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x80800800,0x0,0x0,0x1800,0x1000,0x0,0x0,0x0,0x0,0x0,0x0,0x80800800,0x0,0x80800800,0x1c0000,0x1c0000,0x0,0x200000,0x400000,0x80800800,0x3f000000,0x3f000000,0x3f000000,0xc0000000,0xc0000000,0x0,0x0,0x80000800,0x0,0x800,0x0,0x2000,0x2000,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x10200004,0x10200000,0x10200004,0x0,0x8,0x90000000,0x0,0x40000000,0x10280004,0x10280004,0x0,0x40000,0x0,0x0,0x2000000,0x10200004,0x10200004,0x0,0x0,0x8,0x2000000,0x0,0x0,0x10000000,0x200000,0x0,0x0,0x90000008,0x8,0x90000000,0x8008000,0x8008000,0x80000,0x0,0x10000000,0x10000000,0x10000000,0x100,0x8,0x100,0x0,0x0,0x8,0x10206004,0x10000000,0x200000,0x0,0x0,0x0,0x0,0x4000000,0x80000,0x100000,0x80000,0x40,0x100000,0x20,0x400,0x0,0x8000000,0x0,0x24000000,0x100400,0x6000,0x0,0x8,0x8,0x8,0x30000,0x20000000,0x20000000,0x30206004,0x21000000,0x90000008,0x8,0x90000000,0x0,0x4000000,0x0,0x30000,0x20000000,0x20030000,0x0,0x0,0x1000,0x0,0x0,0x30000,0x0,0x0,0x0,0x0,0x0,0x800003,0x800003,0x30000,0x200,0x30000,0x0,0x80,0x80,0x0,};
+      jj_la1_1 = new int[] {0x10200004,0x10200000,0x10200004,0x0,0x8,0x90000000,0x8008000,0x8008000,0x0,0x40000000,0x10280004,0x10280004,0x0,0x40000,0x0,0x0,0x2000000,0x10200004,0x10200004,0x0,0x0,0x8,0x2000000,0x0,0x0,0x10000000,0x200000,0x0,0x0,0x90000008,0x8,0x90000000,0x8008000,0x8008000,0x80000,0x0,0x10000000,0x10000000,0x10000000,0x100,0x8,0x100,0x0,0x0,0x8,0x10206004,0x10000000,0x200000,0x0,0x0,0x0,0x0,0x4000000,0x80000,0x100000,0x80000,0x40,0x100000,0x20,0x400,0x0,0x8000000,0x0,0x24000000,0x100400,0x6000,0x0,0x8,0x8,0x8,0x30000,0x20000000,0x20000000,0x30206004,0x21000000,0x90000008,0x8,0x90000000,0x0,0x4000000,0x0,0x30000,0x20000000,0x20030000,0x0,0x0,0x1000,0x0,0x0,0x30000,0x0,0x0,0x0,0x0,0x0,0x800003,0x800003,0x30000,0x200,0x30000,0x0,0x80,0x80,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x10,0x10,0x10,0x0,0x0,0x10,0x200000,0x0,0xe12,0xe12,0x200000,0x0,0x0,0x200000,0x0,0xe10,0xe10,0x200000,0x1,0x0,0x0,0xa00,0xa00,0x0,0x10,0x0,0xa00,0x20,0x0,0x20,0x1180,0x1180,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x200010,0x0,0x10,0x0,0x2,0x20000,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x40000,0x20000,0x40000,0x0,0x0,0x0,0x0,0x0,0xbf00040,0x0,0x0,0x200010,0x0,0x20,0x0,0x20,0x2000,0x0,0x8,0xbf00040,0x0,0xbf00048,0x0,0x0,0x0,0x0,0x0,0xbf00040,0x0,0x0,0x0,0x0,0x0,0x4,0x4,0xbf00040,0x0,0xbf00040,0x10000,0x0,0x0,0x200000,};
+      jj_la1_2 = new int[] {0x10,0x10,0x10,0x0,0x0,0x10,0x1180,0x1180,0x400000,0x0,0xe12,0xe12,0x400000,0x0,0x0,0x400000,0x0,0xe10,0xe10,0x400000,0x1,0x0,0x0,0xa00,0xa00,0x0,0x10,0x0,0xa00,0x20,0x0,0x20,0x1180,0x1180,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400010,0x0,0x10,0x0,0x2,0x20000,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x40000,0x20000,0x40000,0x0,0x0,0x0,0x0,0x0,0x17f00040,0x0,0x0,0x400010,0x0,0x20,0x0,0x20,0x2000,0x0,0x8,0x17f00040,0x0,0x17f00048,0x0,0x0,0x0,0x0,0x0,0x17f00040,0x0,0x0,0x0,0x0,0x0,0x4,0x4,0x17f00040,0x0,0x17f00040,0x10000,0x0,0x0,0x400000,};
    }
-  final private JJCalls[] jj_2_rtns = new JJCalls[25];
+  final private JJCalls[] jj_2_rtns = new JJCalls[26];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -3179,7 +3318,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3194,7 +3333,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3205,7 +3344,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3216,7 +3355,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3226,7 +3365,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3236,7 +3375,7 @@ public class HarpoParser implements HarpoParserConstants {
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 102; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 104; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3348,12 +3487,12 @@ public class HarpoParser implements HarpoParserConstants {
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[94];
+    boolean[] la1tokens = new boolean[95];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 102; i++) {
+    for (int i = 0; i < 104; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -3368,7 +3507,7 @@ public class HarpoParser implements HarpoParserConstants {
         }
       }
     }
-    for (int i = 0; i < 94; i++) {
+    for (int i = 0; i < 95; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -3395,7 +3534,7 @@ public class HarpoParser implements HarpoParserConstants {
 
   private void jj_rescan_token() {
     jj_rescan = true;
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 26; i++) {
     try {
       JJCalls p = jj_2_rtns[i];
       do {
@@ -3427,6 +3566,7 @@ public class HarpoParser implements HarpoParserConstants {
             case 22: jj_3_23(); break;
             case 23: jj_3_24(); break;
             case 24: jj_3_25(); break;
+            case 25: jj_3_26(); break;
           }
         }
         p = p.next;

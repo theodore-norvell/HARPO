@@ -55,6 +55,10 @@ class AST{
 
         // Deferred
         val constructorParams: Seq[ ParamDeclNd ]
+        
+        val constructorSpec: Seq[ MethodSpecNd ]
+        
+        val constructorPer: Seq[ PermissionNd ]
 
         val name: String
 
@@ -93,9 +97,15 @@ class AST{
         extends ClassLikeDeclNd( name, coord ) {
         override val constructorParams = ArrayBuffer[ ParamDeclNd ]()
         def addConstructorParam( d: ParamDeclNd ) { constructorParams += d }
+        override val constructorSpec = ArrayBuffer [ MethodSpecNd ]()
+        def addConstructorSpec(c: MethodSpecNd) {constructorSpec += c}
+        override val constructorPer = ArrayBuffer [ PermissionNd ]()
+        def addConstructorPer (p: PermissionNd) {constructorPer += p}
         override def pp = Pretty.func( "ClassDeclNd", superTypes,
             genericParameters,
             constructorParams,
+            constructorSpec,
+            constructorPer,
             members.decls.toSeq )
         //            Document.nest(3, ("class decl" :: name :: " super types:" :: Pretty.list( superTypes ) :/: 
         //	                                        "generic params " :: Pretty.list(genericParameters) :/:
@@ -109,6 +119,10 @@ class AST{
         extends ClassLikeDeclNd( name, coord ) {
 
         override val constructorParams = List()
+        
+        override val constructorSpec = List()
+        
+        override val constructorPer = List()
 
         override def pp = Pretty.func( "IntfDeclNd", superTypes,
             genericParameters,
