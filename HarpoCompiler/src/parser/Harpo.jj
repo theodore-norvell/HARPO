@@ -300,6 +300,7 @@ TOKEN :
 | 	"with"
 | 	"this"
 |    "length"
+|  "forall"
 }
 
 TOKEN :
@@ -1102,7 +1103,7 @@ ClassInvNd ClassInvariant() :
     tk = getToken(1);
   }
   (	
-    tk = "invariant" x = Exp()
+    tk = "invariant" x = Exp() [";"]
   )
   {
     return builder.makeClassInvariant(x, getCoord(tk));
@@ -1119,7 +1120,7 @@ LoopInvNd LoopInvariant() :
     tk = getToken(1);
   }
   (
-    tk = "invariant" x = Exp()
+    tk = "invariant" x = Exp() [";"]
   )
   {
     return builder.makeLoopInvariant(x, getCoord(tk));
@@ -1878,14 +1879,17 @@ ExpNd Exp8() :
   CanReadOp canRead;
   CanWriteOp canWrite;
   PermissionOp permissionOp;
+  ForNameList fnl = builder.forNameList();
+  String i,j;
   AccessOp acc;
   PermissionMapNd permissionMap; 
   ExpNd objId;
   LocSetNd locSet;
   ExpNd x = null;
+  ExpNd y = null;
   Token tk;
 }
-{
+{  	
   x = ObjectId()
   {
     return x;
@@ -1945,6 +1949,18 @@ ExpNd Exp8() :
   {
     return builder.makeLengthOp(objId, getCoord(tk));
   }
+|
+  tk = "forall" i = Name() {  builder.add(fnl,i);}
+    ([ "," ] j = Name() { builder.add(fnl,j);} )*
+
+	":" x = Exp()
+
+	("do" y = Exp()  { return builder.makeForAllExp(fnl, x,y, getCoord(tk));})?
+
+	{ y = builder.noExp(getCoord(tk)); }
+
+	{return builder.makeForAllExp(fnl, x,y, getCoord(tk));}
+
 | 
   "(" x = Exp() ")"
   {

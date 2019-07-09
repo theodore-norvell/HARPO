@@ -300,6 +300,10 @@ extends Contracts {
                   }
                 }
                 case LengthOp(exp) => resolveExp(exp, containingFQN,containingDecl)
+                case ForAllExp(forNameDeclList,exp_x,exp_y) => {
+                  resolveExp(exp_x,containingFQN,containingDecl)
+                  resolveExp(exp_y,containingFQN,containingDecl)
+                }
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )

@@ -503,6 +503,10 @@ class AST{
     case class LengthOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
       override def ppp = Pretty.func("PermissionOp", x)
     }
+    
+    case class ForAllExp(forNameDeclList: List[ForDecl], x: ExpNd,y: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
+      override def ppp = Pretty.func("ForAllExp",forNameDeclList,x,y)
+    }
 
     /*******************/
     /** Operators    **/

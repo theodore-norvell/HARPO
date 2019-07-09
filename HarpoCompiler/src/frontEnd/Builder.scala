@@ -171,6 +171,29 @@ class Builder(val errorRecorder: ErrorRecorder) {
   
   def makeLengthOp(x: ExpNd, coord: AST.Coord) = new LengthOp(x)(coord)
   
+  
+  class ForNameList extends ArrayBuffer[String]
+
+  def forNameList() = new ForNameList;
+
+  def forNameList(x: String) = { val result = new ForNameList; result += x; result }
+
+  def add(fnl: ForNameList, fn: String) { fnl += fn; }
+  
+  class ForDeclList extends ArrayBuffer[ForDecl] {
+      def add(l: ForDeclList, d: ForDecl) { l += d }
+  }
+  
+  def makeForAllExp (fnl: ForNameList,x:ExpNd,y: ExpNd, coord: AST.Coord) = {
+    val forDeclList = new ForDeclList()
+    for(forName <- fnl) {
+    val fvd = new ForVarDecl()(forName, coord)
+    val forDecl = new ForDecl(fvd)(nextForName(), coord)
+    forDeclList.add(forDeclList,forDecl)
+    }
+    new ForAllExp(forDeclList.toList,x,y)(coord)
+  }
+  
   var next = 0
 
   def threadDeclNd(claimList: ClaimList, bl: CommandNd, coord: Coord) = {

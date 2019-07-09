@@ -56,6 +56,11 @@ class TypeChecker(
 
       case LengthOp(exp) =>
         typeCheck(exp)
+      
+      case ForAllExp(forNameDeclList,exp_x,exp_y) => {
+        typeCheck(exp_x)
+        typeCheck(exp_y)
+      }
 
       case NameExpNd(name) => {
         val decl = name.decl.getOrElse {
