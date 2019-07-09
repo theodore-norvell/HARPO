@@ -1438,6 +1438,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 11:
     case NOT:
     case 31:
+    case 43:
     case 48:
     case 49:
     case 70:
@@ -1656,6 +1657,7 @@ public class HarpoParser implements HarpoParserConstants {
         case 11:
         case NOT:
         case 31:
+        case 43:
         case 48:
         case 49:
         case 70:
@@ -1696,6 +1698,7 @@ public class HarpoParser implements HarpoParserConstants {
     case 11:
     case NOT:
     case 31:
+    case 43:
     case 48:
     case 49:
     case 67:
@@ -1839,6 +1842,7 @@ public class HarpoParser implements HarpoParserConstants {
       break;
     case 11:
     case 31:
+    case 43:
     case 48:
     case 49:
     case 70:
@@ -2029,6 +2033,7 @@ public class HarpoParser implements HarpoParserConstants {
     {if (true) return builder.unaryOp("-", x, getCoord(tk));}
       break;
     case 11:
+    case 43:
     case 48:
     case 49:
     case 70:
@@ -2072,6 +2077,8 @@ public class HarpoParser implements HarpoParserConstants {
   CanReadOp canRead;
   CanWriteOp canWrite;
   PermissionOp permissionOp;
+  AccessOp acc;
+  PermissionMapNd permissionMap;
   ExpNd objId;
   LocSetNd locSet;
   ExpNd x = null;
@@ -2125,6 +2132,11 @@ public class HarpoParser implements HarpoParserConstants {
       locSet = LocSet();
       jj_consume_token(12);
     {if (true) return builder.makePermissionOp(locSet, getCoord(tk));}
+      break;
+    case 43:
+      tk = jj_consume_token(43);
+      permissionMap = PermissionMap();
+    {if (true) return builder.makeAccessOp(permissionMap, getCoord(tk));}
       break;
     case 84:
       tk = jj_consume_token(84);
@@ -2428,14 +2440,19 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_104() {
+    if (jj_scan_token(BIN_LITERAL)) return true;
+    return false;
+  }
+
   private boolean jj_3_21() {
     if (jj_3R_47()) return true;
     if (jj_scan_token(11)) return true;
     return false;
   }
 
-  private boolean jj_3R_104() {
-    if (jj_scan_token(BIN_LITERAL)) return true;
+  private boolean jj_3R_103() {
+    if (jj_scan_token(DEC_LITERAL)) return true;
     return false;
   }
 
@@ -2445,24 +2462,9 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_103() {
-    if (jj_scan_token(DEC_LITERAL)) return true;
-    return false;
-  }
-
   private boolean jj_3_20() {
     if (jj_3R_47()) return true;
     if (jj_scan_token(36)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_59() {
-    if (jj_3R_67()) return true;
-    Token xsp;
-    while (true) {
-      xsp = jj_scanpos;
-      if (jj_3R_68()) { jj_scanpos = xsp; break; }
-    }
     return false;
   }
 
@@ -2496,7 +2498,9 @@ public class HarpoParser implements HarpoParserConstants {
     jj_scanpos = xsp;
     if (jj_3R_112()) {
     jj_scanpos = xsp;
-    if (jj_3R_113()) return true;
+    if (jj_3R_113()) {
+    jj_scanpos = xsp;
+    if (jj_3R_114()) return true;
     }
     }
     }
@@ -2507,6 +2511,17 @@ public class HarpoParser implements HarpoParserConstants {
     }
     }
     }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_59() {
+    if (jj_3R_67()) return true;
+    Token xsp;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_68()) { jj_scanpos = xsp; break; }
     }
     return false;
   }
@@ -2567,6 +2582,10 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_119() {
+    return false;
+  }
+
   private boolean jj_3R_63() {
     if (jj_scan_token(BICOND)) return true;
     if (jj_3R_53()) return true;
@@ -2578,6 +2597,11 @@ public class HarpoParser implements HarpoParserConstants {
     xsp = jj_scanpos;
     if (jj_3R_43()) jj_scanpos = xsp;
     if (jj_scan_token(63)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_45() {
+    if (jj_scan_token(NAME)) return true;
     return false;
   }
 
@@ -2623,11 +2647,6 @@ public class HarpoParser implements HarpoParserConstants {
 
   private boolean jj_3_7() {
     if (jj_scan_token(65)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_45() {
-    if (jj_scan_token(NAME)) return true;
     return false;
   }
 
@@ -2748,6 +2767,11 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3_26() {
+    if (jj_scan_token(83)) return true;
+    return false;
+  }
+
   private boolean jj_3_15() {
     if (jj_scan_token(15)) return true;
     if (jj_3R_45()) return true;
@@ -2806,11 +2830,6 @@ public class HarpoParser implements HarpoParserConstants {
     xsp = jj_scanpos;
     if (jj_3R_40()) jj_scanpos = xsp;
     if (jj_scan_token(68)) return true;
-    return false;
-  }
-
-  private boolean jj_3_26() {
-    if (jj_scan_token(83)) return true;
     return false;
   }
 
@@ -2876,6 +2895,12 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_66() {
+    if (jj_scan_token(39)) return true;
+    if (jj_3R_45()) return true;
+    return false;
+  }
+
   private boolean jj_3_25() {
     if (jj_scan_token(11)) return true;
     if (jj_scan_token(61)) return true;
@@ -2888,9 +2913,25 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_66() {
-    if (jj_scan_token(39)) return true;
-    if (jj_3R_45()) return true;
+  private boolean jj_3R_56() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_65()) {
+    jj_scanpos = xsp;
+    if (jj_3R_66()) return true;
+    }
+    return false;
+  }
+
+  private boolean jj_3R_65() {
+    if (jj_scan_token(13)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(14)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_121() {
+    if (jj_3R_119()) return true;
     return false;
   }
 
@@ -2922,20 +2963,9 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_56() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_65()) {
-    jj_scanpos = xsp;
-    if (jj_3R_66()) return true;
-    }
-    return false;
-  }
-
-  private boolean jj_3R_65() {
-    if (jj_scan_token(13)) return true;
+  private boolean jj_3R_120() {
+    if (jj_scan_token(40)) return true;
     if (jj_3R_46()) return true;
-    if (jj_scan_token(14)) return true;
     return false;
   }
 
@@ -2949,11 +2979,6 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_49() {
-    if (jj_scan_token(60)) return true;
-    return false;
-  }
-
   private boolean jj_3R_47() {
     if (jj_3R_45()) return true;
     Token xsp;
@@ -2964,13 +2989,42 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_49() {
+    if (jj_scan_token(60)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_118() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(35)) jj_scanpos = xsp;
+    if (jj_3R_44()) return true;
+    xsp = jj_scanpos;
+    if (jj_3R_120()) {
+    jj_scanpos = xsp;
+    if (jj_3R_121()) return true;
+    }
+    return false;
+  }
+
   private boolean jj_3R_78() {
+    return false;
+  }
+
+  private boolean jj_3R_117() {
+    if (jj_3R_119()) return true;
     return false;
   }
 
   private boolean jj_3R_92() {
     if (jj_scan_token(GE)) return true;
     if (jj_3R_76()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_116() {
+    if (jj_scan_token(40)) return true;
+    if (jj_3R_46()) return true;
     return false;
   }
 
@@ -2991,6 +3045,28 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_115() {
+    if (jj_3R_44()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_116()) {
+    jj_scanpos = xsp;
+    if (jj_3R_117()) return true;
+    }
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_118()) { jj_scanpos = xsp; break; }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_114() {
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(12)) return true;
+    return false;
+  }
+
   private boolean jj_3R_79() {
     if (jj_scan_token(35)) return true;
     if (jj_3R_64()) return true;
@@ -3005,6 +3081,14 @@ public class HarpoParser implements HarpoParserConstants {
 
   private boolean jj_3R_58() {
     if (jj_scan_token(75)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_113() {
+    if (jj_scan_token(84)) return true;
+    if (jj_scan_token(11)) return true;
+    if (jj_3R_47()) return true;
+    if (jj_scan_token(12)) return true;
     return false;
   }
 
@@ -3023,13 +3107,6 @@ public class HarpoParser implements HarpoParserConstants {
     if (jj_scan_token(52)) return true;
     if (jj_3R_45()) return true;
     if (jj_scan_token(17)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_113() {
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_46()) return true;
-    if (jj_scan_token(12)) return true;
     return false;
   }
 
@@ -3073,6 +3150,12 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_112() {
+    if (jj_scan_token(43)) return true;
+    if (jj_3R_115()) return true;
+    return false;
+  }
+
   private boolean jj_3_8() {
     Token xsp;
     xsp = jj_scanpos;
@@ -3084,14 +3167,6 @@ public class HarpoParser implements HarpoParserConstants {
     jj_scanpos = xsp;
     if (jj_scan_token(53)) return true;
     }
-    return false;
-  }
-
-  private boolean jj_3R_112() {
-    if (jj_scan_token(84)) return true;
-    if (jj_scan_token(11)) return true;
-    if (jj_3R_47()) return true;
-    if (jj_scan_token(12)) return true;
     return false;
   }
 
@@ -3141,18 +3216,18 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3R_73() {
-    if (jj_scan_token(13)) return true;
-    if (jj_3R_46()) return true;
-    if (jj_scan_token(14)) return true;
-    return false;
-  }
-
   private boolean jj_3R_110() {
     if (jj_scan_token(49)) return true;
     if (jj_scan_token(11)) return true;
     if (jj_3R_44()) return true;
     if (jj_scan_token(12)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_73() {
+    if (jj_scan_token(13)) return true;
+    if (jj_3R_46()) return true;
+    if (jj_scan_token(14)) return true;
     return false;
   }
 
@@ -3196,19 +3271,14 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
-  private boolean jj_3_1() {
-    if (jj_scan_token(11)) return true;
-    if (jj_scan_token(50)) return true;
-    return false;
-  }
-
   private boolean jj_3R_108() {
     if (jj_scan_token(BOOL_LITERAL)) return true;
     return false;
   }
 
-  private boolean jj_3R_71() {
-    if (jj_3R_74()) return true;
+  private boolean jj_3_1() {
+    if (jj_scan_token(11)) return true;
+    if (jj_scan_token(50)) return true;
     return false;
   }
 
@@ -3217,8 +3287,18 @@ public class HarpoParser implements HarpoParserConstants {
     return false;
   }
 
+  private boolean jj_3R_71() {
+    if (jj_3R_74()) return true;
+    return false;
+  }
+
   private boolean jj_3_23() {
     if (jj_scan_token(61)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_106() {
+    if (jj_scan_token(HEX_LITERAL)) return true;
     return false;
   }
 
@@ -3245,11 +3325,6 @@ public class HarpoParser implements HarpoParserConstants {
       xsp = jj_scanpos;
       if (jj_3R_69()) { jj_scanpos = xsp; break; }
     }
-    return false;
-  }
-
-  private boolean jj_3R_106() {
-    if (jj_scan_token(HEX_LITERAL)) return true;
     return false;
   }
 
@@ -3283,7 +3358,7 @@ public class HarpoParser implements HarpoParserConstants {
       jj_la1_0 = new int[] {0x800,0x0,0x800,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x800,0x0,0x0,0x8000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xa000,0xa000,0x0,0x800,0x0,0x0,0x20000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x800,0x0,0x0,0x0,0x80800800,0x0,0x0,0x1800,0x1000,0x0,0x0,0x0,0x0,0x0,0x0,0x80800800,0x0,0x80800800,0x1c0000,0x1c0000,0x0,0x200000,0x400000,0x80800800,0x3f000000,0x3f000000,0x3f000000,0xc0000000,0xc0000000,0x0,0x0,0x80000800,0x0,0x800,0x0,0x2000,0x2000,0x0,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x10200004,0x10200000,0x10200004,0x0,0x8,0x90000000,0x0,0x0,0x0,0x40000000,0x10280004,0x10280004,0x0,0x40000,0x0,0x0,0x2000000,0x10200004,0x10200004,0x0,0x0,0x8,0x2000000,0x0,0x0,0x10000000,0x200000,0x0,0x0,0x90000008,0x8,0x90000000,0x8008000,0x8008000,0x80000,0x0,0x10000000,0x10000000,0x10000000,0x100,0x8,0x100,0x0,0x0,0x8,0x10206004,0x10000000,0x200000,0x0,0x0,0x0,0x0,0x4000000,0x80000,0x100000,0x80000,0x40,0x100000,0x20,0x400,0x0,0x8000000,0x0,0x24000000,0x100400,0x6000,0x0,0x8,0x8,0x8,0x30000,0x20000000,0x20000000,0x30206004,0x21000000,0x90000008,0x8,0x90000000,0x0,0x4000000,0x0,0x30000,0x20000000,0x20030000,0x0,0x0,0x1000,0x0,0x0,0x30000,0x0,0x0,0x0,0x0,0x0,0x800003,0x800003,0x30000,0x200,0x30000,0x0,0x80,0x80,0x0,};
+      jj_la1_1 = new int[] {0x10200004,0x10200000,0x10200004,0x0,0x8,0x90000000,0x0,0x0,0x0,0x40000000,0x10280004,0x10280004,0x0,0x40000,0x0,0x0,0x2000000,0x10200004,0x10200004,0x0,0x0,0x8,0x2000000,0x0,0x0,0x10000000,0x200000,0x0,0x0,0x90000008,0x8,0x90000000,0x8008000,0x8008000,0x80000,0x0,0x10000000,0x10000000,0x10000000,0x100,0x8,0x100,0x0,0x0,0x8,0x10206004,0x10000000,0x200000,0x0,0x0,0x0,0x0,0x4000000,0x80000,0x100000,0x80000,0x40,0x100000,0x20,0x400,0x0,0x8000000,0x0,0x24000000,0x100400,0x6000,0x0,0x8,0x8,0x8,0x30800,0x20000000,0x20000000,0x30206004,0x21000000,0x90000008,0x8,0x90000000,0x0,0x4000000,0x0,0x30800,0x20000000,0x20030800,0x0,0x0,0x1000,0x0,0x0,0x30800,0x0,0x0,0x0,0x0,0x0,0x800003,0x800003,0x30800,0x200,0x30800,0x0,0x80,0x80,0x0,};
    }
    private static void jj_la1_init_2() {
       jj_la1_2 = new int[] {0x10,0x10,0x10,0x0,0x0,0x10,0x180,0x180,0x400000,0x0,0xe12,0xe12,0x400000,0x0,0x0,0x400000,0x0,0xe10,0xe10,0x400000,0x1,0x0,0x0,0xa00,0xa00,0x0,0x10,0x0,0xa00,0x20,0x0,0x20,0x1180,0x1180,0x0,0x4000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x400010,0x0,0x10,0x0,0x2,0x20000,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000,0x0,0x40000,0x20000,0x40000,0x0,0x0,0x0,0x0,0x0,0x17f00040,0x0,0x0,0x400010,0x0,0x20,0x0,0x20,0x2000,0x0,0x8,0x17f00040,0x0,0x17f00048,0x0,0x0,0x0,0x0,0x0,0x17f00040,0x0,0x0,0x0,0x0,0x0,0x4,0x4,0x17f00040,0x0,0x17f00040,0x10000,0x0,0x0,0x400000,};

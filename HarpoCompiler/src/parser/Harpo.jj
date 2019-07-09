@@ -1878,6 +1878,8 @@ ExpNd Exp8() :
   CanReadOp canRead;
   CanWriteOp canWrite;
   PermissionOp permissionOp;
+  AccessOp acc;
+  PermissionMapNd permissionMap; 
   ExpNd objId;
   LocSetNd locSet;
   ExpNd x = null;
@@ -1932,6 +1934,11 @@ ExpNd Exp8() :
   tk = "permission" "(" locSet = LocSet() ")"
   {
     return builder.makePermissionOp(locSet, getCoord(tk));
+  }
+|
+  tk = "acc" permissionMap = PermissionMap()
+  {
+    return builder.makeAccessOp(permissionMap, getCoord(tk));
   }
 | 
   tk = "length" "(" objId = ObjectId() ")"

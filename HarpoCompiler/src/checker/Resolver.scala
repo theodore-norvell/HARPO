@@ -293,6 +293,12 @@ extends Contracts {
                 case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case PermissionOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case AccessOp(pm) => {
+                 if (pm.locExp.length == pm.locSet.length){
+                  for(lsn <- pm.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                  for(len <- pm.locExp) { resolvePermValue(len,containingFQN,containingDecl)}                  
+                  }
+                }
                 case LengthOp(exp) => resolveExp(exp, containingFQN,containingDecl)
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )

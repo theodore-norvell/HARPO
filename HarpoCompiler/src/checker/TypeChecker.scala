@@ -20,7 +20,7 @@ class TypeChecker(
     val ty: Option[Type] = exp match {
       case NoExpNd() => None
 
-      case BooleanLiteralExpNd (b) => {
+      case BooleanLiteralExpNd(b) => {
         Some(bool)
       }
       case IntLiteralExpNd(i) =>
@@ -29,7 +29,7 @@ class TypeChecker(
 
       case FloatLiteralExpNd(x) =>
         Some(real64)
-        
+
       case CanReadOp(lsn) =>
         typeCheckLocSet(lsn)
 
@@ -39,10 +39,25 @@ class TypeChecker(
       case PermissionOp(lsn) =>
         typeCheckLocSet(lsn)
 
-      case LengthOp(exp) => 
+      case op @ AccessOp(pm) => {
+       
+        for(lsn <- op.p.locSet) {
+          Some(typeCheckLocSet(lsn))
+        }
+        val newAmounts =
+          for (permissionAmount <- pm.locExp) yield {
+            val pTy = typeCheck(permissionAmount)
+            val permissionAmount0 = valueConvert(permissionAmount);
+            typeConvert(permissionAmount0, Some(real64))
+          }
+        op.p.setAmounts(newAmounts.toList)
+        Some(real64) // since typeConvert set the permissions type to real64
+      }
+
+      case LengthOp(exp) =>
         typeCheck(exp)
-      
-      case NameExpNd(name) =>{
+
+      case NameExpNd(name) => {
         val decl = name.decl.getOrElse {
           Contracts.unreachable("Name not resolved by type checking time.")
         }
@@ -131,7 +146,7 @@ class TypeChecker(
           t <- typeCheck(exp);
           tb <- typeCheck(bound);
           x = errorRecorder.checkFatal(
-            isIntegralType(tb), 
+            isIntegralType(tb),
             "Bound should of integral type",
             bound.coord);
           y = errorRecorder.checkFatal(
@@ -205,8 +220,8 @@ class TypeChecker(
         // Convert the initialization expression to match the expected type
         decl.init = typeConvertInitExpNd(init, expectedType)
 
-      case decl @ ClaimNd(pmn) => {
-        typeCheck(pmn)
+      case decl @ ClaimNd(pm) => {
+        typeCheckPermissionMap(pm)
       }
       case decl @ ClassInvNd(exp) => {
         typeCheck(exp)
@@ -228,7 +243,7 @@ class TypeChecker(
       case decl @ ThreadDeclNd(claimList, block) => {
         typeCheck(block)
         for (cn <- claimList) {
-          typeCheck(cn.pmn)
+          typeCheckPermissionMap(cn.pmn)
         }
       }
 
@@ -324,24 +339,24 @@ class TypeChecker(
       }
     }
   }
-
-  def typeCheck(pmn: PermissionMapNd) {
+  
+  def typeCheckPermissionMap(pmn: PermissionMapNd) {
     for (lsn <- pmn.locSet)
       typeCheck(lsn)
-
     val newAmounts =
       for (permissionAmount <- pmn.locExp) yield {
         val pTy = typeCheck(permissionAmount)
         val permissionAmount0 = valueConvert(permissionAmount);
         typeConvert(permissionAmount0, Some(real64))
       }
-    pmn.setAmounts(newAmounts.toList) // Test the tree.
+    pmn.setAmounts(newAmounts.toList)
+
   }
 
   def typeCheck(lsn: LocSetNd) {
     lsn match {
       case ObjectIdLSN(i) => typeCheck(i)
-      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd,boundInclusive: Boolean , locSet: LocSetNd) => {     
+      case ArrayLSN(forDecl: ForDecl, offSet: ExpNd, bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => {
         typeCheck(forDecl)
         typeCheck(offSet)
         typeCheck(bound)
@@ -389,13 +404,13 @@ class TypeChecker(
   def typeCheck(mPerNd: PermissionNd) {
     mPerNd match {
       case mPerNd @ GivesPerNd(pmn) => {
-        typeCheck(pmn)
+        typeCheckPermissionMap(pmn)
       }
       case mPerNd @ TakesPerNd(pmn) => {
-        typeCheck(pmn)
+        typeCheckPermissionMap(pmn)
       }
       case mPerNd @ BorrowsPerNd(pmn) => {
-        typeCheck(pmn)
+        typeCheckPermissionMap(pmn)
       }
     }
 
@@ -471,13 +486,13 @@ class TypeChecker(
       }
 
       case CoForCmdNd(forDecl, repetitions, cl, body) => {
-        for (cn <- cl) typeCheck(cn.pmn)
+        for (cn <- cl) typeCheckPermissionMap(cn.pmn)
         toDo("Co-for commands in type checker")
       }
       case CoCmdNd(cl, fstCmd, sndCmd) => {
         typeCheck(fstCmd)
         typeCheck(sndCmd)
-        for (cn <- cl) typeCheck(cn.pmn)
+        for (cn <- cl) typeCheckPermissionMap(cn.pmn)
       }
       case AcceptCmdNd(methodImplementationList) =>
         for (methImpl <- methodImplementationList) {
@@ -571,12 +586,12 @@ class TypeChecker(
         // No need to check that base is primitive, since
         // Location types can only be constructed for primitive types
         typeConvert(valueConvert(rhs), Some(base))
-        
-      case ((Some(ArrayLocationType(baseType)), rhs),lhs) => typeConvert(valueConvert(rhs),Some(baseType.base))  
-      
-      case ((a@Some(PrimitiveType(base)),rhs),lhs) => typeConvert(valueConvert(rhs), a)
-      
-      case ((Some(_), rhs), lhs) => 
+
+      case ((Some(ArrayLocationType(baseType)), rhs), lhs) => typeConvert(valueConvert(rhs), Some(baseType.base))
+
+      case ((a @ Some(PrimitiveType(base)), rhs), lhs) => typeConvert(valueConvert(rhs), a)
+
+      case ((Some(_), rhs), lhs) =>
         println(lhsTypes + " " + rhss + " " + lhss)
         errorRecorder.reportFatal(
           "Left hand side of assignment does not represent a location.",
@@ -590,7 +605,7 @@ class TypeChecker(
   private def typeCheckLocSet(lsn: LocSetNd): Option[Type] = {
     val resultType: Option[Type] = lsn match {
       case ObjectIdLSN(i) => typeCheck(i)
-      case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,upperBound: ExpNd, boundInclusive: Boolean , locSet: LocSetNd) => typeCheckLocSet(locSet)
+      case ArrayLSN(forDecl: ForDecl, offSet: ExpNd, upperBound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => typeCheckLocSet(locSet)
       //TODO need to check that it actually represent a location,
       // Convert from location to set of location, insert a cast, if necessary
       // location holding int to set of int
@@ -886,7 +901,7 @@ class TypeChecker(
     }
 
   private def typeConvertInitExpNd(exp: InitExpNd, optType: Option[Type]): InitExpNd =
-    
+
     (exp.tipe, optType) match {
       case (Some(tyFrom), Some(tyTo)) =>
         if (tyFrom == tyTo) {
@@ -896,15 +911,15 @@ class TypeChecker(
           exp$.tipe = Some(tyTo)
           exp$
         } else if (tyFrom != tyTo)
-        (tyFrom,tyTo) match {
-          case  (ArrayType(base,bound), ArrayLocationType(baseType)) => {
-            val exp$ = WidenInitExpNd(exp)(exp.coord)
-            exp$.tipe = Some(tyTo)
-            exp$
+          (tyFrom, tyTo) match {
+            case (ArrayType(base, bound), ArrayLocationType(baseType)) => {
+              val exp$ = WidenInitExpNd(exp)(exp.coord)
+              exp$.tipe = Some(tyTo)
+              exp$
+            }
           }
-        }
 
-          else {
+        else {
           // At the moment the only nontrivial conversion is widening.
           // Anything else indicates an internal error.
           errorRecorder.reportFatal("Can not convert " + tyFrom + " to " + tyTo + ".", exp.coord);
@@ -922,10 +937,10 @@ class TypeChecker(
     }
 
   private def isIntegralType(t: Type): Boolean = {
-    
+
     t match {
       case `int8` | `int16` | `int32` | `int64` => true;
-      case  LocationType(base) => isIntegralType(base)
+      case LocationType(base) => isIntegralType(base)
       case _ => false;
     }
   }
@@ -972,7 +987,7 @@ class TypeChecker(
 
   private val isWiderThanTable: Array[Array[Boolean]] =
     // NB. This relation is nonreflexive but transitive
-    Array(       //  Int8   Int16  Int32  Int64  Real16 Real32 Real64 Bool
+    Array( //  Int8   Int16  Int32  Int64  Real16 Real32 Real64 Bool
       /*Int8*/ Array(false, false, false, false, false, false, false, false),
       /*Int16*/ Array(true, false, false, false, false, false, false, false),
       /*Int32*/ Array(true, true, false, false, false, false, false, false),
@@ -997,14 +1012,14 @@ class TypeChecker(
   }
 
   private def isElaborationTimeConstant(exp: ExpNd): Boolean = {
-     exp match {
+    exp match {
       case NameExpNd(name) => {
         val decl = name.decl.getOrElse {
           contracts.Contracts.unreachable("array bound not resolved by type creation time.")
         }
         decl match {
-          case ObjDeclNd(isGhost, isConst, acc, ty, init) => if(isConst) true else false //check further what elaboration time constant means for HARPO
-          case LocalDeclNd(isGhost, isConst, ty, init, cmd) => if(isConst) true else false
+          case ObjDeclNd(isGhost, isConst, acc, ty, init) => if (isConst) true else false //check further what elaboration time constant means for HARPO
+          case LocalDeclNd(isGhost, isConst, ty, init, cmd) => if (isConst) true else false
           case ForDecl(fvd) => true
           case _ =>
             errorRecorder.reportFatal(name + " does not represent an object or location.", name.coord)

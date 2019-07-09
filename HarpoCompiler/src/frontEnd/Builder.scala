@@ -167,6 +167,8 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
   
+  def makeAccessOp(p : PermissionMapNd, coord: AST.Coord) = new AccessOp(p)(coord)
+  
   def makeLengthOp(x: ExpNd, coord: AST.Coord) = new LengthOp(x)(coord)
   
   var next = 0

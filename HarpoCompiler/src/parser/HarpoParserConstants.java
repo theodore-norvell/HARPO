@@ -33,25 +33,25 @@ public interface HarpoParserConstants {
   /** RegularExpression Id. */
   int PRIME = 41;
   /** RegularExpression Id. */
-  int BOOL_LITERAL = 84;
+  int BOOL_LITERAL = 85;
   /** RegularExpression Id. */
-  int NAME = 85;
+  int NAME = 86;
   /** RegularExpression Id. */
-  int DEC_LITERAL = 86;
+  int DEC_LITERAL = 87;
   /** RegularExpression Id. */
-  int BIN_LITERAL = 87;
+  int BIN_LITERAL = 88;
   /** RegularExpression Id. */
-  int OCT_LITERAL = 88;
+  int OCT_LITERAL = 89;
   /** RegularExpression Id. */
-  int HEX_LITERAL = 89;
+  int HEX_LITERAL = 90;
   /** RegularExpression Id. */
-  int HEX_CHAR = 90;
+  int HEX_CHAR = 91;
   /** RegularExpression Id. */
-  int REAL_LITERAL = 91;
+  int REAL_LITERAL = 92;
   /** RegularExpression Id. */
-  int EXP = 92;
+  int EXP = 93;
   /** RegularExpression Id. */
-  int UNEXPECTED_CHARACTER = 93;
+  int UNEXPECTED_CHARACTER = 94;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -146,6 +146,7 @@ public interface HarpoParserConstants {
     "\"while\"",
     "\"with\"",
     "\"this\"",
+    "\"length\"",
     "<BOOL_LITERAL>",
     "<NAME>",
     "<DEC_LITERAL>",
