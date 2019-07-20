@@ -50,6 +50,14 @@ axiom (forall x:int :: Isint32(x) <==> min32 <=x&&x<=max32);
 function Isint64(int) returns (bool);
 axiom (forall x:int :: Isint64(x) <==> min64 <= x && x <= max64);
 
+const unique minPer : Perm;
+axiom minPer == 0.0;
+const unique maxPer : Perm;
+axiom maxPer == 1.0;
+
+function IsValidPermission(Perm) returns (bool);
+axiom (forall x: Perm:: IsValidPermission(x) <==> minPer <= x && x <= maxPer);
+
 type ClassName;
 function dtype(Ref) returns (ClassName);
 
