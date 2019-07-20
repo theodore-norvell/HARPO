@@ -27,7 +27,7 @@ class BufferTest extends VerifierTestBase {
   behavior of "The Boogie back end with Harpo 'Buffer' class";
   it should "generate Boogie code for Buffer class" in {
     
-    var str = """
+    val str = """
 
           (class Buffer()
 
@@ -52,8 +52,8 @@ class BufferTest extends VerifierTestBase {
 				               rear := (rear+1) mod size
 				               full := full+1
 				            |
-                       fetch(out ovalue: Real64) when (0 < full)
-				               ovalue := buf[front]
+                       fetch(out value: Real64) when (0 < full)
+				               value := buf[front]
 				               front := (front+1) mod size
 				               full := full-1
 				          accept)
@@ -62,9 +62,7 @@ class BufferTest extends VerifierTestBase {
         class)
 """
 
-    var BoogieSource = tryWithBoogieBackEnd(str)
-    
-    println(BoogieSource)
+ translateAndVerify(str)
 
 }
 }

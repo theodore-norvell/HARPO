@@ -1,5 +1,5 @@
 /*
- * These tests contains all the variations of the counter class
+ * These tests contains Permission Transfer Scenario 1
  * @Author: Inaam Ahmed
  * */
 
@@ -27,7 +27,7 @@ class Scenario1Test extends VerifierTestBase {
   behavior of "The Boogie back end with Harpo 'Scenario 1' class";
   it should "generate Boogie code for Scenario 1 " in {
 
-    var str = """ //Permission Transfer Scenario 1
+    val str = """ //Permission Transfer Scenario 1
 
                   (class Scenario1()
 	
@@ -107,9 +107,7 @@ class Scenario1Test extends VerifierTestBase {
 	                  thread)
                   class) """
 
-    var BoogieSource = tryWithBoogieBackEnd(str)
-
-    println(BoogieSource)
+  translateAndVerify(str)
 
   }
 }

@@ -23,11 +23,20 @@ class CheckerTests extends TestsBase {
     val str = ""
     tryWithChecker(str)
   }
+  
+  it should "check the int object declaration" in {
+    val str = """
+              (class Test()
+                obj c: int32 := 0;
+              class)
+            """
+    tryWithChecker(str)
+  }
 
   it should "check a 'ghost' object" in {
     val str = """ 
                   (class Test() 
-                    ghost obj c: Int32:=0; 
+                    ghost obj c: int32:=0; 
                   class) 
               """
     tryWithChecker(str)
