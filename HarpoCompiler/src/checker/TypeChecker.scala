@@ -36,8 +36,8 @@ class TypeChecker(
       case CanWriteOp(lsn) =>
         typeCheckLocSet(lsn)
 
-      case PermissionOp(lsn) =>
-        typeCheckLocSet(lsn)
+      case PermissionOp(objId) =>
+        typeCheck(objId)
 
       case op @ AccessOp(pm) => {
        

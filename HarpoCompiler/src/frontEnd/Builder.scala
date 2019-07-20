@@ -165,7 +165,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
 
   //Get amount of 'Permission' Operation
 
-  def makePermissionOp(x: LocSetNd, coord: AST.Coord) = new PermissionOp(x)(coord)
+  def makePermissionOp(x: ExpNd, coord: AST.Coord) = new PermissionOp(x)(coord)
   
   def makeAccessOp(p : PermissionMapNd, coord: AST.Coord) = new AccessOp(p)(coord)
   

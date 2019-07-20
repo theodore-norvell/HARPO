@@ -292,7 +292,7 @@ extends Contracts {
                     name.decl = symTab.lookUp( containingFQN, name )
                 case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
                 case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
-                case PermissionOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case PermissionOp(objId) => resolveExp(objId, containingFQN, containingDecl)
                 case AccessOp(pm) => {
                  if (pm.locExp.length == pm.locSet.length){
                   for(lsn <- pm.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}

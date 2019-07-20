@@ -492,7 +492,7 @@ class AST{
       override def ppp = Pretty.func("CanWriteOp", x)
     }
   
-    case class PermissionOp(x: LocSetNd)(coord: AST.Coord) extends ExpNd(coord) {
+    case class PermissionOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
       override def ppp = Pretty.func("PermissionOp", x)
     }
     

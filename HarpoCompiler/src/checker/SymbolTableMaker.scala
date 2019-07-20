@@ -169,6 +169,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
                 case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
                 case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
                 case PermissionOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+                case PermissionOp(objId) => {}
                 case AccessOp(pm) => buildSTFromPermissonMap(pm, containingFQN)
                 case ForAllExp(forNameDeclList,x: ExpNd, y: ExpNd) => {
                  for(i <- forNameDeclList) buildSTFromDecl(i,containingFQN)       
