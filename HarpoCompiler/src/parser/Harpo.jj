@@ -257,57 +257,56 @@ TOKEN :
 
 TOKEN :
 {
-  "accept"
-| 	"acc"
-| 	"as"
+
+"acc"
+| "accept"
+| "as"
 | "assert"
-| 	"assume"
-| 	"borrows"
-| 	"canRead"
-| 	"canWrite"
-| 	"class"
-| 	"claim"
-| 	"co"
+| "assume"
+| "borrows"
+| "canRead"
+| "canWrite"
+| "claim"
+| "class"
+| "co"
 | "const"
-| 	"do"
-| 	"div"
-| 	"else"
+| "div"
+| "do"
+| "else"
 | "extends"
-| 	"for"
-| 	"gives"
-| 	"ghost"
-| 	"if"
+| "for"
+| "forall"
+| "ghost"
+| "gives"
+| "if"
 | "implements"
-| 	"in"
+| "in"
 | "interface"
-| 	"invariant"
-| 	"mod"
-| 	"new"
+| "invariant"
+| "length"
+| "mod"
+| "new"
 | "obj"
-| 	"out"
-| 	"permission"
-| 	"pre"
-| 	"post"
+| "out"
+| "permission"
+| "post"
+| "pre"
 | "private"
-| 	"proc"
+| "proc"
 | "public"
-| 	"takes"
-| 	"then"
-| 	"thread"
+| "takes"
+| "then"
+| "this"
+| "thread"
 | "type"
-| 	"when"
-| 	"while"
-| 	"with"
-| 	"this"
-|    "length"
-|  "forall"
+| "when"
+| "while"
+| "with"
 }
 
 TOKEN :
 {
-  < BOOL_LITERAL :
-    "true"
-  | "false" >
+  < BOOL_LITERAL :  "true" | "false" >
 }
 
 TOKEN :
@@ -831,12 +830,7 @@ ThreadDeclNd Thread() :
 {
   (	
     tk = "(" "thread"
-    (
-      claim = Claim()
-      {
-        builder.add(claimList, claim);
-      }
-    )*
+    ( claim = Claim() { builder.add(claimList, claim); } )*
     bl = Block() [ "thread" ] ")"
     {
       return builder.threadDeclNd(claimList, bl, getCoord(tk));
@@ -1202,28 +1196,14 @@ CommandNd Block() :
   Token tk;
 }
 {
-  p = Command()
-  {
-    tk = getToken(1);
-  }
-  q = Block()
-  {
-    return builder.isSkip(q) ? p : builder.seq(p, q, getCoord(tk));
-  }
+  p = Command() { tk = getToken(1); }
+  q = Block() { return builder.isSkip(q) ? p : builder.seq(p, q, getCoord(tk)); }
 | 
-  p = LocalDeclaration()
-  {
-    return p;
-  }
+  p = LocalDeclaration()  { return p; }
 | 
-  ";" p = Block()
-  {
-    return p;
-  }
+  ";" p = Block()  { return p;  }
 |
-  {
-    return builder.skip(getCoord(1));
-  }
+  { return builder.skip(getCoord(1)); }
 }
 
 CommandNd LocalDeclaration() :
@@ -1935,9 +1915,9 @@ ExpNd Exp8() :
     return builder.makeCanWriteOp(locSet, getCoord(tk));
   }
 | 
-  tk = "permission" "(" locSet = LocSet() ")"
+  tk = "permission" "(" objId = ObjectId() ")"
   {
-    return builder.makePermissionOp(locSet, getCoord(tk));
+    return builder.makePermissionOp(objId, getCoord(tk));
   }
 |
   tk = "acc" permissionMap = PermissionMap()
@@ -2031,7 +2011,11 @@ ExpNd Lock() :
   )
   {
     return r;
-  } // ObjectId is prioritized, 
+  }
+  |
+    /*empty*/{
+    return builder.noExp(getCoord(1));
+  }
 }
 
 ExpNd ObjectName() :
