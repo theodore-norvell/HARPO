@@ -72,7 +72,6 @@ class TypeChecker(
               ty.tipe != None,
               "The type of " + name + " can not be determined at this point.",
               exp.coord)
-            println("For " + name + " Type is " + ty.tipe)
             ty.tipe
           case LocalDeclNd(isGhost, isConst, ty, init, cmd) =>
             errorRecorder.checkFatal(
@@ -367,13 +366,7 @@ class TypeChecker(
         typeCheck(bound)
         typeCheck(locSet)
       }
-      case _ => println("Type Not Allowed")
-      //TODO need to check that it actually represent a location,
-      // Convert from location to set of location, insert a cast, if necessary
-      // location holding int to set of int
-      // Need new type
-      // add other cases
-    }
+      case _ => contracts.Contracts.unreachable("Can not find the Type of Location Set")
   }
 
   def typeCheckObjId(objId: ExpNd) {
@@ -487,7 +480,8 @@ class TypeChecker(
 
       case ForCmdNd(forDecl, repetitions, lil, body) => {
         for (li <- lil) typeCheck(li)
-        toDo("For commands in type checker")
+        typeCheck(repetitions)
+        typeCheck(body)
       }
 
       case CoForCmdNd(forDecl, repetitions, cl, body) => {
@@ -881,13 +875,12 @@ class TypeChecker(
       case _ => exp
     }
 
-  private def typeConvert(exp: ExpNd, optType: Option[Type]): ExpNd =
+  def typeConvert(exp: ExpNd, optType: Option[Type]): ExpNd =
     (exp.tipe, optType) match {
       case (Some(tyFrom), Some(tyTo)) =>
         if (tyFrom == tyTo) {
           exp
         } else if (isIntegralType(tyFrom) && isRealType(tyTo)) {
-          println("it is trying to convert")
           val exp$ = AsExpNd(exp, nodeFor(tyTo))(exp.coord)
           exp$.tipe = Some(tyTo); println(exp$.tipe)
           exp$
@@ -905,7 +898,7 @@ class TypeChecker(
         exp
     }
 
-  private def typeConvertInitExpNd(exp: InitExpNd, optType: Option[Type]): InitExpNd =
+ def typeConvertInitExpNd(exp: InitExpNd, optType: Option[Type]): InitExpNd =
 
     (exp.tipe, optType) match {
       case (Some(tyFrom), Some(tyTo)) =>
@@ -918,6 +911,11 @@ class TypeChecker(
         } else if (tyFrom != tyTo)
           (tyFrom, tyTo) match {
             case (ArrayType(base, bound), ArrayLocationType(baseType)) => {
+              val exp$ = WidenInitExpNd(exp)(exp.coord)
+              exp$.tipe = Some(tyTo)
+              exp$
+            }
+            case _ => {
               val exp$ = WidenInitExpNd(exp)(exp.coord)
               exp$.tipe = Some(tyTo)
               exp$
