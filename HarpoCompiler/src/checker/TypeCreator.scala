@@ -182,11 +182,8 @@ class TypeCreator(errorRecorder: ErrorRecorder) {
           ty match {
             case NoTypeNd() => {}
             case _ => {
-              println("Type before creation for : " + decl.name + " " + ty.tipe)
               createTypeFromTypeNd(ty)
-              println("Type after creation for : " + decl.name + " " +ty.tipe)
               promoteToLoc(ty)
-              println("Type Promoted for : " + decl.name + " is " + ty.tipe)
             }
           }
         case ClaimNd(lpmn: PermissionMapNd) => {}
