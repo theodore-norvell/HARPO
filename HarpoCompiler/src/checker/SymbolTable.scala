@@ -52,7 +52,8 @@ class SymbolTable( private val errorRecorder : ErrorRecorder,
      */
     private def lookupAbsolute( fqn : FQN, coord : Coord ) : Option[DeclNd] = { 
             if( map.contains( fqn ) ) Some(map.apply( fqn ))
-            else {errorRecorder.reportFatal("Could not find " +fqn.toString, coord) ;
+            else {  
+              errorRecorder.reportFatal("Could not find " +fqn.toString, coord) ;
                   None }
     }
                  
@@ -107,12 +108,15 @@ class SymbolTable( private val errorRecorder : ErrorRecorder,
         case rqn : RQN =>  
     			  lookUpRelative( baseFQN, rqn ) match { 
     			      case Some(decl) => Some(decl)
-    			      case None =>
-                          errorRecorder.reportFatal("Could not find " +nameNd.toString, nameNd.coord) ;
+    			      case None => {
+                          errorRecorder.reportFatal("Could not find " +nameNd.toString, nameNd.coord) ;}
     			          None  } }
     }
     
     def dump = 
         for( k <- map.keys ) println( k.toString+  " +-> " +map(k) )
+        
+    def print = 
+        for( k <- allMembersMap.keys ) println( k.toString+  "  +-> " +allMembersMap(k) )
     
 }
