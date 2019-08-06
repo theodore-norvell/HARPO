@@ -87,6 +87,37 @@ class OutputBuilder extends Contracts {
         addToLine( str ) 
     }
     
+    
+        /** Adds a string to the output.
+     *  
+     *  If the string contains embedded newlines, returns
+     *  return-newline pairs, these are treated
+     *  as calls to <code>.newLine</code>.
+     *  
+     *  Strings at the start of a line will be indented with spaces
+     *  to the current indentation level.
+     *  
+     */
+    
+    def putln( string : String ) : Unit =
+    {
+        var str = string 
+        val endOfLineRE = """\r\n|\n|\r""".r
+        var m = endOfLineRE.findFirstMatchIn( str )
+        while( !m.isEmpty  ) {
+            val matchData = m.get
+            
+            addToLine( matchData.before.toString )
+            newLine
+            str = matchData.after.toString
+            m = endOfLineRE.findFirstMatchIn( str )
+        }
+        addToLine( str ) 
+        newLine
+    }
+    
+    
+    
     protected def startNewLine : Unit = {
         val newLine = new Line() ;
         newLine.indentLevel = current.indentLevel 
