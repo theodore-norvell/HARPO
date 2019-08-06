@@ -1,54 +1,87 @@
-// Prelude begin
 type Ref;
 type Field x;
 type HeapType = <x> [Ref,Field x]x;
-
 var Heap:HeapType;
+var Permission : PermissionType where (forall <x> r: Ref, f: Field x :: Permission[r,f] == 0.0);
+var LockPermission : PermissionType where (forall <x> r: Ref, f: Field x :: LockPermission[r,f] == 0.0);
 
 type ArrayRef x;
 type ArrayHeapType = <x> [ArrayRef x, int]x;
 var ArrayHeap:ArrayHeapType;
+var ArrayPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayPermission[r,f] == 0.0);
+var ArrayLockPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayLockPermission[r,f] == 0.0);
 
 type Perm = real;
 type PermissionType = <x> [Ref,Field x]Perm;
 type ArrayPermissionType = <x>[ArrayRef x, int] Perm;
-var LockPermission: PermissionType;
-var ArrayLockPermission: ArrayPermissionType;
-
 
 function Length<x>(Field (ArrayRef x))returns(int);
 
-const unique min8:int;
-axiom min8 == -128;
-const unique max8:int;
-axiom max8==127;
+const unique minInt8:int;
+axiom minInt8 == -128;
+const unique maxInt8:int;
+axiom maxInt8==127;
 
-const unique min16:int;
-axiom min16 == -32768;
-const unique max16:int;
-axiom max16 == 32767;
+const unique minInt16:int;
+axiom minInt16 == -32768;
+const unique maxInt16:int;
+axiom maxInt16 == 32767;
 
-const unique min32:int;
-axiom min32 == -2147483648;
-const unique max32:int;
-axiom max32 == 2147483647;
+const unique minInt32:int;
+axiom minInt32 == -2147483648;
+const unique maxInt32:int;
+axiom maxInt32 == 2147483647;
 
-const unique min64:int;
-axiom min64 == -9223372036854775808;
-const unique max64:int;
-axiom max64== 9223372036854775807;
+const unique minInt64:int;
+axiom minInt64 == -9223372036854775808;
+const unique maxInt64:int;
+axiom maxInt64== 9223372036854775807;
 
 function Isint8(int) returns (bool);
-axiom (forall x:int :: Isint8(x) <==> min8 <=x&&x<=max8);
+axiom (forall x:int :: Isint8(x) <==> minInt8 <= x && x <= maxInt8);
 
 function Isint16(int) returns (bool);
-axiom (forall x:int :: Isint16(x) <==> min16 <=x&&x<=max16);
+axiom (forall x:int :: Isint16(x) <==> minInt16 <= x && x <= maxInt16);
 
 function Isint32(int) returns (bool);
-axiom (forall x:int :: Isint32(x) <==> min32 <=x&&x<=max32);
+axiom (forall x:int :: Isint32(x) <==> minInt32 <= x && x <= maxInt32);
 
 function Isint64(int) returns (bool);
-axiom (forall x:int :: Isint64(x) <==> min64 <= x && x <= max64);
+axiom (forall x:int :: Isint64(x) <==> minInt64 <= x && x <= maxInt64);
+
+const unique TenPow16 : real;
+axiom TenPow16 == 10000000000000000.0; // 10 ^ 16
+const unique TenPow32 : real;
+axiom TenPow32 == 100000000000000000000000000000000.0; // 10 ^ 32
+const unique TenPow64 : real;
+axiom TenPow64 == 10000000000000000000000000000000000000000000000000000000000000000.0; // 10 ^ 64
+
+const unique minFloat16:real;
+axiom minFloat16 == 6.10/10000.0; // 6.10 E - 5 
+const unique maxFloat16:real;
+axiom maxFloat16 == 6.55*10000.0; // 6.55 E + 4
+
+const unique minFloat32:real;
+axiom minFloat32 == 1.175494351 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
+const unique maxFloat32:real;
+axiom maxFloat32 == 3.402823466 * (TenPow32*10000.0) ;  //3.402823466 E + 38
+
+const unique minFloat64:real;
+axiom minFloat64 == 2.2250738585072014 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
+const unique maxFloat64:real;
+axiom maxFloat64 == 1.7976931348623157 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
+
+function IsFloat16(real) returns (bool);
+axiom (forall x:real :: IsFloat16(x) <==> minFloat16 <= x && x <= maxFloat16);
+
+function IsFloat32(real) returns (bool);
+axiom (forall x:real :: IsFloat32(x) <==> minFloat32 <= x && x <= maxFloat32);
+
+function IsFloat64(real) returns (bool);
+axiom (forall x:real :: IsFloat64(x) <==> minFloat64 <= x && x <= maxFloat64);
+
+function IsBool(bool) returns (bool);
+axiom (forall x: bool :: IsBool(x) <==> x == true || x == false);
 
 const unique minPer : Perm;
 axiom minPer == 0.0;
