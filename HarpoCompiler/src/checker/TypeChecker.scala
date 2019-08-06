@@ -368,6 +368,7 @@ class TypeChecker(
       }
       case _ => contracts.Contracts.unreachable("Can not find the Type of Location Set")
   }
+  }
 
   def typeCheckObjId(objId: ExpNd) {
     objId match {
@@ -915,7 +916,7 @@ class TypeChecker(
               exp$.tipe = Some(tyTo)
               exp$
             }
-            case _ => {
+            case _ => { //TODO New cases would be included.
               val exp$ = WidenInitExpNd(exp)(exp.coord)
               exp$.tipe = Some(tyTo)
               exp$
