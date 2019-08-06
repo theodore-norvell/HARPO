@@ -20,8 +20,8 @@ class Checker( val errorRecorder : ErrorRecorder ) {
         val boolTypeNd0 = new NamedTypeNd( NameNd(boolFQN)(noCoord))(noCoord)
         val boolTypeNd1 = new NamedTypeNd( NameNd(boolFQN)(noCoord))(noCoord)
         //TODO for isGhost, ObjDeclNd need to be double checked
-        val trueDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
-        val falseDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, falseInit)("false",noCoord)
+       // val trueDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, trueInit)("true",noCoord)
+       // val falseDecl = ObjDeclNd(true,true, PublicAccess, boolTypeNd0, falseInit)("false",noCoord)
         decls.addDeclaration(boolTypeDeclNd)
         decls.addDeclaration(PrimitiveTypeDeclNd(int8FQN)(noCoord))
         decls.addDeclaration(PrimitiveTypeDeclNd(int16FQN)(noCoord))
@@ -30,8 +30,8 @@ class Checker( val errorRecorder : ErrorRecorder ) {
         decls.addDeclaration(PrimitiveTypeDeclNd(real16FQN)(noCoord)) 
         decls.addDeclaration(PrimitiveTypeDeclNd(real32FQN)(noCoord))
         decls.addDeclaration(PrimitiveTypeDeclNd(real64FQN)(noCoord))
-        decls.addDeclaration(trueDecl)
-        decls.addDeclaration(falseDecl)
+       // decls.addDeclaration(trueDecl)
+       // decls.addDeclaration(falseDecl)
     }
 
           
