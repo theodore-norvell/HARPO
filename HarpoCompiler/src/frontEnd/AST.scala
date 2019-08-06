@@ -467,7 +467,7 @@ class AST{
     }
     
     case class ThisExpNd(str : String)(coord: AST.Coord) extends ExpNd(coord){
-      override def ppp = Pretty.func("CurrentObjReference", str)
+      override def ppp = Pretty.func("ThisObjRef", str)
     }
     
     case class ObjIdsNd( x: List[ExpNd]) (coord: AST. Coord) extends ExpNd(coord) {
@@ -501,7 +501,7 @@ class AST{
     }
     
     case class LengthOp(x: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
-      override def ppp = Pretty.func("PermissionOp", x)
+      override def ppp = Pretty.func("LengthOp", x)
     }
     
     case class ForAllExp(forNameDeclList: List[ForDecl], x: ExpNd,y: ExpNd)(coord: AST.Coord) extends ExpNd(coord) {
