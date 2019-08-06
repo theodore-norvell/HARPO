@@ -53,8 +53,8 @@ extends Contracts {
                 case ClassInvNd(exp) =>
                   resolveExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
-                    resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
+                    resolveType( ty, containingFQN, containingDecl )
                 case ParamDeclNd(isGhost: Boolean, ty : TypeNd, paramCategory : ParamCategory) =>
                     resolveType( ty, containingFQN, containingDecl )
                 case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>
@@ -77,7 +77,8 @@ extends Contracts {
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
                     resolveExp( init, containingFQN, containingDecl )
-                    resolveCommand( stmt, fqn, Some(decl) )
+                    resolveCommand( stmt, containingFQN, containingDecl )
+                    
                 case GenericParamDeclNd( ty : TypeNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                 case ForDecl(fvd) => resolveDecl(fvd,containingFQN, containingDecl)
