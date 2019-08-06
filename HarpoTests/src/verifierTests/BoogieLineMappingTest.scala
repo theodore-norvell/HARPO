@@ -119,7 +119,7 @@ class BoogieLineMappingTest extends VerifierTestBase {
   }
 
   it should "map boogie line numbers to Harpo line numbers" in {
-    val errors = translateAndVerify(harpo0, 0, 0, 1)
+    val (errors,builder) = translateAndVerify(harpo0, 0, 0, 1)
     assertResult( 5 )( errors.getVerificationCoord( 1 ).line ) 
     val expectedErrorMessage = "TODO" 
     assertResult( expectedErrorMessage )( errors.getVerificationText( 1 ) ) 

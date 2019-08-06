@@ -71,13 +71,13 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
         expectedFatalErrors : Int = 0,
         expectedWarningErrors : Int = 0,
         expectedVerificationErrors : Int = 0 )
-    : ErrorRecorder = {
+    : (StandardErrorRecorder,OutputBuilder) = {
         val translator = new HarpoToBoogieTranslator()
         translator.addFile( "HarpoSourceCode.harpo", str )
-        val errorRecorder = translator.translateAndVerify( true ) 
+        val (errorRecorder, builder) = translator.translateAndVerify( true ) 
         assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
         assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
         assertResult( expectedVerificationErrors)( errorRecorder.getVerificationCount() )
-        errorRecorder
+        (errorRecorder,builder)
     }
 }

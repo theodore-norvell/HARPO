@@ -28,8 +28,7 @@ object HarpoVerifier extends App {
   println( "\n\n\nVerifier start" )
   var translator = new HarpoToBoogieTranslator()
   translator.addFile( "HarpoSourceCode.harpo", getHarpoSource() )
-  val errorRecorder = translator.translateAndVerify( verbose )
-    
+  val (errorRecorder, builder) = translator.translateAndVerify( verbose )
   errorRecorder.printErrors( System.out )
 }
 
