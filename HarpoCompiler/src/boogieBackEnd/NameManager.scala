@@ -2,18 +2,20 @@ package boogieBackEnd
 import frontEnd.AST._;
 import frontEnd.FQN;
 
-private class NameManager() {
-  
-  def getFQN(exp: ExpNd) : String = {
-     exp match {
-      case exp@NameExpNd(nameNd) => exp.name.decl.get.fqn.names.toString();
+object NameManager {
+
+  def getFQN(exp: ExpNd): String = {
+    exp match {
+      case exp @ NameExpNd(nameNd) => nameNd.decl.get.fqn.toString();
       case _ => "NoName"
     }
   }
-  def getFQN(lsn: LocSetNd) : String = {
-    lsn match {
+
+  def getFQN(locSet: LocSetNd): String = {
+    locSet match {
       case ObjectIdLSN(exp: ExpNd) => getFQN(exp)
-      case ArrayLSN(exp: ArrayExpNd) => getFQN(exp.objId)
+      case ArrayLSN(forVar, offSet, bound, inclusiveBound, locSet) => getFQN(locSet)   
+      case _ => "NoName"
     }
   }
 }
