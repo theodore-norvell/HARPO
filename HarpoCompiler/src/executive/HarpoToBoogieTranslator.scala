@@ -21,19 +21,20 @@ class HarpoToBoogieTranslator {
         files += ((fileName, fileText))
     }
     
-    def translateAndVerify( verbose : Boolean  ) : ErrorRecorder = {
+    def translateAndVerify( verbose : Boolean  ) = {
         val (errors, builder) = runHarpoToBoogieTrans( verbose )
+        if(verbose) {println(errors.printErrors(System.out))}
         if( errors.getFatalCount() == 0 ) {
             val vr = runVerifier( builder, verbose )
             vr.reportErrors( errors, builder ) 
-        }
-        errors
+        } 
+        (errors,builder)
     }
     
     /** Translate the given files to Boogie.
      *  Postcondition: If the number of fatal errors is 0, the outputbuilder will not be null.
      */
-    def runHarpoToBoogieTrans( verbose : Boolean ) : (ErrorRecorder, OutputBuilder) = {
+    def runHarpoToBoogieTrans( verbose : Boolean ) : (StandardErrorRecorder, OutputBuilder) = {
         val errorRecorder = new StandardErrorRecorder()
         if( verbose ) println("Translator is running")
         val masterDeclList  = new frontEnd.AST.DeclList() 
