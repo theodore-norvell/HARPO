@@ -21,7 +21,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
    *
    *  As a side effect, the FQN field of the declarations is set to its FQN.
    */
-  def createSymbolTable(decls: DeclList): SymbolTable = { 
+  def createSymbolTable(decls: DeclList): SymbolTable = {
     var next = 0;
 
     val hash = new mutable.HashMap[FQN, DeclNd]
@@ -59,7 +59,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
     }
 
     def buildSTFromDecl(decl: DeclNd, containingFQN: FQN) {
-      val fqn = containingFQN.append(decl.name)      
+      val fqn = containingFQN.append(decl.name)
       addFQN(fqn, decl)
       decl match {
         case d: ClassDeclNd =>
@@ -81,15 +81,14 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
         case ThreadDeclNd(claimNdList, block) => {
           buildSTFromClaimNdList(claimNdList, fqn)
           buildSTfromCommand(block, fqn)
-          
+
         }
         case LocalDeclNd(isGhost, isConst, ty, init, stmt) => {
-         // println("Containing FQN : "+ containingFQN + " just fqn is : " + fqn)
           buildSTfromCommand(stmt, containingFQN)
         }
 
         case GenericParamDeclNd(ty: TypeNd) => ()
-        case ForDecl(fvd) => buildSTFromDecl(fvd, fqn) 
+        case ForDecl(fvd) => buildSTFromDecl(fvd, fqn)
         case ForVarDecl() => ()
         case MethodImplementationDeclNd(nameNd: NameNd,
           paramList: List[ParamDeclNd],
@@ -127,7 +126,7 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTFromInitExp(a, forDecl.fvd.fqn)
         }
         case IfInitExpNd(guard: ExpNd, a: InitExpNd, b: InitExpNd) => {
-          buildSTFromInitExp(a, fqn) 
+          buildSTFromInitExp(a, fqn)
           buildSTFromInitExp(b, fqn)
         }
         case WidenInitExpNd(a: InitExpNd) =>
@@ -142,84 +141,84 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
     def buildSTFromClaimNd(claimNd: ClaimNd, containingFQN: FQN) {
       buildSTFromPermissonMap(claimNd.pmn, containingFQN)
     }
-    
-    def buildSTFromPermissonMap (pmn: PermissionMapNd, containingFQN: FQN) {
-      for(lsn <- pmn.lsn)
+
+    def buildSTFromPermissonMap(pmn: PermissionMapNd, containingFQN: FQN) {
+      for (lsn <- pmn.lsn)
         lsn match {
           case ObjectIdLSN(objId) => ()
-          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => {
+          case ArrayLSN(forDecl: ForDecl, offSet: ExpNd, bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => {
             buildSTFromDecl(forDecl, containingFQN)
             buildSTFromLocSet(locSet, forDecl.fvd.fqn)
           }
-        }  
+        }
     }
-    
-   def buildSTFromLocSet(locSet: LocSetNd, fqn: FQN){
-     locSet match {
-          case ObjectIdLSN(objId) => ()
-          case ArrayLSN(forDecl: ForDecl,offSet: ExpNd,bound: ExpNd, boundInclusive: Boolean , locSet: LocSetNd) => {
-            buildSTFromDecl(forDecl, fqn)
-            buildSTFromLocSet(locSet, forDecl.fvd.fqn)
-          }
-        }  
-   }
-    
+
+    def buildSTFromLocSet(locSet: LocSetNd, fqn: FQN) {
+      locSet match {
+        case ObjectIdLSN(objId) => ()
+        case ArrayLSN(forDecl: ForDecl, offSet: ExpNd, bound: ExpNd, boundInclusive: Boolean, locSet: LocSetNd) => {
+          buildSTFromDecl(forDecl, fqn)
+          buildSTFromLocSet(locSet, forDecl.fvd.fqn)
+        }
+      }
+    }
+
     def buildSTFromInvariantExp(exp: ExpNd, containingFQN: FQN) {
-         exp match {
-                case NoExpNd() => {}
-                case BooleanLiteralExpNd(b) => {}
-                case IntLiteralExpNd(i) => {}
-                case FloatLiteralExpNd(x) => {}
-                case NameExpNd( name ) => {}
-                case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
-                case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
-                case PermissionOp(objId) => {}
-                case AccessOp(pm) => buildSTFromPermissonMap(pm, containingFQN)
-                case ForAllExp(forNameDeclList: List[ForDecl],x: ExpNd, y: ExpNd) => {
-                 for(forDecl <- forNameDeclList)  {
-                   buildSTFromDecl(forDecl,containingFQN)
-                   println("See the ForNameDecl has Variable FQN " + forDecl.fqn + " and it's FQN is  "+ containingFQN)
-                 }
-                    buildSTFromInvariantExp( x, containingFQN)
-                    buildSTFromInvariantExp( y, containingFQN)
-                }
-                case LengthOp(exp) => {}
-                case UnaryOpExpNd( op, x ) =>
-                    buildSTFromInvariantExp( x, containingFQN)
-                case AsExpNd( x : ExpNd, ty : TypeNd ) =>
-                    buildSTFromInvariantExp( x, containingFQN) 
-                case MemberExpNd( x, name ) =>
-                    buildSTFromInvariantExp( x, containingFQN)
-                case BinaryOpExpNd(op,x,y) => {
-                  buildSTFromInvariantExp(x,containingFQN)
-                  buildSTFromInvariantExp(y,containingFQN)
-                }
-                case ChainExpNd( ops, operands ) =>
-                    for( x <- operands ) buildSTFromInvariantExp( x, containingFQN)
-                case FetchExpNd( exp ) => 
-                    unreachable("FetchExpNd in resolver)")
-                case _ => {}
+      exp match {
+        case NoExpNd() => {}
+        case BooleanLiteralExpNd(b) => {}
+        case IntLiteralExpNd(i) => {}
+        case FloatLiteralExpNd(x) => {}
+        case NameExpNd(name) => {}
+        case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+        case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+        case PermissionOp(objId) => {}
+        case AccessOp(pm) => buildSTFromPermissonMap(pm, containingFQN)
+        case ForAllExp(forNameDeclList: List[ForDecl], x: ExpNd, y: ExpNd) => {
+          for (forDecl <- forNameDeclList) {
+            buildSTFromDecl(forDecl, containingFQN)
+            println("See the ForNameDecl has Variable FQN " + forDecl.fqn + " and it's FQN is  " + containingFQN)
+          }
+          buildSTFromInvariantExp(x, containingFQN)
+          buildSTFromInvariantExp(y, containingFQN)
+        }
+        case LengthOp(exp) => {}
+        case UnaryOpExpNd(op, x) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case AsExpNd(x: ExpNd, ty: TypeNd) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case MemberExpNd(x, name) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case BinaryOpExpNd(op, x, y) => {
+          buildSTFromInvariantExp(x, containingFQN)
+          buildSTFromInvariantExp(y, containingFQN)
+        }
+        case ChainExpNd(ops, operands) =>
+          for (x <- operands) buildSTFromInvariantExp(x, containingFQN)
+        case FetchExpNd(exp) =>
+          unreachable("FetchExpNd in resolver)")
+        case _ => {}
       }
     }
 
     def buildSTfromMethodSpecList(msn: MethodSpecNd, containingFQN: FQN) {
       msn match {
-        case PreCndNd(condition) => buildSTFromConditionExp(condition,containingFQN)
-        case PostCndNd(condition) => buildSTFromConditionExp(condition,containingFQN)
+        case PreCndNd(condition) => buildSTFromConditionExp(condition, containingFQN)
+        case PostCndNd(condition) => buildSTFromConditionExp(condition, containingFQN)
       }
     }
     def buildSTfromMethodPerList(mpn: PermissionNd, containingFQN: FQN) {
       mpn match {
-        case GivesPerNd(pm) => buildSTFromPermissonMap(pm,containingFQN)
-        case TakesPerNd(pm) => buildSTFromPermissonMap(pm,containingFQN)
-        case BorrowsPerNd(pm) => buildSTFromPermissonMap(pm,containingFQN)
+        case GivesPerNd(pm) => buildSTFromPermissonMap(pm, containingFQN)
+        case TakesPerNd(pm) => buildSTFromPermissonMap(pm, containingFQN)
+        case BorrowsPerNd(pm) => buildSTFromPermissonMap(pm, containingFQN)
         case _ => contracts.Contracts.unreachable("Method Permissions Not Applicable")
       }
     }
     def buildSTfromWithPerList(wpm: PermissionNd, containingFQN: FQN) {
       wpm match {
-        case GivesPerNd(pm) => buildSTFromPermissonMap(pm,containingFQN) 
-        case TakesPerNd(pm) => buildSTFromPermissonMap(pm,containingFQN)
+        case GivesPerNd(pm) => buildSTFromPermissonMap(pm, containingFQN)
+        case TakesPerNd(pm) => buildSTFromPermissonMap(pm, containingFQN)
         case _ => contracts.Contracts.unreachable("With block can not have Specs except 'Gives' and 'Takes'")
       }
     }
@@ -238,10 +237,10 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
           buildSTfromCommand(elseCmd, containingFQN)
         }
         case WhileCmdNd(guard, lil, body) => {
-          for (li <- lil) 
+          for (li <- lil)
             buildSTFromInvariantExp(li.exp, containingFQN)
           buildSTfromCommand(body, containingFQN)
-         // println("See the FQN of while loop " + containingFQN)
+          // println("See the FQN of while loop " + containingFQN)
         }
 
         //---- Adding assert case, 'skip' in case of C
@@ -268,51 +267,47 @@ class SymbolTableMaker(errorRecorder: ErrorRecorder)
             buildSTFromDecl(methImpl, containingFQN)
           }
         case WithCmdNd(lock, tpl, guard, command, gpl) =>
-          buildSTfromLock(lock,containingFQN)
+          buildSTfromLock(lock, containingFQN)
           buildSTfromCommand(command, containingFQN)
           for (pmn <- tpl) buildSTfromWithPerList(pmn, containingFQN)
           for (pmn <- gpl) buildSTfromWithPerList(pmn, containingFQN)
 
       }
     }
-    
+
     def buildSTFromConditionExp(cond: ExpNd, containingFQN: FQN) {
-             cond match {
-                case NoExpNd() => {}
-                case BooleanLiteralExpNd(b) => {}
-                case IntLiteralExpNd(i) => {}
-                case FloatLiteralExpNd(x) => {}
-                case NameExpNd( name ) => {}
-                case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
-                case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
-                case PermissionOp(objId) => {}
-                case AccessOp(pm) => buildSTFromPermissonMap(pm, containingFQN)
-                case ForAllExp(forNameDeclList,x: ExpNd, y: ExpNd) => {
-                 for(forDecl <- forNameDeclList) {
-                   buildSTFromDecl(forDecl,containingFQN)
-                   println("See the ForNameDecl has Variable FQN " + forDecl.fqn + " and it's FQN is  "+ containingFQN)
-                }
-                 }
-                case LengthOp(exp) => {}
-                case BinaryOpExpNd( op, x, y ) =>
-                    buildSTFromInvariantExp( x, containingFQN)
-                    buildSTFromInvariantExp( y, containingFQN)
-                case UnaryOpExpNd( op, x ) =>
-                    buildSTFromInvariantExp( x, containingFQN)
-                case AsExpNd( x : ExpNd, ty : TypeNd ) =>
-                    buildSTFromInvariantExp( x, containingFQN) 
-                case MemberExpNd( x, name ) =>
-                    buildSTFromInvariantExp( x, containingFQN)
-                case ChainExpNd( ops, operands ) =>
-                    for( x <- operands ) buildSTFromInvariantExp( x, containingFQN)
-                case FetchExpNd( exp ) => 
-                    unreachable("FetchExpNd in resolver)")
-                case _ => {}
+      cond match {
+        case NoExpNd() => {}
+        case BooleanLiteralExpNd(b) => {}
+        case IntLiteralExpNd(i) => {}
+        case FloatLiteralExpNd(x) => {}
+        case NameExpNd(name) => {}
+        case CanReadOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+        case CanWriteOp(locSet) => buildSTFromLocSet(locSet, containingFQN)
+        case PermissionOp(objId) => {}
+        case AccessOp(pm) => buildSTFromPermissonMap(pm, containingFQN)
+        case ForAllExp(forNameDeclList, x: ExpNd, y: ExpNd) =>
+          for (forDecl <- forNameDeclList) buildSTFromDecl(forDecl, containingFQN)
+        case LengthOp(exp) => {}
+        case BinaryOpExpNd(op, x, y) =>
+          buildSTFromInvariantExp(x, containingFQN)
+          buildSTFromInvariantExp(y, containingFQN)
+        case UnaryOpExpNd(op, x) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case AsExpNd(x: ExpNd, ty: TypeNd) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case MemberExpNd(x, name) =>
+          buildSTFromInvariantExp(x, containingFQN)
+        case ChainExpNd(ops, operands) =>
+          for (x <- operands) buildSTFromInvariantExp(x, containingFQN)
+        case FetchExpNd(exp) =>
+          unreachable("FetchExpNd in resolver)")
+        case _ => {}
+      }
     }
-    }
-    
-    def buildSTfromLock(lock: ExpNd,containingFQN: FQN) {
-        ()
+
+    def buildSTfromLock(lock: ExpNd, containingFQN: FQN) {
+      ()
     }
 
     def computeAnscestors(decls: DeclList): Boolean = {
