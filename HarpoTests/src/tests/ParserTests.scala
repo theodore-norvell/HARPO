@@ -24,7 +24,7 @@ class ParserTests extends TestsBase {
  
   it should "parse an empty interface" in {
     val str = "(interface Fred interface)" 
-    tryWithParser(str) 
+    tryWithParser(str)  
   }
   
   it should "fail to parse when there is a missing end" in {
@@ -206,6 +206,19 @@ class ParserTests extends TestsBase {
               """
     tryWithParser(str)
   }
+  
+  it should "parse two separate invariants " in {
+    val str = """
+                  (class Test()
+	                  ghost obj c: Int32:=0; 
+                    invariant 5>0
+                    invariant canRead(c)
+                    
+                  class)
+              """
+    tryWithParser(str)
+  }
+  
   it should "parse a 'claim' specification of class Test" in {
     val str = """
                  (class Test()
@@ -360,7 +373,7 @@ class ParserTests extends TestsBase {
 				               rear := (rear+1) mod size
 				               full := full+1
 				            |
-                       fetch(out ovalue: Real64) when (0 < full)
+                       fetch(out value: Real64) when (0 < full)
 				               ovalue := buf[front]
 				               front := (front+1) mod size
 				               full := full-1
