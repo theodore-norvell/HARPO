@@ -56,29 +56,29 @@ axiom TenPow32 == 100000000000000000000000000000000.0; // 10 ^ 32
 const unique TenPow64 : real;
 axiom TenPow64 == 10000000000000000000000000000000000000000000000000000000000000000.0; // 10 ^ 64
 
-const unique minFloat16:real;
-axiom minFloat16 == 6.10/10000.0; // 6.10 E - 5 
-const unique maxFloat16:real;
-axiom maxFloat16 == 6.55*10000.0; // 6.55 E + 4
+const unique minReal16:real;
+axiom minReal16 == 6.10/10000.0; // 6.10 E - 5 
+const unique maxReal16:real;
+axiom maxReal16 == 6.55*10000.0; // 6.55 E + 4
 
-const unique minFloat32:real;
-axiom minFloat32 == 1.175494351 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
-const unique maxFloat32:real;
-axiom maxFloat32 == 3.402823466 * (TenPow32*10000.0) ;  //3.402823466 E + 38
+const unique minReal32:real;
+axiom minReal32 == 1.175494351 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
+const unique maxReal32:real;
+axiom maxReal32 == 3.402823466 * (TenPow32*10000.0) ;  //3.402823466 E + 38
 
-const unique minFloat64:real;
-axiom minFloat64 == 2.2250738585072014 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
-const unique maxFloat64:real;
-axiom maxFloat64 == 1.7976931348623157 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
+const unique minReal64:real;
+axiom minReal64 == 2.2250738585072014 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
+const unique maxReal64:real;
+axiom maxReal64 == 1.7976931348623157 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
 
-function IsFloat16(real) returns (bool);
-axiom (forall x:real :: IsFloat16(x) <==> minFloat16 <= x && x <= maxFloat16);
+function IsReal16(real) returns (bool);
+axiom (forall x:real :: IsReal16(x) <==> minReal16 <= x && x <= maxReal16);
 
-function IsFloat32(real) returns (bool);
-axiom (forall x:real :: IsFloat32(x) <==> minFloat32 <= x && x <= maxFloat32);
+function IsReal32(real) returns (bool);
+axiom (forall x:real :: IsReal32(x) <==> minReal32 <= x && x <= maxReal32);
 
-function IsFloat64(real) returns (bool);
-axiom (forall x:real :: IsFloat64(x) <==> minFloat64 <= x && x <= maxFloat64);
+function IsReal64(real) returns (bool);
+axiom (forall x:real :: IsReal64(x) <==> minReal64 <= x && x <= maxReal64);
 
 function IsBool(bool) returns (bool);
 axiom (forall x: bool :: IsBool(x) <==> x == true || x == false);
