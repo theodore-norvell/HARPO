@@ -194,6 +194,7 @@ import scala.collection.mutable.HashMap
 import frontEnd.ErrorRecorder
 import frontEnd.AST
 import frontEnd.AST._
+import checker.CheckerTypes._
 import scala.io.Source
 import checker.CheckerTypes.PrimitiveType;
 import java.io.File
@@ -229,10 +230,21 @@ class BoogieBackEnd {
     for (dlNd: DeclNd <- dl.decls) {
       dlNd match {
         case ObjDeclNd(isGhost, isConst, acc, ty, initExp) => {
+          val heapTransContext = new TransContext("Heap", "This_" + dlNd.fqn.toString)
           val objType: String = TypeCodeGen(ty)
-          val objInit: String = new ExpCodeGen().initExpCodeGen(initExp)
-          outputBuilder.newLine
-          outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
+          val objInit: String = ExpCodeGen.initExpCodeGen(initExp,heapTransContext)
+          ty.tipe.get match {
+            case ArrayLocationType (baseType) => {
+              outputBuilder.newLine
+              outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field(ArrayRef " + objType + ");")
+            }
+            case LocationType (baseType) => {
+              outputBuilder.newLine
+              outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
+              }
+            case _=>
+          }
+
         }
         case IntfDeclNd() => {
           outputBuilder.newLine
@@ -244,9 +256,7 @@ class BoogieBackEnd {
           outputBuilder = classCode.getOutputBuilder()
           outputBuilder.newLine
         }
-        case _ => {
-          val code = "No main declarations were found"
-        }
+        case _ => contracts.Contracts.unreachable("No Main Declarations Found in Main Declaration List")
       }
     }
   }
