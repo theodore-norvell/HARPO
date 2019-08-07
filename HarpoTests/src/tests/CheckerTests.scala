@@ -245,6 +245,14 @@ class CheckerTests extends TestsBase {
     tryWithChecker(str)
   }
   
+  it should "check invariant with PermissionOp specification" in {
+    val str = """ 
+                (class Test()
+                  ghost const x: Int32:=9;
+                  invariant permission(x) = 1;              
+                class)""" 
+    tryWithChecker(str)
+  }
   
   it should "parse when Array Initialization" in {
     val str = """ 
