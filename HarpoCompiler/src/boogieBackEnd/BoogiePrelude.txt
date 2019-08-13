@@ -37,17 +37,17 @@ axiom minInt64 == -9223372036854775808;
 const unique maxInt64:int;
 axiom maxInt64== 9223372036854775807;
 
-function Isint8(int) returns (bool);
-axiom (forall x:int :: Isint8(x) <==> minInt8 <= x && x <= maxInt8);
+function isInt8(int) returns (bool);
+axiom (forall x:int :: isInt8(x) <==> minInt8 <= x && x <= maxInt8);
 
-function Isint16(int) returns (bool);
-axiom (forall x:int :: Isint16(x) <==> minInt16 <= x && x <= maxInt16);
+function isInt16(int) returns (bool);
+axiom (forall x:int :: isInt16(x) <==> minInt16 <= x && x <= maxInt16);
 
-function Isint32(int) returns (bool);
-axiom (forall x:int :: Isint32(x) <==> minInt32 <= x && x <= maxInt32);
+function isInt32(int) returns (bool);
+axiom (forall x:int :: isInt32(x) <==> minInt32 <= x && x <= maxInt32);
 
-function Isint64(int) returns (bool);
-axiom (forall x:int :: Isint64(x) <==> minInt64 <= x && x <= maxInt64);
+function isInt64(int) returns (bool);
+axiom (forall x:int :: isInt64(x) <==> minInt64 <= x && x <= maxInt64);
 
 const unique TenPow16 : real;
 axiom TenPow16 == 10000000000000000.0; // 10 ^ 16
@@ -57,39 +57,39 @@ const unique TenPow64 : real;
 axiom TenPow64 == 10000000000000000000000000000000000000000000000000000000000000000.0; // 10 ^ 64
 
 const unique minReal16:real;
-axiom minReal16 == 6.10/10000.0; // 6.10 E - 5 
+axiom minReal16 == -6.10/10000.0; // 6.10 E - 5 
 const unique maxReal16:real;
 axiom maxReal16 == 6.55*10000.0; // 6.55 E + 4
 
 const unique minReal32:real;
-axiom minReal32 == 1.175494351 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
+axiom minReal32 == -3.402823466 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
 const unique maxReal32:real;
-axiom maxReal32 == 3.402823466 * (TenPow32*10000.0) ;  //3.402823466 E + 38
+axiom maxReal32 == 3.402823465 * (TenPow32*10000.0) ;  //3.402823466 E + 38, change it again
 
 const unique minReal64:real;
-axiom minReal64 == 2.2250738585072014 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
+axiom minReal64 == -1.7976931348623157 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
 const unique maxReal64:real;
-axiom maxReal64 == 1.7976931348623157 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
+axiom maxReal64 == 1.7976931348623156 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
 
-function IsReal16(real) returns (bool);
-axiom (forall x:real :: IsReal16(x) <==> minReal16 <= x && x <= maxReal16);
+function isReal16(real) returns (bool);
+axiom (forall x:real :: isReal16(x) <==> minReal16 <= x && x <= maxReal16);
 
-function IsReal32(real) returns (bool);
-axiom (forall x:real :: IsReal32(x) <==> minReal32 <= x && x <= maxReal32);
+function isReal32(real) returns (bool);
+axiom (forall x:real :: isReal32(x) <==> minReal32 <= x && x <= maxReal32);
 
-function IsReal64(real) returns (bool);
-axiom (forall x:real :: IsReal64(x) <==> minReal64 <= x && x <= maxReal64);
+function isReal64(real) returns (bool);
+axiom (forall x:real :: isReal64(x) <==> minReal64 <= x && x <= maxReal64);
 
-function IsBool(bool) returns (bool);
-axiom (forall x: bool :: IsBool(x) <==> x == true || x == false);
+function isBool(bool) returns (bool);
+axiom (forall x: bool :: isBool(x) <==> x == true || x == false);
 
 const unique minPer : Perm;
 axiom minPer == 0.0;
 const unique maxPer : Perm;
 axiom maxPer == 1.0;
 
-function IsValidPermission(Perm) returns (bool);
-axiom (forall x: Perm:: IsValidPermission(x) <==> minPer <= x && x <= maxPer);
+function isValidPermission(Perm) returns (bool);
+axiom (forall x: Perm:: isValidPermission(x) <==> minPer <= x && x <= maxPer);
 
 type ClassName;
 function dtype(Ref) returns (ClassName);
