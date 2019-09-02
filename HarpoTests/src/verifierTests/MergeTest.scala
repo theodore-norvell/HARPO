@@ -20,21 +20,23 @@ import frontEnd.AST.ThreadDeclNd
 import frontEnd.AST.CommandNd
 import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
+import util.OutputBuilder;
 
 @RunWith(classOf[JUnitRunner])
 class MergeTest extends VerifierTestBase {
   
-  behavior of "The Boogie back end with Harpo 'Counter' class";
+  
+  behavior of "The Boogie back end with Harpo 'Merge' class";
   it should "generate Boogie code for Merge class" in {
     
     val str = """
 // Merge class to implement the merge algorithm on two segments of // an array
 
-(class M(in size : int32, obj a : real64[size],obj b : real64[size])
+(class M(in size : Int32, obj a : Real64[size],obj b : Real64[size])
 	         pre a ~= b
 	         pre 0 < size
 
-	       proc merge(in left: int32, in right: int32, in end : int32)	          
+	       proc merge(in left: Int32, in right: Int32, in end : Int32)	          
 	          pre 0 _< left /\ left < right /\ right _< end /\ end < length(a)
 	          takes {i:{left,..,end} do a[i]}
 	          takes {i:{left,..,end} do b[i]}
@@ -45,10 +47,10 @@ class MergeTest extends VerifierTestBase {
 	          gives {i:{left,..end} do b[i]}
 
 	  (thread(*t0*)
-		    (accept merge(in left: int32, in right:int32,in end:int32)
-		      obj ileft:int32 := left;
-		      obj iright:int32 := right;
-		      obj k:int32:= left;
+		    (accept merge(in left: Int32, in right:Int32,in end:Int32)
+		      obj ileft:Int32 := left;
+		      obj iright:Int32 := right;
+		      obj k:Int32:= left;
 		     (while (left _< k /\ k _< end)
 			      invariant acc left@0.5,right@0.5,end@0.5,k,ileft,iright,{i:{left,..,end} do a[i]},{i:{left,..,end} do b[i]}
 			      invariant (left _< k /\ k _< end+1)
@@ -102,7 +104,7 @@ class)
 
  """
 
- translateAndVerify(str)
+ val (errors : StandardErrorRecorder, boogieCode: OutputBuilder) = translateAndVerify(str)
 
 }
 }

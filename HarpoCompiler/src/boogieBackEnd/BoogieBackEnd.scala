@@ -212,7 +212,7 @@ class BoogieBackEnd {
     genBoogiePrelude("/boogieBackEnd/BoogiePrelude.txt")
     genBoogieTranslation(masterDeclList)
     this.outputBuilder
-  }
+  } 
   private def genBoogiePrelude(fileName: String): Unit = {
     val preludeUrl: URL = this.getClass().getResource(fileName)
     val prelude = new File(preludeUrl.toURI())
@@ -226,6 +226,7 @@ class BoogieBackEnd {
   }
 
   private def genBoogieTranslation(dl: DeclList): Unit = {
+    outputBuilder.newLine
     //Iterate the top level declaration nodes
     for (dlNd: DeclNd <- dl.decls) {
       dlNd match {
@@ -235,20 +236,17 @@ class BoogieBackEnd {
           val objInit: String = ExpCodeGen.initExpCodeGen(initExp,heapTransContext)
           ty.tipe.get match {
             case ArrayLocationType (baseType) => {
-              outputBuilder.newLine
-              outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field(ArrayRef " + objType + ");")
+              outputBuilder.putln("const unique " + dlNd.fqn + ":" + "Field(ArrayRef " + objType + ");")
             }
             case LocationType (baseType) => {
-              outputBuilder.newLine
-              outputBuilder.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
+              outputBuilder.putln("const unique " + dlNd.fqn + ":" + "Field " + objType + ";")
               }
             case _=>
           }
 
         }
         case IntfDeclNd() => {
-          outputBuilder.newLine
-          outputBuilder.put("\nconst unique " + dlNd.name + ": className;")
+          outputBuilder.putln("const unique " + dlNd.name + ":ClassName;")
         }
         case ClassDeclNd() => {
           val classCode = new ClassCodeGen(dlNd, outputBuilder)
@@ -256,7 +254,7 @@ class BoogieBackEnd {
           outputBuilder = classCode.getOutputBuilder()
           outputBuilder.newLine
         }
-        case _ => contracts.Contracts.unreachable("No Main Declarations Found in Main Declaration List")
+        case _ =>
       }
     }
   }

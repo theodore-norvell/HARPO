@@ -62,14 +62,14 @@ const unique maxReal16:real;
 axiom maxReal16 == 6.55*10000.0; // 6.55 E + 4
 
 const unique minReal32:real;
-axiom minReal32 == -3.402823466 / (TenPow32*10000.0) ; // 1.175494351 E - 38 
+axiom minReal32 == -3.402823466 / (TenPow32*10000.0) ; // 3.402823466 E - 38 
 const unique maxReal32:real;
-axiom maxReal32 == 3.402823465 * (TenPow32*10000.0) ;  //3.402823466 E + 38, change it again
+axiom maxReal32 == 3.402823465 * (TenPow32*10000.0) ;  //3.402823465 E + 38
 
 const unique minReal64:real;
-axiom minReal64 == -1.7976931348623157 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 2.2250738585072014 E - 308 
+axiom minReal64 == -1.7976931348623157 / (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // -1.7976931348623157 E - 308 
 const unique maxReal64:real;
-axiom maxReal64 == 1.7976931348623156 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623158 E + 308
+axiom maxReal64 == 1.7976931348623156 * (TenPow64*TenPow64*TenPow64*TenPow64*TenPow32*TenPow16*1000.0); // 1.7976931348623156 E + 308
 
 function isReal16(real) returns (bool);
 axiom (forall x:real :: isReal16(x) <==> minReal16 <= x && x <= maxReal16);

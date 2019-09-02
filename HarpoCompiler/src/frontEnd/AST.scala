@@ -320,7 +320,7 @@ class AST{
 
     case class ForCmdNd( decl: ForDecl, repetitions: ExpNd, lil:List[LoopInvNd], body: CommandNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
-        override def pp = Pretty.func( "ForCmdNd", decl, body )
+        override def pp = Pretty.func( "ForCmdNd", decl,repetitions,lil,body )
     }
 
     case class CoForCmdNd( decl: ForDecl, repetitions: ExpNd,cl: List[ClaimNd], body: CommandNd )( coord: AST.Coord )

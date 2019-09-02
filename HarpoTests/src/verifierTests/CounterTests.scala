@@ -51,197 +51,197 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-    translateAndVerify(str)
+    val (builder, error) = translateAndVerify(str)
   }
   
-  
-  it should "generate Boogie code for Counter class without lock" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@0.5
-	                invariant canRead(count) /\ count >_ 0
-	
-	                proc increment()
-	                  takes count@0.5
-	                  pre count>_0
-	                  post count'>0
-	                  gives count@0.5
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-					                  count := count+1; 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-    
-    
-  }
-  
-    it should "generate Boogie code for Counter class without object invariant" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@0.5
-
-	                proc increment()
-	                  takes count@0.5
-	                  pre count>_0
-	                  post count'>0
-	                  gives count@0.5
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-					                  count := count+1; 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-  }
-  
-    
-    it should "generate Boogie code for Counter class without takes and gives" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@0.5
-
-	                proc increment()
-	                  pre count>_0
-	                  post count'>0
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-                        (with this
-                          do
-					                  count := count+1;
-                          with) 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-
-  }
-    
-    
-  it should "generate Boogie code for Counter class with claim of full permission and gives" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@1.0
-
-	                proc increment()
-	                  pre count>_0
-	                  post count'>0
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-                        (with this
-                          do
-					                  count := count+1;
-                          with) 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-
-  }
-  
-    it should "generate Boogie code for Counter class with claim of more than maximum allowed permission" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@1.0
-
-	                proc increment()
-	                  pre count>_0
-	                  post count'>0
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-                        (with this
-                          do
-					                  count := count+1;
-                          with) 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-
-  }
-
-  it should "generate Boogie code for Counter class with invariant of full permission" in {
-        
-    val str = """ 
-                (class Counter()	                
-                  claim count@1.0
-                  invariant canWrite(count)
-	                proc increment()
-	                  pre count>_0
-	                  post count'>0
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-                        (with this
-                          do
-					                  count := count+1;
-                          with) 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-
-  }
-  
-    it should "generate Boogie code for Counter invariant of full permission without claim" in {
-        
-    val str = """ 
-                (class Counter()
-                  invariant canWrite(count)
-	                proc increment()
-	                  pre count>_0
-	                  post count'>0
-	                obj count: Int32 := 0
-	                (thread (*t0*)
-		                (while true
-		                  do
-			                  (accept increment()
-                        (with this
-                          do
-					                  count := count+1;
-                          with) 
-				                accept)
-		                while)
-	                thread)
-             class)"""
-
-    translateAndVerify(str)
-
-  }
-    
+//  
+//  it should "generate Boogie code for Counter class without lock" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@0.5
+//	                invariant canRead(count) /\ count >_ 0
+//	
+//	                proc increment()
+//	                  takes count@0.5
+//	                  pre count>_0
+//	                  post count'>0
+//	                  gives count@0.5
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//					                  count := count+1; 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//    
+//    
+//  }
+//  
+//    it should "generate Boogie code for Counter class without object invariant" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@0.5
+//
+//	                proc increment()
+//	                  takes count@0.5
+//	                  pre count>_0
+//	                  post count'>0
+//	                  gives count@0.5
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//					                  count := count+1; 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//  }
+//  
+//    
+//    it should "generate Boogie code for Counter class without takes and gives" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@0.5
+//
+//	                proc increment()
+//	                  pre count>_0
+//	                  post count'>0
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//                        (with this
+//                          do
+//					                  count := count+1;
+//                          with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//
+//  }
+//    
+//    
+//  it should "generate Boogie code for Counter class with claim of full permission and gives" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@1.0
+//
+//	                proc increment()
+//	                  pre count>_0
+//	                  post count'>0
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//                        (with this
+//                          do
+//					                  count := count+1;
+//                          with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//
+//  }
+//  
+//    it should "generate Boogie code for Counter class with claim of more than maximum allowed permission" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@1.0
+//
+//	                proc increment()
+//	                  pre count>_0
+//	                  post count'>0
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//                        (with this
+//                          do
+//					                  count := count+1;
+//                          with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//
+//  }
+//
+//  it should "generate Boogie code for Counter class with invariant of full permission" in {
+//        
+//    val str = """ 
+//                (class Counter()	                
+//                  claim count@1.0
+//                  invariant canWrite(count)
+//	                proc increment()
+//	                  pre count>_0
+//	                  post count'>0
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//                        (with this
+//                          do
+//					                  count := count+1;
+//                          with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//
+//  }
+//  
+//    it should "generate Boogie code for Counter invariant of full permission without claim" in {
+//        
+//    val str = """ 
+//                (class Counter()
+//                  invariant canWrite(count)
+//	                proc increment()
+//	                  pre count>_0
+//	                  post count'>0
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//                        (with this
+//                          do
+//					                  count := count+1;
+//                          with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    translateAndVerify(str)
+//
+//  }
+//    
 }
