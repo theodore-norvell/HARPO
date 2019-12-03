@@ -229,8 +229,6 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
 
     val genBoogie = getBoogie(fileName, str)
 
-    println(genBoogie)
-
     val expBoogie = List(
       ".*const *unique *Math.c *: *Field *int *;.*",
       ".*Heap\\[This.Math,Math.c\\] *:= *450 *\\+ *30 *\\- *200 *\\* *5 *;.*")
@@ -269,8 +267,6 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
                 """
 
     val genBoogie = getBoogie(fileName, str)
-
-    println(genBoogie)
 
     val expBoogie = List(
       ".*const *unique *Math.[a-u] *: *Field *(int|real|bool) *;.*",
@@ -320,7 +316,7 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
             class) """
 
     val genBoogie = getBoogie(fileName, str)
-    println(genBoogie)
+
     val expBoogie = List(
       ".*assert +isInt32\\((9|100|20|60|Heap\\[This.Math,Math.c\\])\\).*",
       ".*assert +Permission\\[This.Math,Math.c\\] *> *0.0.*",
@@ -364,7 +360,6 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
             class) """
     val genBoogie = getBoogie(fileName, str)
 
-    println(genBoogie)
     val expBoogie = List(
       ".*assert +isBool\\((Heap\\[This.Math,Math.c\\]|false)\\).*",
       ".*Heap\\[This.Math,Math.t#0.b\\] *:= *Heap\\[This.Math,Math.c\\] *\\&\\& *false *;.*")
@@ -439,8 +434,8 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
 
     assertResult(result)(true)
   }
-  
-    it should "generate code for Division By Zero Exp" in { //Let it fail
+
+  it should "generate code for Division By Zero Exp" in { //Let it fail
     val fileName = "Div_By_Zero"
     val str = """
             //Math Class in HARPO/L
@@ -451,14 +446,14 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
             	thread)
             class) """
 
-    val genBoogie = getBoogie(fileName, str) 
-      println(genBoogie)
+    val genBoogie = getBoogie(fileName, str)
+    println(genBoogie)
     val expBoogie = List(".*")
     val result = findSnippets(fileName, expBoogie, genBoogie)
 
     assertResult(result)(true)
   }
-  
+
   it should "generate code for 'For_Command' " in {
     val fileName = "For_Command"
     val str = """
@@ -474,11 +469,13 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
             class) """
     val genBoogie = getBoogie(fileName, str)
     val expBoogie = List(".*while *\\(.*\\) *\n* *\\{ *\n*([^\\}]*).*")
-    val result = findSnippets(fileName, expBoogie, genBoogie) 
+    val result = findSnippets(fileName, expBoogie, genBoogie)
+    
+    assertResult(result)(true)
   }
 
   it should "generate the code for Call to Multiply method declaration" in {
-   val fileName = "Call_Command"
+    val fileName = "Call_Command"
     val str = """
                 (class Math()
                 obj a : Int32 := 0;
@@ -492,65 +489,68 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
                 thread)
                 class)
                 """
-    val genBoogie = getBoogie(fileName, str)
+    val genBoogie = getBoogie(fileName, "")
     println(genBoogie)
     val expBoogie = List()
-    val result = findSnippets(fileName, expBoogie, genBoogie) 
+    val result = findSnippets(fileName, expBoogie, genBoogie)
+    
+    assertResult(result)(true)
   }
-  //
-  //  it should "generate code for 'Method Decl Call' " in {
-  //    val str = """(class Math()
-  //                  obj a : Int32 := 21;
-  //                  obj b : Int32 := 31;
-  //                  obj sum : Int32 :=0;
-  //                  proc add()
-  //                    pre a > 20 /\ b > 10
-  //                    post sum > 30
-  //                  (thread (*t0*)
-  //                    (accept add()
-  //                        sum := a+b;
-  //                    accept)
-  //                  thread)
-  //
-  //                  (thread (*t1*)
-  //                    add()
-  //                  thread)
-  //                class)
-  //              """
-  //    val genBoogie = getBoogie("Method_decl_call", str)
-  //    println(genBoogie)
-  //    // TODO
-  //  }
-  //
-  //  it should "generate the code for Permission(ObjectId) Function" in {
-  //    val str = """(class Math()
-  //                  claim x@1.0
-  //                  invariant permission(x) = 1.0
-  //                  obj x : Int32 := 0;
-  //                  class)
-  //                  """
-  //    val genBoogie = getBoogie ("Permission_Fetch", str)
-  //    println(genBoogie)
-  //  }
-  //  it should "generate code for 'Method Declaration'" in {
-  //    // TODO
-  //  }
-  //  it should "generate code for 'Method Call' " in {
-  //    // TODO
-  //  }
-  //  it should "generate code for 'Class Constructor' " in {
-  //    // TODO
-  //  }
-  //  it should "generate code for 'Co Command' " in {
-  //    // TODO
-  //  }
-  //
-  //
-  //
-  //
-  //
-  //
-  //
-  //
+
+  it should "generate code for 'Method Decl Call' " in {
+    val fileName = "Method_Decl_Call"
+    val str = """(class Math()
+                    obj a : Int32 := 21;
+                    obj b : Int32 := 31;
+                    obj sum : Int32 :=0;
+                    proc add()
+                      pre a > 20 /\ b > 10
+                      post sum > 30
+                    (thread (*t0*)
+                      (accept add()
+                          sum := a+b;
+                      accept)
+                    thread)
+  
+                    (thread (*t1*)
+                      add()
+                    thread)
+                  class)
+                """
+    val genBoogie = getBoogie(fileName, str)
+    println(genBoogie)
+    val expBoogie = List(".*goto add; *\n* *([^]*) *\n* *\n*end of Thread Procedure.*")
+    val result = findSnippets(fileName, expBoogie, genBoogie)
+
+    assertResult(result)(true)
+  }
+
+  it should "generate the code for Permission(ObjectId) Function" in {
+    val fileName = "Permission Object"
+    val str = """(class Math()
+                    claim x@1.0
+                    invariant permission(x) = 1.0
+                    obj x : Int32 := 0;
+                    class)
+                    """
+    val genBoogie = getBoogie(fileName, "")
+    println(genBoogie)
+    val expBoogie = List(".*")
+    val result = findSnippets(fileName, expBoogie, genBoogie)
+
+    assertResult(result)(true)
+  }
+  it should "generate code for 'Method Declaration'" in {
+    // TODO
+  }
+  it should "generate code for 'Method Call' " in {
+    // TODO
+  }
+  it should "generate code for 'Class Constructor' " in {
+    // TODO
+  }
+  it should "generate code for 'Co Command' " in {
+    // TODO
+  }
 
 }

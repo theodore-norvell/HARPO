@@ -39,7 +39,7 @@ class AST{
         var fqn: FQN
         val errorRecorder: ErrorRecorder
 
-        var tipe: Option[ Type ] = None;
+        var tipe: Option[ Type ] = None; 
 
         val genericParameters = ArrayBuffer[ GenericParamDeclNd ]()
 
@@ -148,11 +148,11 @@ class AST{
     
     abstract sealed class MethodSpecNd(coord: AST.Coord) extends Pretty
     
-    case class PreCndNd(var condition: ExpNd )( coord: AST.Coord )
+    case class PreCndNd(condition: ExpNd )( coord: AST.Coord )
         extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "PreCndNd", condition )
     }
-    case class PostCndNd(var condition: ExpNd )( coord: AST.Coord )
+    case class PostCndNd(condition: ExpNd )( coord: AST.Coord )
         extends MethodSpecNd( coord ) {
         override def pp = Pretty.func( "PostCndNd", condition )
     }
@@ -318,9 +318,9 @@ class AST{
         override def pp = Pretty.func( "WhileCmdNd", guard,lil, body )
     }
 
-    case class ForCmdNd( decl: ForDecl, repetitions: ExpNd, lil:List[LoopInvNd], body: CommandNd )( coord: AST.Coord )
+    case class ForCmdNd( decl: ForDecl, bounds: ExpNd, lil:List[LoopInvNd], body: CommandNd )( coord: AST.Coord )
         extends CommandNd( coord ) {
-        override def pp = Pretty.func( "ForCmdNd", decl,repetitions,lil,body )
+        override def pp = Pretty.func( "ForCmdNd", decl,bounds,lil,body )
     }
 
     case class CoForCmdNd( decl: ForDecl, repetitions: ExpNd,cl: List[ClaimNd], body: CommandNd )( coord: AST.Coord )

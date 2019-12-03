@@ -6,9 +6,9 @@ import frontEnd.AST._
 import scala.collection.mutable.Set;
 class Builder(val errorRecorder: ErrorRecorder) {
 
-/******************/
+   /******************/
   /** Declarations **/
-/******************/
+ /******************/
 
   def makeCoord(file: String, line: Int, col: Int) = Coord(file, line, col);
 
@@ -52,7 +52,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
   }
 
 /*************************/
-  /** PermissionMapNd lists **/
+/** PermissionMapNd lists **/
 /*************************/
 
   class PermissionMapList extends ArrayBuffer[PermissionMapNd]
@@ -169,7 +169,7 @@ class Builder(val errorRecorder: ErrorRecorder) {
   
   def makeAccessOp(p : PermissionMapNd, coord: AST.Coord) = new AccessOp(p)(coord)
   
-  def makeLengthOp(x: ExpNd, coord: AST.Coord) = new LengthOp(x)(coord)
+  def makeLengthOp(x: ExpNd, coord: AST.Coord) = new LengthOp(x)(coord) 
   
   
   class ForNameList extends ArrayBuffer[String]

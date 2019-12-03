@@ -246,7 +246,7 @@ class BoogieBackEnd {
 
         }
         case IntfDeclNd() => {
-          outputBuilder.putln("const unique " + dlNd.name + ":ClassName;")
+          outputBuilder.putln("const unique " + dlNd.name + " : ClassName;")
         }
         case ClassDeclNd() => {
           val classCode = new ClassCodeGen(dlNd, outputBuilder)

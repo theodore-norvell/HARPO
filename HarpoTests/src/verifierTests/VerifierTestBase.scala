@@ -12,7 +12,7 @@ import java.io.StringReader
 import java.io.OutputStreamWriter
 import java.io.File;
 import java.io.PrintWriter;
-import java.io.IOException ;
+import java.io.IOException;
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.immutable.Range
@@ -46,38 +46,42 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
   override def afterEach(td: TestData) {
     println("<<<<<<<<<<<<<Finished " + td.name + " <<<<<<<<<<<<<<<<<")
   }
-  
+
   def tryWithBoogieBackEnd(str: String, expectedFatalErrors: Int = 0, expectedWarningErrors: Int = 0): String = {
 
-    println( "\n\n\nTranslation start" )
-        val translator = new HarpoToBoogieTranslator()
-        translator.addFile( "HarpoSourceCode.harpo", str )
-        val ( errorRecorder, transBuffer ) : (ErrorRecorder, OutputBuilder) = translator.runHarpoToBoogieTrans( true )
+    println("\n\n\nTranslation start")
+    val translator = new HarpoToBoogieTranslator()
+    translator.addFile("HarpoSourceCode.harpo", str)
+    val (errorRecorder, transBuffer): (ErrorRecorder, OutputBuilder) = translator.runHarpoToBoogieTrans(true)
 
-        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
-        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
-        
-        if ( errorRecorder.getFatalCount() == 0 ) {
-            transBuffer.newLine
-            val text : String = transBuffer.resultAsString()
-            text 
-        } else {
-            "Fatal errors"
-        }
-  }
-  
-  def translateAndVerify(
-        str : String,
-        expectedFatalErrors : Int = 0,
-        expectedWarningErrors : Int = 0,
-        expectedVerificationErrors : Int = 0 )
-    : (StandardErrorRecorder,OutputBuilder) = {
-        val translator = new HarpoToBoogieTranslator()
-        translator.addFile( "HarpoSourceCode.harpo", str )
-        val (errorRecorder, builder) = translator.translateAndVerify( true ) 
-        assertResult( expectedFatalErrors )( errorRecorder.getFatalCount() )
-        assertResult( expectedWarningErrors )( errorRecorder.getWarningCount() )
-        assertResult( expectedVerificationErrors)( errorRecorder.getVerificationCount() )
-        (errorRecorder,builder)
+    assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
+    assertResult(expectedWarningErrors)(errorRecorder.getWarningCount())
+
+    if (errorRecorder.getFatalCount() == 0) {
+      transBuffer.newLine
+      val text: String = transBuffer.resultAsString()
+      text
+    } else {
+      "Fatal errors"
     }
+  }
+
+  def translateAndVerify(
+    str: String,
+    expectedFatalErrors: Int = 0,
+    expectedWarningErrors: Int = 0,
+    expectedVerificationErrors: Int = 0): (StandardErrorRecorder, OutputBuilder) = {
+    val translator = new HarpoToBoogieTranslator()
+    translator.addFile("HarpoSourceCode.harpo", str)
+    val (errorRecorder, builder) = translator.translateAndVerify(true)
+    assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
+    assertResult(expectedWarningErrors)(errorRecorder.getWarningCount())
+    assertResult(expectedVerificationErrors)(errorRecorder.getVerificationCount())
+    writeResultToTextFile(str,builder.resultAsString())
+    println(errorRecorder.printErrors(System.out))
+    (errorRecorder, builder)
+  }
+  def writeResultToTextFile(HarpoCode: String, BoogieCode: String) {
+    
+  }
 }

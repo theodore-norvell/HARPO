@@ -20,6 +20,7 @@ import frontEnd.AST.ThreadDeclNd
 import frontEnd.AST.CommandNd
 import frontEnd.AST.ClassDeclNd
 import frontEnd.AST.ClassLike
+import util.OutputBuilder;
 
 @RunWith(classOf[JUnitRunner])
 class Scenario1Test extends VerifierTestBase {
@@ -107,7 +108,6 @@ class Scenario1Test extends VerifierTestBase {
 	                  thread)
                   class) """
 
-  translateAndVerify(str)
-
+   val (outputBuilder, errorRecorder) = translateAndVerify(str)
   }
 }

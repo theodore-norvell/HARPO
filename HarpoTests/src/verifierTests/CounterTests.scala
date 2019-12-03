@@ -23,7 +23,6 @@ import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
 class CounterTests extends VerifierTestBase {
-  
   behavior of "The Boogie back end with Harpo 'Counter' class";
   it should "generate Boogie code for Counter class with lock" in {
     
@@ -31,7 +30,6 @@ class CounterTests extends VerifierTestBase {
                 (class Counter()	                
                   claim count@0.5
 	                invariant canRead(count) /\ count >_ 0
-	
 	                proc increment()
 	                  takes count@0.5
 	                  pre count>_0
@@ -49,41 +47,43 @@ class CounterTests extends VerifierTestBase {
 				                accept)
 		                while)
 	                thread)
+                  (thread (*t1*)
+                    increment()
+                  thread)
              class)"""
 
-    val (builder, error) = translateAndVerify(str)
+    val (errors, builder) = translateAndVerify(str)
   }
+
   
-//  
-//  it should "generate Boogie code for Counter class without lock" in {
-//        
-//    val str = """ 
-//                (class Counter()	                
-//                  claim count@0.5
-//	                invariant canRead(count) /\ count >_ 0
-//	
-//	                proc increment()
-//	                  takes count@0.5
-//	                  pre count>_0
-//	                  post count'>0
-//	                  gives count@0.5
-//	                obj count: Int32 := 0
-//	                (thread (*t0*)
-//		                (while true
-//		                  do
-//			                  (accept increment()
-//					                  count := count+1; 
-//				                accept)
-//		                while)
-//	                thread)
-//             class)"""
-//
-//    translateAndVerify(str)
-//    
-//    
-//  }
-//  
-//    it should "generate Boogie code for Counter class without object invariant" in {
+  it should "generate Boogie code for Counter class without lock" in {
+        
+    val str = """ 
+                (class Counter()	                
+                  claim count@0.5
+	                invariant canRead(count) /\ count >_ 0
+	                proc increment()
+	                  takes count@0.5
+	                  pre count>_0
+	                  post count'>0
+	                  gives count@0.5
+	                obj count: Int32 := 0
+	                (thread (*t0*)
+		                (while true
+		                  do
+			                  (accept increment()
+					                  count := count+1; 
+				                accept)
+		                while)
+	                thread)
+                  (thread (*t1*)
+                   increment()
+                  thread)
+             class)"""
+
+    //val (errors, builder) = translateAndVerify(str) 
+ }  
+//    it should "generate Boogie code for Counter class without class invariant" in {
 //        
 //    val str = """ 
 //                (class Counter()	                
@@ -244,4 +244,35 @@ class CounterTests extends VerifierTestBase {
 //
 //  }
 //    
+//  it should "generate Boogie code for Assignment" in {
+//    
+//    val str = """
+//                (class Another() class)
+//                (class bar()	                
+//                  claim count@0.5
+//	                invariant canRead(count) /\ count >_ 0
+//	                obj foo : Another := new Another();
+//	                proc increment()
+//	                  takes count@0.5
+//	                  pre count>_0
+//	                  post count'>0
+//	                  gives count@0.5
+//	                obj count: Int32 := 0
+//	                (thread (*t0*)
+//		                (while true
+//		                  do
+//			                  (accept increment()
+//				                  (with foo
+//                            do
+//					                  count := count+1;
+//					                with) 
+//				                accept)
+//		                while)
+//	                thread)
+//             class)"""
+//
+//    val (builder, error) = translateAndVerify(str)
+//  }
+//  
+    
 }

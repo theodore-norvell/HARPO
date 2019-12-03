@@ -2,19 +2,17 @@ type Ref;
 type Field x;
 type HeapType = <x> [Ref,Field x]x;
 var Heap:HeapType;
-var Permission : PermissionType where (forall <x> r: Ref, f: Field x :: Permission[r,f] == 0.0);
 var LockPermission : PermissionType where (forall <x> r: Ref, f: Field x :: LockPermission[r,f] == 0.0);
 
 type ArrayRef x;
 type ArrayHeapType = <x> [ArrayRef x, int]x;
 var ArrayHeap:ArrayHeapType;
-var ArrayPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayPermission[r,f] == 0.0);
-var ArrayLockPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayLockPermission[r,f] == 0.0);
 
 type Perm = real;
 type PermissionType = <x> [Ref,Field x]Perm;
 type ArrayPermissionType = <x>[ArrayRef x, int] Perm;
-
+var ArrayLockPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayLockPermission[r,f] == 0.0);
+var LockArrayPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: lockArrayPermission[r,f] == 0.0);
 function Length<x>(Field (ArrayRef x))returns(int);
 
 const unique minInt8:int;
