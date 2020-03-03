@@ -42,14 +42,14 @@ class Scenario3Test extends VerifierTestBase {
         
         	// returns read permission equal to received permission via  	// worker1_start
         
-        	public proc worker1_finish(ghost in p1_init :Perm)
+        	public proc worker1_finish(ghost in p1_init : Real64)
         	takes gp1@0.5
         	pre p1_init = gp1
         	gives a@p1_init
         	
         	// receives read permission on field a and stores the amount 	// in gp2
         
-        	public proc worker2_start(ghost in p2:Perm)
+        	public proc worker2_start(ghost in p2: Real64)
         	takes a@p2
         	pre 0<p2 /\ p2<1.0
         	post gp2' = p2
@@ -67,7 +67,7 @@ class Scenario3Test extends VerifierTestBase {
         post po' = p1_init + p2_init
         gives a@po
         
-        public obj a:bool :=0
+        public obj a : Bool :=0
         public ghost obj gp1 : Real64 := 0.0
         public ghost obj gp2 : Real64 := 0.0
         
@@ -112,8 +112,8 @@ class Scenario3Test extends VerifierTestBase {
         			gp2:=p2
         		accept)
         		(accept worker2_finish ( ghost in p1_init :Real64, ghost in p2_init : Real64, ghost out po: Real64)
-        		worker_finish(p1_init)
-        		po := p1_inint + p2_init
+        		worker1_finish(p1_init)
+        		po := p1_init + p2_init
         		accept)
         	while)
         thread)
