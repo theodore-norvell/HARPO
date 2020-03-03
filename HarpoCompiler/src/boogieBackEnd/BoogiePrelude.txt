@@ -12,7 +12,6 @@ type Perm = real;
 type PermissionType = <x> [Ref,Field x]Perm;
 type ArrayPermissionType = <x>[ArrayRef x, int] Perm;
 var ArrayLockPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: ArrayLockPermission[r,f] == 0.0);
-var LockArrayPermission : ArrayPermissionType where (forall <x> r: ArrayRef x, f: int :: lockArrayPermission[r,f] == 0.0);
 function Length<x>(Field (ArrayRef x))returns(int);
 
 const unique minInt8:int;
