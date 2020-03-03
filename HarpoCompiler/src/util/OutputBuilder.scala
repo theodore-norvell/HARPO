@@ -246,7 +246,17 @@ class OutputBuilder extends Contracts {
     
     /** Obtain the string built so far. */
     def resultAsString() : String = {
-        result.mkString( "\n" ) }
+        result.mkString("\n") 
+        }
+    def resultAsStringWithLineNum() : String = {
+      var resultString = "";
+      var line = 0;
+      for (elem <- result) {
+        line = line + 1;
+        resultString += s"${line} : ${elem} \n"; 
+      }
+      resultString
+    }
     
     /** Obtain the string built so far. */
     def result() : Iterator[String] ={ new MyIterator() ; }
