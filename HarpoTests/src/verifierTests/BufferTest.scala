@@ -62,7 +62,7 @@ class BufferTest extends VerifierTestBase {
         class)
 """
 
- translateAndVerify(str)
+ val (errors, builder) = translateAndVerify(str)
 
 }
 }

@@ -540,17 +540,4 @@ class BackendTests extends FlatSpec with BeforeAndAfterEach {
 
     assertResult(result)(true)
   }
-  it should "generate code for 'Method Declaration'" in {
-    // TODO
-  }
-  it should "generate code for 'Method Call' " in {
-    // TODO
-  }
-  it should "generate code for 'Class Constructor' " in {
-    // TODO
-  }
-  it should "generate code for 'Co Command' " in {
-    // TODO
-  }
-
 }
