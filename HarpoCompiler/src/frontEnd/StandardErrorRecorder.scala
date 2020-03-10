@@ -1,6 +1,7 @@
 package frontEnd
 
 import scala.collection.mutable._
+import util.OutputBuilder;
 
 class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
     
@@ -79,4 +80,27 @@ class StandardErrorRecorder extends ErrorRecorder with ErrorReport {
         }
     }
     
+    def getErrors () : String = {
+      
+      val errors = new OutputBuilder;
+      errors.putln("Fatal errors" );
+       errors.indent
+        for( err <- fatals ) {
+          errors.put(err.coord.toString() + " " + err.text + "\n")
+        }
+       errors.dedent
+      errors.putln( "Warning errors" )
+       errors.indent
+        for( err <- warnings ) {
+          errors.put(err.coord.toString() + " " + err.text  + "\n")
+        }
+       errors.dedent
+      errors.putln( "Verification errors" )
+       errors.indent
+        for( err <- verifications ) {
+          errors.put(err.coord.toString() + " " + err.text  + "\n")
+        }
+       errors.dedent
+      errors.resultAsString();
+    }
 }
