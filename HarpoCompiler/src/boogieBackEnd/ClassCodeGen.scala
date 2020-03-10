@@ -192,6 +192,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     //TODO Increase the permission of the lock based on the permission map in claim specification - Done
     //TODO Constructor Specifications
 
+    outputBuilder.putln("//Constructor Procedure Starts")
     val classDeclNd = dlNd.asInstanceOf[ClassDeclNd]
     outputBuilder.putln("procedure " + dlNd.fqn.toString + ".constructor" + "(" + heapTransContext.objRef + ":Ref)") // dlNd.fqn is class name
     outputBuilder.putln("requires dtype(" + heapTransContext.objRef + ") <: " + dlNd.fqn.toString + ";")
@@ -200,10 +201,12 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     outputBuilder.putln("{")
     outputBuilder.indent
     outputBuilder.putln("var oldHeap, preHeap, tempHeap:HeapType;")
-    outputBuilder.putln("var Permission, oldPermission : PermissionType;")
+    outputBuilder.putln("var Permission : PermissionType where (forall <x> r: Ref, f: Field x :: Permission[r,f] == 0.0);")
+    outputBuilder.putln("var oldPermission : PermissionType;")
     outputBuilder.putln("var ArrayPermission: ArrayPermissionType;")
     outputBuilder.putln("havoc " + heapTransContext.getHeap() + ";")
-
+    
+    
     //Add Permissions to Input Parameters of Constructor Procedure
     
     addPermissionToInputParameters(classDeclNd)
@@ -218,7 +221,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
     //Class Invariant Code
     classInvCodeGen(classDeclNd)
     
-
+    outputBuilder.putln("//Constructor Procedure Ends")
+    
     //Closing of Constructor Procedure
     outputBuilder.dedent
     outputBuilder.putln("}")
@@ -232,9 +236,11 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /***** Thread Procedure Code Generation *****/
 /*******************************************/
   def threadProceduresCodeGen(classDeclNd: ClassDeclNd) {
+    outputBuilder.putln("//Thread Procedure")
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ThreadDeclNd(claimList: List[ClaimNd], block: CommandNd) => {
+          outputBuilder.putln("//Thread Procedure " + dlNd.name + "." + mem.name + " Code Starts")
           outputBuilder.putln("procedure " + dlNd.name + "." + mem.name + " (" + heapTransContext.objRef + " : Ref)")
           outputBuilder.putln("requires dtype(" + heapTransContext.objRef + ") <: " + dlNd.fqn.toString + ";")
           outputBuilder.putln("modifies " + heapTransContext.getHeap() + ";")
@@ -254,17 +260,26 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           /*********************************************/
           /******* Thread Claim Code Generation *******/
           /*******************************************/
+          
+          outputBuilder.putln("//Thread Named (" + dlNd.name + "." + mem.name + ")'s Claim Code Starts")
 
           for (claim <- claimList)
             claimCodeGen(claim, classDeclNd)
+            
+          outputBuilder.putln("//Thread Named (" + dlNd.name + "." + mem.name + ")'s Claim Code Ends")
 
           //Thread Body Code Generation, Commands/Statements inside thread
           
+          outputBuilder.putln("//Thread Named (" + dlNd.name + "." + mem.name + ")'s Body Starts")
+          
           commandCodeGen(block)
+          
+          outputBuilder.putln("//Thread Named (" + dlNd.name + "." + mem.name + ")'s Body Ends")
           
           outputBuilder.dedent
           outputBuilder.newLine
-          outputBuilder.putln("}//end of Thread Procedure")
+          outputBuilder.putln("}")
+          outputBuilder.putln("//Thread Procedure " + dlNd.name + "." + mem.name + " Code Ends")
         }
         case _ => {}
       }
@@ -291,6 +306,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /****************************************************/
 
         case LocalDeclCmdNd(decl) => {
+          
+          outputBuilder.putln(s"//Local Declaration of ${decl.fqn.toString()} Starts ")
 
           //add full Permission to local declaration
           outputBuilder.newLine
@@ -302,12 +319,16 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.putln("Heap[" + heapTransContext.objRef + "," + decl.fqn.toString() + "] := " + ExpCodeGen.buildBoogieExp(decl.init, heapTransContext) + ";")
           //command code generation - in scope of this local declaration
           commandCodeGen(decl.cmd)
+          outputBuilder.putln(s"//Local Declaration of ${decl.fqn.toString()} Ends ")
         }
 /****************************************************/
 /********** Assignment Command Code eneration ********/
 /****************************************************/
 
         case AssignmentCmdNd(lhs, rhs) => {
+          
+          outputBuilder.putln(s"//Assignment Command Starts")
+          outputBuilder.indent
 
           // Sum up all locked Permissions first, later put it in assignment defindness
           // Assert Write Permission on LHS and ReadPermission on LHS
@@ -398,7 +419,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put(ExpCodeGen.buildBoogieExp(rhs.last, heapTransContext))
           outputBuilder.put(";")
           outputBuilder.newLine
-          outputBuilder.put("//Assignment Command Ends")
+          outputBuilder.putln(s"//Assignment Command Ends")
+          outputBuilder.dedent
         }
 
 /*******************************************************/
@@ -406,6 +428,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /*******************************************************/
 
         case CallCmdNd(method, argList) => {
+          
+          outputBuilder.putln(s"//Call Command Starts")
+          outputBuilder.indent
 
           val argToParamMap = new mutable.HashMap[ExpNd, ParamDeclNd]
           val methDeclList = methodDeclList.toList
@@ -419,7 +444,6 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                 if (nameNd.toString() == methDecl.name && methDecl.params.size == argList.size) {
                   
                   //TODO Identify Method Overloading
-                  // println("Seeeee\n nameNd.toString() : " + nameNd.toString() + " methDecl.name " + methDecl.name)
                   for ((arg, param) <- argList zip methDecl.params)
                     argToParamMap += ((arg, param))
                 }
@@ -438,7 +462,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                 case NameExpNd(nameNd) => {
                   val argName = "arg_" + newParam
                   outputBuilder.goToBefore(savedLine)
-                  outputBuilder.putln(s"var ${argName}:= Ref;")
+                  outputBuilder.putln(s"var ${argName} : Ref;")
                   outputBuilder.goToEnd()
                   newParam = newParam + 1
                   argToParamMap.get(arg) match {
@@ -479,7 +503,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                   for (pre <- methDecl.preCnds) {
                     outputBuilder.setError("Pre Condition not defined, or does not hold", pre.condition.coord)
                     isExpressionDefined(pre.condition, replacedTransContext)
-                    outputBuilder.putln("assert " + ExpCodeGen.buildBoogieExp(pre.condition, replacedTransContext))
+                    outputBuilder.putln("assert " + ExpCodeGen.buildBoogieExp(pre.condition, replacedTransContext) + ";")
                     outputBuilder.clearError
                   }
 
@@ -489,8 +513,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                       lsn match {
                         case ObjectIdLSN(nameExp) => {
                           outputBuilder.setError("Does not have enough permission to transfer to callee", lsn.getCoord())
-                          outputBuilder.putln(s"assert Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] == ${ExpCodeGen.simpleExpCodeGen(exp)}")
-                          outputBuilder.putln(s"Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] == Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] - ${ExpCodeGen.simpleExpCodeGen(exp)};")
+                          outputBuilder.putln(s"assert Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] == ${ExpCodeGen.simpleExpCodeGen(exp)};")
+                          outputBuilder.putln(s"Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] := Permission[${replacedTransContext.initObjRef},${NameManager.getFQN(lsn)}] - ${ExpCodeGen.simpleExpCodeGen(exp)};")
                           outputBuilder.clearError
                         }
                         case ArrayLSN(forDecl, offSet, bound, boundInclusive, locSet) => {
@@ -537,12 +561,17 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
             }
             case _ => {}
           }
+          outputBuilder.putln(s"//Call Command Ends")
+          outputBuilder.dedent
         }
 /*******************************************************/
 /************* If Command Code Generation **************/
 /*******************************************************/
 
-        case IfCmdNd(guard, thenCmd, elseCmd) => { //set translation context for guard
+        case IfCmdNd(guard, thenCmd, elseCmd) => { 
+          outputBuilder.putln(s"//If Command Starts")
+          outputBuilder.indent
+          //set translation context for guard
           // Translate Body of else, assert guard is defined
           outputBuilder.putln("//assert guard is defined")
           isExpressionDefined(guard, heapTransContext)
@@ -569,7 +598,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
               outputBuilder.putln("}")
             }
           }
-
+          outputBuilder.putln(s"//If Command Ends")
+          outputBuilder.dedent
         }
 
 /*******************************************************/
@@ -577,6 +607,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /*******************************************************/
 
         case WhileCmdNd(guard, lil, body) => {
+          
+          outputBuilder.putln(s"//While Command Starts")
+          outputBuilder.indent
 
           //Store Heap and ArrayHeap into oldHeap, and oldArrayHeap
 
@@ -619,7 +652,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           commandCodeGen(body)
           outputBuilder.newLine
           outputBuilder.dedent
-          outputBuilder.put("}")
+          outputBuilder.putln("}")
+          outputBuilder.putln(s"//While Command Ends")
+          outputBuilder.dedent
         }
 
 /*******************************************************/
@@ -627,6 +662,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /*******************************************************/
 
         case ForCmdNd(decl, bounds, lil, body) => {
+          
+          outputBuilder.putln(s"//For Command Starts")
+          outputBuilder.indent
 
           val counter = heapTransContext.getHeap() + "[" + heapTransContext.getObjRef() + "," + decl.fqn.toString() + "]";
           val boundExp = ExpCodeGen.buildBoogieExp(bounds, heapTransContext)
@@ -655,6 +693,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.put("}")
 
           //Translate body of For loop
+          
+          outputBuilder.putln(s"//For Command Ends")
+          outputBuilder.dedent
 
         }
 /**********************************************************/
@@ -662,8 +703,12 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /**********************************************************/
 
         case CoForCmdNd(decl, repetitions, claimList, body) => {
+          outputBuilder.putln(s"//CoFor Command Starts")
+          outputBuilder.indent
           outputBuilder.indent
           //Translate body of Co For Command
+          outputBuilder.dedent
+          outputBuilder.putln(s"//CoFor Command Ends")
           outputBuilder.dedent
         }
 /**********************************************************/
@@ -671,9 +716,13 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /**********************************************************/
 
         case CoCmdNd(claimList, fstCmd, sndCmd) => {
+          outputBuilder.putln(s"//Co Command Starts")
+          outputBuilder.indent
           outputBuilder.indent
           //Translate fstCmd
           //Translate sndCmd
+          outputBuilder.dedent
+          outputBuilder.putln(s"//Co Command Ends")
           outputBuilder.dedent
         }
 
@@ -681,6 +730,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /*************** 'accept' Command Code Generation ***********/
 /**********************************************************/
         case AcceptCmdNd(methodImplementationList) => {
+          
+          outputBuilder.putln(s"//Accept Command Starts")
+          outputBuilder.indent
 
           //List all the method implementations in one goto statement.
           outputBuilder.newLine
@@ -776,7 +828,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                       //Add Reading Permission
                       outputBuilder.putln("//Remove Reading Permission to input parameters")
                       outputBuilder.setError("Permission Amount in not greater than '0'", param.coord)
-                      outputBuilder.putln(s"assert Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] > 0.0")
+                      outputBuilder.putln(s"assert Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] > 0.0;")
                       outputBuilder.clearError
                       outputBuilder.putln(s"Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] := 0.0;")
                     }
@@ -784,7 +836,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
                       //Add Writing Permission
                       outputBuilder.putln("//Remove Writing Permission to onput parameters")
                       outputBuilder.setError("Permission is not sufficient 'write permission' to remove.", param.coord)
-                      outputBuilder.putln(s"assert Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] == 1.0")
+                      outputBuilder.putln(s"assert Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] == 1.0;")
                       outputBuilder.clearError
                       outputBuilder.putln(s"Permission[This.${dlNd.fqn.toString()},${param.fqn.toString()}] := 0.0;")
                     }
@@ -800,6 +852,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
               case _ => "" // Check TypeChecker line 279-280
             }
           }
+          outputBuilder.putln(s"//Accept Command Ends")
+          outputBuilder.dedent
         }
 
 /**********************************************************/
@@ -807,6 +861,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /**********************************************************/
 
         case WithCmdNd(lock, tpl, guard, command, gpl) => {
+          
+          outputBuilder.putln(s"//Whit Command Starts")
+          outputBuilder.indent
 
           //assume class invariant
           assumeClassInv(classDeclNd)
@@ -931,6 +988,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           lockedClassInv(lock, "assert")
 
           outputBuilder.dedent
+          
+          outputBuilder.putln(s"//With Command Ends")
+          outputBuilder.dedent
         }
 
 /**********************************************************/
@@ -938,6 +998,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 /**********************************************************/
 
         case AssertCmdNd(exp) => {
+          outputBuilder.putln(s"//Assert Command Starts")
+          outputBuilder.indent
           outputBuilder.newLine
           outputBuilder.put("//Expression Definedness Start")
           isExpressionDefined(exp, heapTransContext)
@@ -964,12 +1026,16 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.newLine
           outputBuilder.clearError
           heapTransContext.reset()
+          outputBuilder.putln(s"//Assert Command Ends")
+          outputBuilder.dedent
         }
 
 /**********************************************************/
 /************** 'assume' Command Code Generation **********/
 /**********************************************************/
         case AssumeCmdNd(exp) => {
+          outputBuilder.putln(s"//Assume Command Starts")
+          outputBuilder.indent
           outputBuilder.newLine
           outputBuilder.put("//Expression Definedness Start")
           isExpressionDefined(exp, heapTransContext)
@@ -989,6 +1055,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           outputBuilder.newLine
           outputBuilder.clearError
           heapTransContext.reset()
+          outputBuilder.putln(s"//Assume Command Ends")
+          outputBuilder.dedent
         }
         case _ => {}
       }
@@ -1093,7 +1161,6 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         }
         case _ =>
       }
-
     }
 
     def getBaseOfPrimitiveType(type$: Type): String = {
@@ -1122,6 +1189,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
   //Class Claim Code Generation
 
   def classClaimCodeGen(classDeclNd: ClassDeclNd) {
+    outputBuilder.putln("//Class Claim Code Starts")
+    outputBuilder.putln("    //Initialize Permission to \'0\' First");
+    
     heapTransContext.set("Permission", heapTransContext.objRef)
     arrayHeapTransContext.set("ArrayPermission", arrayHeapTransContext.getObjRef())
 
@@ -1177,11 +1247,12 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       outputBuilder.clearError
     }
     heapTransContext.reset()
-
+    outputBuilder.putln("//Class Claim Code Ends")
   }
   //Object Initialization Code Generation
 
   def objectsInitCodeGen(classDeclNd: ClassDeclNd) {
+    outputBuilder.putln("//Object/Field Initialization Code Starts")
     var objDecl, objInits = ""
     for (mem <- classDeclNd.directMembers) {
       mem match {
@@ -1209,7 +1280,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
 
       }
     }
-
+    outputBuilder.putln("//Object/Field Initialization Code Ends")
   }
 
   //Method's Parameters Code Generation
@@ -1248,22 +1319,29 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       val nameExps = ExpCodeGen.nameExpCodeGen(prc.condition, nameExp)
       if (!(nameExps.isEmpty)) {
         outputBuilder.newLine
-        outputBuilder.put("assume ");
-        for (name <- nameExps) {
-          outputBuilder.putln(s" (forall<x> r:Ref, f : Field x :: !((r== This.${dlNd.fqn.toString()} && f == ${name}) ==> Heap[r,f] == oldHeap[r,f]));")
+        if(nameExps.size>1)
+        {
+          outputBuilder.put("assume (");
+          for (name <- nameExps.dropRight(1)) {
+            outputBuilder.put(s" (forall<x> r:Ref, f : Field x :: !((r== This.${dlNd.fqn.toString()} && f == ${name}) ==> Heap[r,f] == oldHeap[r,f])) && ")
+          }
+          outputBuilder.put(s" (forall<x> r:Ref, f : Field x :: !((r== This.${dlNd.fqn.toString()} && f == ${nameExps.last}) ==> Heap[r,f] == oldHeap[r,f]))")
+          outputBuilder.putln(");")
+        }
+        else {
+          outputBuilder.putln(s"assume (forall<x> r:Ref, f : Field x :: !((r== This.${dlNd.fqn.toString()} && f == ${nameExps(0)}) ==> Heap[r,f] == oldHeap[r,f]));")
         }
         outputBuilder.newLine
       }
-
     }
-
   }
 
   //Method's 'takes' Specification Code Generation
   def methTakesPerCodeGen(acc: Access, name: String, params: List[ParamDeclNd], takesPers: List[TakesPerNd]) {
     heapTransContext.reset()
     outputBuilder.newLine
-    outputBuilder.put("//Taking Permission(s)")
+    outputBuilder.putln("//Taking Permission(s) Code Starts")
+    outputBuilder.indent
     for (tp <- takesPers)
       for ((lsn, exp) <- tp.pmn.pm)
         lsn match {
@@ -1286,13 +1364,16 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           }
           case _ => contracts.Contracts.toDo("Array Location Set Node")
         }
+    outputBuilder.putln("//Taking Permission(s) Code Ends")
+    outputBuilder.dedent
   }
 
   //Method's 'post' Condition Code Generation
   def methPostCondCodeGen(acc: Access, name: String, params: List[ParamDeclNd], postCnds: List[PostCndNd]) {
     heapTransContext.reset()
     outputBuilder.newLine
-    outputBuilder.put("//Post Condition(s)")
+    outputBuilder.putln("//Post Condition Code Starts")
+    outputBuilder.indent
     for (poc <- postCnds) {
       val exp = poc.condition;
       outputBuilder.newLine
@@ -1312,12 +1393,15 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
       outputBuilder.clearError
 
     }
+    outputBuilder.putln("//Post Condition Code Ends")
+    outputBuilder.dedent
   }
   //Method's 'gives' Specification Code Generation
 
   def methGivesPerCodeGen(acc: Access, name: String, params: List[ParamDeclNd], givesPers: List[GivesPerNd]) {
     outputBuilder.newLine
-    outputBuilder.put("//Giving Permissions(s)")
+    outputBuilder.putln("//Giving Permission Code Starts")
+    outputBuilder.indent
     heapTransContext.reset()
     heapTransContext.setHeap("Permission")
     for (tp <- givesPers)
@@ -1338,11 +1422,13 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
           }
           case _ => contracts.Contracts.toDo("Array Location Set Node")
         }
+     outputBuilder.putln("//Giving Permission Code Ends")
+     outputBuilder.dedent
   }
 
   def assertClassInvariant() {
     outputBuilder.newLine;
-    outputBuilder.put("//Asserting class invariant for Locked object")
+    outputBuilder.putln("//Asserting class invariant for Locked object")
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers) {
       mem match {
         case ClassInvNd(exp) => {
@@ -1414,7 +1500,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
   }
 
   def classInvCodeGen(classDeclNd: ClassDeclNd) {
-    outputBuilder.putln("//Class Invariant")
+    outputBuilder.putln("//Class Invariant Code Starts")
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
       mem match {
         case ClassInvNd(exp) => {
@@ -1425,6 +1511,7 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         }
         case _ => {}
       }
+    outputBuilder.putln("//Class Invariant Code Ends")
   }
 
   def assumeClassInv(classDeclNd: ClassDeclNd) {
@@ -1452,6 +1539,8 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
   }
 
   def assumeInvariantPermission(classDeclNd: ClassDeclNd, lockTransContext: TransContext) {
+    outputBuilder.putln("//Assume Permissions Defined in Class Invariant Starts")
+    outputBuilder.indent
     outputBuilder.newLine
     outputBuilder.putln("//Class Invariant")
     var nameExp = new ArrayBuffer[String]()
@@ -1473,11 +1562,14 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         case _ => {}
       }
     heapTransContext.reset()
+    outputBuilder.putln("//Assume Permissions Defined in Class Invariant Ends")
+    outputBuilder.dedent
   }
 
   def lockForceClassInvariant(stmt: String, context: TransContext) {
     outputBuilder.newLine
-    outputBuilder.put("//Class Invariant")
+    outputBuilder.putln("//Lock Force Class Invariant Starts")
+    outputBuilder.indent
     for (mem <- dlNd.asInstanceOf[ClassLike].directMembers)
       mem match {
         case ClassInvNd(exp) => {
@@ -1490,18 +1582,24 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         }
         case _ => {}
       }
+    outputBuilder.putln("//Lock Force Class Invariant Ends")
+    outputBuilder.dedent
   }
 
   def loopInvCodeGen(loopInv: LoopInvNd) {
+    outputBuilder.newLine
+    outputBuilder.putln("//Loop Invariant Code Starts")
+    outputBuilder.indent
     //Check Loop Invariant is Defined
     heapTransContext.reset()
     outputBuilder.newLine
-    outputBuilder.put("//loop Invariant")
     val invString = ExpCodeGen.InvExpCodeGen(loopInv.exp, heapTransContext)
+    if(!invString.equals("")) {
     outputBuilder.newLine
     outputBuilder.setError("Invariant does not hold", loopInv.exp.coord)
     outputBuilder.putln("invariant " + invString + ";")
     outputBuilder.clearError
+    }
 
     //Inferring loop Invariant for frame problem
     // Unchanged parts of Heap must remain same. [Frame Condition]
@@ -1512,7 +1610,9 @@ private class ClassCodeGen(val dlNd: DeclNd, outputBuilder: OutputBuilder) {
         outputBuilder.putln("invariant (forall<x> r:Ref, f : Field x :: !(r == this && f == " + fqn + ") ==>Heap[r, f] == oldHeap[r, f]);")
       }
     }
-
+    outputBuilder.newLine
+    outputBuilder.putln("//Loop Invariant Code Ends")
+    outputBuilder.dedent
   }
 
   def isGuardPresent(exp: ExpNd): Boolean = {

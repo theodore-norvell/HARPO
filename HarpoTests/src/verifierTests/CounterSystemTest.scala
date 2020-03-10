@@ -48,6 +48,6 @@ class CounterSystemTest extends VerifierTestBase {
               thread)
           class) """
     
-    val (errors,builder) = translateAndVerify(str, 0, 0, 3)
+    val (errors,builder) = translateAndVerify(str, 0, 0, 1)
    }
 }
