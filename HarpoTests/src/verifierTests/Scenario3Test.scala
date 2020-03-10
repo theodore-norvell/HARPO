@@ -23,6 +23,8 @@ import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
 class Scenario3Test extends VerifierTestBase {
+  
+  val fileName = getClass.getName
   behavior of "The Boogie back end with Harpo 'Scenario 3' class";
   it should "generate Boogie code for Scenario 3 " in {
 
@@ -120,7 +122,7 @@ class Scenario3Test extends VerifierTestBase {
         class) 
                 
  """
-   translateAndVerify(str)
+   translateAndVerify(fileName,str)
 
   }
 }

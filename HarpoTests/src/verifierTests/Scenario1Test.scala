@@ -25,6 +25,7 @@ import util.OutputBuilder;
 @RunWith(classOf[JUnitRunner])
 class Scenario1Test extends VerifierTestBase {
 
+  val fileName = getClass.getName
   behavior of "The Boogie back end with Harpo 'Scenario 1' class";
   it should "generate Boogie code for Scenario 1 " in {
 
@@ -108,6 +109,6 @@ class Scenario1Test extends VerifierTestBase {
 	                  thread)
                   class) """
 
-   val (outputBuilder, errorRecorder) = translateAndVerify(str)
+   val (outputBuilder, errorRecorder) = translateAndVerify(fileName,str)
   }
 }

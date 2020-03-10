@@ -25,7 +25,7 @@ import util.OutputBuilder;
 @RunWith(classOf[JUnitRunner])
 class MergeTest extends VerifierTestBase {
   
-  
+  val fileName = getClass.getName
   behavior of "The Boogie back end with Harpo 'Merge' class";
   it should "generate Boogie code for Merge class" in {
     
@@ -104,7 +104,7 @@ class)
 
  """
 
- val (errors : StandardErrorRecorder, boogieCode: OutputBuilder) = translateAndVerify(str)
+ val (errors : StandardErrorRecorder, boogieCode: OutputBuilder) = translateAndVerify(fileName,str)
 
 }
 }

@@ -23,7 +23,7 @@ import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
 class BufferTest extends VerifierTestBase {
-  
+  val fileName = getClass.getName
   behavior of "The Boogie back end with Harpo 'Buffer' class";
   it should "generate Boogie code for Buffer class" in {
     
@@ -62,7 +62,7 @@ class BufferTest extends VerifierTestBase {
         class)
 """
 
- val (errors, builder) = translateAndVerify(str)
+ val (errors, builder) = translateAndVerify(fileName,str)
 
 }
 }

@@ -19,7 +19,7 @@ class BoogieLineMappingTest extends VerifierTestBase {
   def runBoogie(stringBoogie: String) = {
 
   }
-
+  
   behavior of "The Boogie back end";
 
   val harpo0 = """
@@ -119,7 +119,7 @@ class BoogieLineMappingTest extends VerifierTestBase {
   }
 
   it should "map boogie line numbers to Harpo line numbers" in {
-    val (errors,builder) = translateAndVerify(harpo0, 0, 0, 1)
+    val (errors,builder) = translateAndVerify(getClass.getName,harpo0, 0, 0, 1)
     println(builder.resultAsStringWithLineNum())
     assertResult( 5 )( errors.getVerificationCoord( 1 ).line ) 
     val expectedErrorMessage = "TODO" 

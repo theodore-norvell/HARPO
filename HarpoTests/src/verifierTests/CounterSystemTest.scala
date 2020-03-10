@@ -47,7 +47,7 @@ class CounterSystemTest extends VerifierTestBase {
                    while)
               thread)
           class) """
-    
-    val (errors,builder) = translateAndVerify(str, 0, 0, 1)
+    val fileName = getClass.getName;
+    val (errors,builder) = translateAndVerify(fileName,str, 0, 0, 1)
    }
 }

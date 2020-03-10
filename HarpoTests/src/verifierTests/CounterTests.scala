@@ -23,9 +23,9 @@ import frontEnd.AST.ClassLike
 
 @RunWith(classOf[JUnitRunner])
 class CounterTests extends VerifierTestBase {
+  val fileName = getClass.getName
   behavior of "The Boogie back end with Harpo 'Counter' class";
   it should "generate Boogie code for Counter class with lock" in {
-    
     val str = """ 
                 (class Counter()	                
                   claim count@0.5
@@ -52,7 +52,7 @@ class CounterTests extends VerifierTestBase {
                   thread)
              class)"""
 
-    translateAndVerify(str)
+   val (errors, builder) = translateAndVerify(fileName,str,0,0,0)
   }
 
   
@@ -81,7 +81,7 @@ class CounterTests extends VerifierTestBase {
                   thread)
              class)"""
 
-    translateAndVerify(str)
+   val (errors, builder) = translateAndVerify(fileName,str,0,0,0)
  }  
     it should "generate Boogie code for Counter class without class invariant" in {
         
@@ -105,7 +105,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-    translateAndVerify(str)
+   val (errors, builder) = translateAndVerify(fileName,str,0,0,2)
   }
   
     
@@ -132,7 +132,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-    translateAndVerify(str)
+   val (errors, builder) = translateAndVerify(fileName,str,0,0,2)
 
   }
     
@@ -160,7 +160,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-    val (errors, builder) = translateAndVerify(str) 
+    val (errors, builder) = translateAndVerify(fileName,str,0,0,2) 
 
   }
   
@@ -187,7 +187,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-   translateAndVerify(str)
+   translateAndVerify(fileName,str,0,0,2)
 
   }
 
@@ -214,7 +214,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-    translateAndVerify(str)
+    translateAndVerify(fileName,str,0,0,0)
 
   }
   
@@ -240,7 +240,7 @@ class CounterTests extends VerifierTestBase {
 	                thread)
              class)"""
 
-   translateAndVerify(str)
+   translateAndVerify(fileName,str,0,0,1)
 
   }
     

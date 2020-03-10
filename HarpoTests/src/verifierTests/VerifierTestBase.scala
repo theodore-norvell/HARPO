@@ -6,12 +6,13 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.Assertions._
-
 import java.io.Reader
 import java.io.StringReader
 import java.io.OutputStreamWriter
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import scala.collection.mutable.ArrayBuffer
@@ -38,7 +39,8 @@ import executive.HarpoToBoogieTranslator
 import parser.HarpoParser
 
 class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
-
+  
+  var TestNum = 0;
   override def beforeEach(td: TestData) {
     println(">>>>>>>>>>>>>Starting " + td.name + " >>>>>>>>>>>>>>>>>>")
   }
@@ -67,21 +69,33 @@ class VerifierTestBase extends FlatSpec with BeforeAndAfterEach {
   }
 
   def translateAndVerify(
-    str: String,
+    fileName: String,
+    HarpoStr: String,
     expectedFatalErrors: Int = 0,
     expectedWarningErrors: Int = 0,
     expectedVerificationErrors: Int = 0): (StandardErrorRecorder, OutputBuilder) = {
     val translator = new HarpoToBoogieTranslator()
-    translator.addFile("HarpoSourceCode.harpo", str)
+    translator.addFile("HarpoSourceCode.harpo", HarpoStr)
     val (errorRecorder, builder) = translator.translateAndVerify(true)
+    println(builder.resultAsStringWithLineNum())
+    writeTestIntoTextFile(fileName, HarpoStr, builder.resultAsStringWithLineNum(), errorRecorder)
     assertResult(expectedFatalErrors)(errorRecorder.getFatalCount())
     assertResult(expectedWarningErrors)(errorRecorder.getWarningCount())
     assertResult(expectedVerificationErrors)(errorRecorder.getVerificationCount())
-    writeResultToTextFile(str,builder.resultAsString())
     println(errorRecorder.printErrors(System.out))
     (errorRecorder, builder)
   }
-  def writeResultToTextFile(HarpoCode: String, BoogieCode: String) {
-    
+  //Write Complete Test into Text File
+  def writeTestIntoTextFile(fileName: String, harpoStr: String, boogieStr: String, errors: StandardErrorRecorder) {
+    println(s"See ------------- ${fileName}[${TestNum}].txt")
+    val writer = new PrintWriter( new File( s"${fileName}[${TestNum}].txt") )
+    writer.write(s"-------------------HARPO Code in File: ${fileName}[${TestNum}].txt---------------------------\n")
+    writer.write(harpoStr + "\n")
+    writer.write("--------------------Boogie Code--------------------------\n")
+    writer.write(boogieStr + "\n")
+    writer.write("--------------------Errors Detected--------------------------\n")
+    writer.write(errors.getErrors() + "\n")
+    writer.close()
+    TestNum = TestNum+1;
   }
 }
