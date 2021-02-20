@@ -55,8 +55,6 @@ type className;
 function dtype(Ref) returns (className); 
 const unique Math:className;
 const unique Math.c:Field int;
-const unique Math.c:Field int;
-const unique Math.x:Field int;
 procedure Math.t0(this:Ref)
 modifies Heap;
 {
@@ -66,7 +64,4 @@ var oldHeap, tmpHeap : HeapType ;
 Permission[this, Math.c] := 1.0;
 assert Permission[this, Math.c] == 1.0;
 Heap[this, Math.c] := 0;
-Permission[this, Math.x] := 1.0;
-assert Permission[this, Math.x] == 1.0;
-Heap[this, Math.x] := 9;
 }

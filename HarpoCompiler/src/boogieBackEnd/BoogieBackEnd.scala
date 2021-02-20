@@ -1,5 +1,5 @@
 /*
-						case ConstDeclNd()=>{ // To Do
+						case ConstDeclNd()=>{ // To Do 
 						  
 						}
 
@@ -186,7 +186,7 @@
 						}
 */
 package boogieBackEnd
-import java.net.URL
+import java.net.URL  
 import scala.io.Source
 import java.io.OutputStreamWriter
 import scala.collection.mutable.ArrayBuffer
@@ -197,40 +197,104 @@ import frontEnd.AST._
 import scala.io.Source
 import checker.CheckerTypes.PrimitiveType;
 import java.io.File
+import util.Format
+import scala.text.Document
+import util.OutputBuilder;
 
-class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList) {
-
-	def getBoogieCode():String = {
-			println(masterDeclList.toString());
-			val boogieCode = getBoogiePrelude() + genDeclCode( masterDeclList )
-			return boogieCode.toString();
+<<<<<<< HEAD
+class BoogieBackEnd(val masterDeclList : frontEnd.AST.DeclList, var outputBuffer: OutputBuilder) extends Format {
+  
+	def getBoogieCode(): OutputBuilder = {
+			val boogiePrelude = getBoogiePrelude() 
+			outputBuffer.put(boogiePrelude)
+			outputBuffer.newLine
+			genBoogieCode( masterDeclList)
+			outputBuffer		
 	}   
-	private def getBoogiePrelude():String = {      
+	private def getBoogiePrelude():String = {       
         	val preludeUrl : URL = this.getClass().getResource("/boogieBackEnd/BoogiePrelude.txt")
           val prelude = new File(preludeUrl.toURI())
           val contents = Source.fromFile(prelude)
           val boogiePrelude = try contents.mkString finally contents.close()
           return boogiePrelude
+=======
+class BoogieBackEnd {
+
+  def getBoogieCode( masterDeclList : frontEnd.AST.DeclList ) : OutputBuilder = {
+    val boogiePrelude = getBoogiePrelude()
+    val outputBuilder = new OutputBuilder
+    outputBuilder.put( boogiePrelude )
+    outputBuilder.newLine
+    genBoogieCode( masterDeclList, outputBuilder )
+    outputBuilder
+  }
+  private def getBoogiePrelude() : String = {
+    val preludeUrl : URL = this.getClass().getResource( "/boogieBackEnd/BoogiePrelude.txt" )
+    val prelude = new File( preludeUrl.toURI() )
+    val contents = Source.fromFile( prelude )
+    val boogiePrelude = try contents.mkString finally contents.close()
+    return boogiePrelude
+  }
+
+  private def genBoogieCode( dl : DeclList, outputBuffer : OutputBuilder ) : Unit = {
+
+    for ( dlNd : DeclNd <- dl.decls ) {
+      dlNd match {
+        case ObjDeclNd( isGhost, isConst, acc, ty, initExp ) => {
+          val objType : String = TypeCodeGen( ty )
+          val objInit : String = new ExpCodeGen().initExpCodeGen( initExp )
+          outputBuffer.newLine
+          outputBuffer.put( "\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";" )
+        }
+        case IntfDeclNd() => {
+          outputBuffer.newLine
+          outputBuffer.put( "\nconst unique " + dlNd.name + ": className;" )
+        }
+        case ClassDeclNd() => {
+          val classCode = new ClassCodeGen( dlNd, outputBuffer )
+        }
+        case _ => {
+          val code = "No main declarations were found"
+          outputBuffer
+        }
+      }
+    }
+  }
+>>>>>>> origin/temp-afv-tsn
 }
 
-	private def genDeclCode( dl : DeclList):String = {
-			    var globalObjCode = ""
+	private def genBoogieCode( dl : DeclList) : OutputBuilder = {
+			    
+	        var globalObjCode = ""
 					var initializeCode = ""
-					var nameTbl = HashMap[String, HashMap[String, String]]()
-					var boogieCode = ""
-						for(dlNd : DeclNd <- dl.decls) {
-						dlNd match{          
-						case ClassDeclNd() => {
-						  val classCode=new ClassCodeGen(dlNd);
-						  boogieCode += classCode.getClassCode()
+					
+					var globalObjects = ""
+					var interfaces = ""
+					var classes = ""
+					
+				 for(dlNd : DeclNd <- dl.decls) {
+						dlNd match{ 						
+						case ObjDeclNd( isGhost,isConst, acc, ty, initExp ) => {
+						  val objType: String = TypeCodeGen(ty)
+						  val objInit: String = new ExpCodeGen().initExpCodeGen(initExp)
+						  outputBuffer.newLine
+						  outputBuffer.put("\nconst unique " + dlNd.fqn + ":" + "Field " + objType + ";")
 						}
 						case IntfDeclNd() => {
-						  val intfCode=new IntfCodeGen(dlNd);
-						  boogieCode += intfCode.getIntfCode()
+						  interfaces += "\nconst unique " + dlNd.name + ": className;" 
+						  outputBuffer.newLine
+						  outputBuffer.put( "\nconst unique " + dlNd.name + ": className;")
+						}	
+						case ClassDeclNd() => {
+						  val classCode=new ClassCodeGen(dlNd, outputBuffer)
+						  outputBuffer = classCode.classCodeGen()
 						}
-						case _ => val code = "No Declarations Found"
+						case _ => {
+						  val code = "No main declarations were found"
+						  outputBuffer
 						}
-					} 
-			return boogieCode;
+					}
+				}
+			outputBuffer
   }
 }

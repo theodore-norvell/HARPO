@@ -8,7 +8,7 @@ import contracts.Contracts
 
 
 /**
-* A class mapping fully qualified names to declarations.
+* A class mapping fully qualified names to declarations .
 */
 class SymbolTable( private val errorRecorder : ErrorRecorder,
                    private val map : Map[ FQN, DeclNd ],

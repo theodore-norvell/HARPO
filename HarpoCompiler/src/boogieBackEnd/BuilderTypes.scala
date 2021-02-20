@@ -13,3 +13,5 @@ HashMap(checker.CheckerTypes.int8->"int",
     checker.CheckerTypes.real64->"real",
 		checker.CheckerTypes.bool->"bool")
 }
+
+//Out of range integers for the Boogie, we should not just convert the int1,16,32,64 into int in Boogie

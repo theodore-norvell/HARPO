@@ -1,0 +1,293 @@
+%
+\documentclass{article}%
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}%
+\setcounter{MaxMatrixCols}{30}
+%TCIDATA{OutputFilter=latex2.dll}
+%TCIDATA{Version=5.50.0.2960}
+%TCIDATA{CSTFile=Literate Programming Article.cst}
+%TCIDATA{Created=Monday, March 27, 2006 10:55:29}
+%TCIDATA{LastRevised=Tuesday, February 04, 2014 16:36:35}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="SaveForMode" CONTENT="3">}
+%TCIDATA{BibliographyScheme=Manual}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Articles\Literate Programming Article">}
+%TCIDATA{Language=American English}
+%BeginMSIPreambleData
+\providecommand{\U}[1]{\protect\rule{.1in}{.1in}}
+%EndMSIPreambleData
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\input{litprog.sty}
+%BeginMSIPreambleData
+\ifx\pdfoutput\relax\let\pdfoutput=\undefined\fi
+\newcount\msipdfoutput
+\ifx\pdfoutput\undefined\else
+\ifcase\pdfoutput\else
+\msipdfoutput=1
+\ifx\paperwidth\undefined\else
+\ifdim\paperheight=0pt\relax\else\pdfpageheight\paperheight\fi
+\ifdim\paperwidth=0pt\relax\else\pdfpagewidth\paperwidth\fi
+\fi\fi\fi
+%EndMSIPreambleData
+\begin{document}
+
+\title{Annotations for verification of HARPOL [Draft version 0]}
+\author{Theodore S\ Norvell\\Electrical and Computer Engineering\\Memorial University}
+\maketitle
+
+\begin{abstract}
+This document indicates extensions to the basic HARPOL language that support verification.
+
+\end{abstract}
+
+%
+
+\[%
+\begin{tabular}
+[c]{ll}%
+$N\rightarrow E$ & An $N$ can be $E$\\
+$\underline{(}E\underline{)}$ & Grouping\\
+$E\;F$ & An $E$ followed by an $F$\\
+$E^{\ast}$ & Zero or more $E$s\\
+$E^{\ast F}$ & Zero or more $E$s separated by $F$s\\
+$E^{+}$ & One or more $E$s\\
+$E^{+F}$ & One or more $E$s separated by $F$s\\
+$E^{?}$ & Zero or one $E$s\\
+$\underline{\lbrack}E\underline{]}$ & Zero or one $E$s\\
+$E\mid F$ & Either an $E$ or a $F$%
+\end{tabular}
+\ \
+\]
+
+
+\section{Classes and Objects}
+
+\subsection{Programs}
+
+A program is a set of classes, interfaces, and objects.%
+\[
+Program\rightarrow\underline{(}ClassDecl\mid IntfDecl\mid ObjectDecl\mid
+ConstDecl\mid;\underline{)}^{\ast}%
+\]
+
+
+\subsection{Objects}
+
+Fields may be ghost fields. Ghost fields may be used in specification
+annotations and ghost code. Initialization expressions for ghost variables may
+contain ghost variables. Likewise assignments to ghost variables and arguments
+for ghost parameters may contain ghost variables.%
+\[
+ObjectDecl\rightarrow\underline{[}\mathbf{ghost}\underline{]}\;(\mathbf{const}%
+\mid\mathbf{obj})\;Name\;\underline{[}:Type\underline{]}:=InitExp
+\]
+
+
+There is a new primitive type \textrm{Perm} which is only available for ghost
+fields. Values of type float can be widened to Perm. Expressions of type Perm
+are used to express degrees of ownership with $0$ meaning no ownership, $1$
+meaning total ownership and any number strictly between $0$ and $1$ meaning
+partial ownership (enough to read, but not enough to write). [Note:\ In the
+future permission values may be extended to include infinitessimals of various
+degrees, e.g. $0+4\varepsilon+10\varepsilon^{2}$. But for now, we will just
+use simple fractions.]
+
+\subsection{Classes and interfaces}
+
+Constructor parameters may be ghost%
+\[
+CParam\rightarrow\underline{[}\mathbf{ghost}\underline{]}\;\mathbf{obj}%
+\;Name:Type\mid\underline{[}\mathbf{ghost}\underline{]}\;\mathbf{in}%
+\;Name:Type
+\]
+
+
+\subsection{Class Members}
+
+Class members include invariants%
+\begin{align*}
+ClassMember &  \rightarrow Invariant\mid Claim\mid\cdots\\
+Invariant &  \rightarrow\mathbf{invariant}\;Condition
+\end{align*}
+and claims. The claim indicates which locations belong to the object
+initially. The invariant must hold initially (i.e. in the initial state of the
+object) and at the end of each \textbf{with} command.
+
+Method declarations may include pre- and postconditions as well as takes and
+gives clauses. Parameters may be ghost.%
+\begin{align*}
+Method  &  \rightarrow Access\;\mathbf{proc}\;Name(\underline{(}%
+\underline{[}\mathbf{ghost}\underline{]}\;Direction\;Name:\;Type\underline{)}%
+^{\ast,})\underline{]}\underline{(}MethodSpecClause\underline{)}^{\ast}\\
+MethodSpecClause  &  \rightarrow\mathbf{pre}\;Condition\\
+&  \mid\mathbf{post}\;Condition\\
+&  \mid\mathbf{takes}\;PermMap\\
+&  \mid\mathbf{gives}\;PermMap\\
+&  \mid\mathbf{borrows}\;PermMap
+\end{align*}
+
+
+\subsection{Conditions}
+
+Conditions are boolean expressions that may refer to ghost variables. Within a
+postcondition, expressions may be marked with a postfix apostrophe to refer to their
+final values. E.g.\ \texttt{x} is an initial value while \texttt{x' }is a
+final value.
+ The precedence of the apostrophe operator is just below unary -. Thus \texttt{-x'} is parsed as \texttt{-(x')}.
+\subsection{Permission maps}
+
+A permission map describes a mapping from locations to permission amounts.
+\[
+PermMap\rightarrow LocSet\mid LocSet@Expression\mid PermMap,PermMap
+\]
+The default permission is 1, i.e. full ownership; i.e., if a permission map
+consists only of a location set, then the each location in the set is mapped
+to 1.\ The thrid possibility indicates the sum of two permission maps. E.g.
+$a@0.5,a@0.5$ is equivalent to $a@1.0$.
+
+The location set may just be one location as specified by a single object id,
+or it can be a set of locations.%
+\[
+LocSet\rightarrow ObjectId\mid\{Name:Set\;\underline{[}Guard\underline{]}%
+\;\mathbf{do}\;ObjectId\}
+\]
+The name here is bound within the location set expression. The range of the
+name is given by a set expression, which can be any of the following. The
+object id's must be of premitive type.%
+\[
+Set\rightarrow\left\{  Expression,..Expression\right\}  \mid\left\{
+Expression,..,Expression\right\}  \mid Expression
+\]
+The first form is exclusive of its upper bound. The second form is inclusive.
+The third form is equivalent to $\left\{  0,..Expression\right\}  $
+
+Within location sets and permission maps, expressions may include ghost
+variables.%
+\[
+ObjectId\rightarrow Name\mid ObjectId[Expression]\mid ObjectId.Name
+\]
+
+
+\section{Threads}
+
+Threads may start with a claim
+\begin{align*}
+Thread &  \rightarrow(\mathbf{thread}\;\underline{[}Claim\underline{]}%
+\;Block\;\underline{[}\mathbf{thread}\underline{]})\\
+Claim &  \rightarrow\mathbf{claim}\;PermMap
+\end{align*}
+The locations of an object (i.e.\ its primitive fields and the primitive items
+of any array fields) may be claimed by a thread. The sum of the claims for the
+various threads and the initial claim of the class must not be more than 1 for
+any location.
+
+\subsection{Statements and Blocks}
+
+\begin{itemize}
+\item Statements include assert and assume%
+\begin{align*}
+Command  &  \rightarrow\mathbf{assert}\;Condition\\
+Command  &  \rightarrow\mathbf{assume}\;Condition
+\end{align*}
+
+
+\item Method call statements may have ghost arguments, but there is no special
+marking of them%
+\begin{align*}
+Command  &  \rightarrow ObjectId.Name(Args)\\
+&  \mid Name(Args)\\
+Args  &  \rightarrow\underline{[}Expressions\underline{]}%
+\end{align*}
+
+
+\item Loops may have loop invariants%
+\begin{align*}
+Command  &  \rightarrow\left(  \mathbf{while}~Expression\;\underline{\{}%
+Invariant\underline{\}}\;\underline{[}\mathbf{do}\underline{]}%
+\;Block\;\underline{[}\mathbf{while}\underline{]}\right) \\
+&  \mid\left(  \mathbf{for}\;Name:Bounds\;\underline{[}Invariant\underline{]}%
+\;\underline{[}\mathbf{do}\underline{]}\;Block\;\underline{[}\mathbf{for}%
+\underline{]}\right)
+\end{align*}
+
+
+\item Parallel blocks may begin with claims%
+\begin{align*}
+Command &  \rightarrow\left(  \mathbf{co}\;\underline{[}Claim\underline{]}%
+\ Block\;\underline{(}||\;\underline{[}Claim\underline{]}\;Block\underline{)}%
+^{+}\;\underline{[}\mathbf{co}\underline{]}\right)  \\
+&  \mid\left(  \mathbf{co}\;Name:Bounds\;\underline{[}\mathbf{do}%
+\underline{]}\;\underline{[}Claim\underline{]}\;Block\;\underline{[}%
+\mathbf{co}\underline{]}\right)
+\end{align*}
+At the start of a \textbf{co} command the thread's permission map is split
+according to the claims. Thus the sum of the claims must not exceed the
+initial permissions of the parent thread; unclaimed permission remains with
+the parent thread. At the end of a \textbf{co}, the permissions of the child
+threads are added back to the permissions of the parent thread.
+
+\item Method implementation (note that the vertical bar here is a terminal)%
+\begin{align*}
+Command  &  \rightarrow\left(  \mathbf{accept}\;MethodImp\;\underline{(}%
+|\;MethodImp\underline{)}^{\ast}\;\underline{[}\mathbf{accept}\underline{]}%
+\right) \\
+MethodImp  &  \rightarrow Name(\;\underline{(}%
+Direction\;Name:Type\underline{)}^{\ast,}\;)\;\underline{[}Guard\underline{]}%
+\;Block_{0}\;\underline{[}\mathbf{then\;}Block_{1}\underline{]}\\
+Guard  &  \rightarrow\mathbf{when}\;Expression
+\end{align*}
+
+
+\item With commands have take and give%
+\[
+Command\rightarrow\left(  \mathbf{with}\;Exp\;\underline{[}\mathbf{takes}%
+\;PermMap\underline{]}\;\underline{[}Guard\underline{]}\;\underline{[}%
+\mathbf{do}\underline{]}\;Block\;\underline{[}\mathbf{gives}%
+\;PermMap\underline{]}\;\underline{[}\mathbf{with}\underline{]}\right)
+\]
+Within a \textbf{with} command, the permissions of the tread are augmented by
+the permissions held by the lock object.\ E.g. $x:=2$ is allowed if the
+permission of the lock object on $x$ and the permission of the thread on $x$
+sum to $1$.
+\end{itemize}
+
+\section{Conditions}
+
+Conditions are just ordinary boolean expressions with the addition of the
+following operations
+
+\begin{itemize}
+\item canRead(LocSet) :\ a boolean; true if every location in the LocSet can
+be read (permission $>0.0$).
+
+\item canWrite(LocSet) :\ a boolean; true if every location in the LocSet can
+be written (permission is 1.0).
+
+\item permission(ObjectId)\ :\ a number from $0.0$ to $1.0$.
+\end{itemize}
+
+
+\end{document}

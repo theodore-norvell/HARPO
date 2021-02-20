@@ -1,6 +1,6 @@
 package util
 
-import scala.text.Document
+import scala.text.Document 
 import java.io.Writer
 import java.io.StringWriter
 
@@ -14,7 +14,7 @@ trait Pretty {
         this.format( width, writer )
         writer.toString
     }
-   
+  
     implicit protected def toDocument( seq : Seq[Pretty]) = 
         Pretty.prettyList( seq )
     

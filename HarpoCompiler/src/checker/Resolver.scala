@@ -11,16 +11,17 @@ import frontEnd.AST.GivesPerNd;
 import frontEnd.AST.TakesPerNd;
 import frontEnd.AST.BorrowsPerNd;
 
-/* The goal of the resolver is to hunt down all NameNds and link them to the
+/* The goal of the resolver is to hunt down all NameNds and link them to the 
  * corresponding declaration.  There are a few other types of nodes that
  * also need to be linked to their declarations.
  */
 
 private class Resolver( val errorRecorder : ErrorRecorder, symTab : SymbolTable )
 extends Contracts {
-
+ 
     def resolve( decls : DeclList ) {
 
+      /* Option type is a container for zero of one element of given type*/
         def resolveDeclList( decls : DeclList, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
             for ( decl <- decls.decls )
               resolveDecl( decl, containingFQN, containingDecl )
@@ -42,20 +43,37 @@ extends Contracts {
                     resolveClassLike(d, containingFQN, containingDecl) 
                 case d : IntfDeclNd =>
                     resolveClassLike(d, containingFQN, containingDecl) 
+                case ClaimNd(pmn) => {
+                  // TODO Compare Length - toDo("LocSetNd list and ExpNd list's lengths varies")
+                  if (pmn.locExp.length == pmn.locSet.length){
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                  }
+                }
+                case ClassInvNd(exp) =>
+                  resolveExp(exp,containingFQN,containingDecl)
                 case ObjDeclNd( isGhost:Boolean,isConst : Boolean, acc : Access, ty : TypeNd, init : InitExpNd) =>
                     resolveType( ty, containingFQN, containingDecl )
                     resolveInitExp( init, containingFQN, containingDecl )
-                case ParamDeclNd( ty : TypeNd, paramCategory : ParamCategory) =>
+                case ParamDeclNd(isGhost: Boolean, ty : TypeNd, paramCategory : ParamCategory) =>
                     resolveType( ty, containingFQN, containingDecl )
                 case MethodDeclNd( acc : Access, params : List[ParamDeclNd], preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd]) =>
                     for( pdn <- params ) resolveDecl( pdn, fqn, Some(decl))
                     for( precn <- preCndList ) resolveMethodSpec( precn, fqn, Some(decl))
                     for( postcn <- postCndList ) resolveMethodSpec( postcn, fqn, Some(decl))
-                    for( givesper <- postCndList ) resolveMethodSpec( givesper, fqn, Some(decl))
-                    for( takesper <- postCndList ) resolveMethodSpec( takesper, fqn, Some(decl))
-                    for( borrowsper <- postCndList ) resolveMethodSpec( borrowsper, fqn, Some(decl))
-                case ThreadDeclNd( block : CommandNd) =>
-                    resolveCommand( block, fqn, Some(decl) )
+                    for( givesper <- givesPerList ) resolvePermissionNd( givesper, fqn, Some(decl))
+                    for( takesper <- takesPerList ) resolvePermissionNd( takesper, fqn, Some(decl))
+                    for( borrowsper <- borrowsPerList ) resolvePermissionNd( borrowsper, fqn, Some(decl))
+                case ThreadDeclNd(claimList: List[ClaimNd], block : CommandNd) =>
+                    {
+                      resolveCommand( block, fqn, Some(decl))
+                     for(clmNd <- claimList){ 
+                       if (clmNd.pmn.locExp.length == clmNd.pmn.locSet.length){
+                       for(len <- clmNd.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                       for(lsn <- clmNd.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                      }
+                     }
+                }
                 case LocalDeclNd(isGhost, isConst, ty, init, stmt ) =>
                     resolveType( ty, containingFQN, containingDecl ) 
                     resolveExp( init, containingFQN, containingDecl )
@@ -76,7 +94,6 @@ extends Contracts {
                 case PrimitiveTypeDeclNd( qn : FQN) => {}
             }
         }
-        
         
         def resolveClassLike( d : ClassLikeDeclNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
           
@@ -138,36 +155,42 @@ extends Contracts {
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             spec match {
-                // --- case for PreCndNd
                 case PreCndNd (condition) =>
                     resolveExp(condition,containingFQN, containingDecl)
                     
-                // --- case for PostCndNd
                 case PostCndNd (condition) =>
                     resolveExp(condition,containingFQN, containingDecl) 
-                case _ => ()
             }
         }
         
-        def resolveMethodPer( pers : MethodPerNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
+        def resolvePermissionNd( pers : PermissionNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
             check(  containingDecl == None && containingFQN.names.length == 0 
                 ||  containingDecl.isDefined && containingDecl.get.fqn == containingFQN )
 
             pers match {             
-                // --- case for GivesPerNd
-                case GivesPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                // --- case for TakesPerNd
-                case TakesPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                // --- case for BorrowsPerNd
-                case BorrowsPerNd (objId) =>
-                    resolveExp(objId,containingFQN, containingDecl)
-                
-                case _ => ()
+                case GivesPerNd (pmn) => {
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
+                case TakesPerNd (pmn) => {
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
+                case BorrowsPerNd (pmn) => {
+                  for(len <- pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                  for(lsn <- pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                 }
             }
+        }
+        def resolvePermValue (len: ExpNd, containingFQN: FQN, containingDecl: Option[DeclNd]){
+          resolveExp(len,containingFQN,containingDecl)
+        }
+        def resolveLocSetNd (lsn: LocSetNd, containingFQN: FQN, containingDecl: Option[DeclNd])
+        {
+          lsn match { 
+            case ObjectIdLSN(en) => resolveExp(en, containingFQN, containingDecl)
+            //TODO Add other Cases later
+        }
         }
 
         def resolveCommand( command : CommandNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
@@ -197,38 +220,52 @@ extends Contracts {
                     resolveCommand( thenCmd, containingFQN, containingDecl )
                     resolveCommand( elseCmd, containingFQN, containingDecl )
                     
-                case WhileCmdNd( guard, body ) =>
+                case WhileCmdNd( guard, lil, body ) => {
                     resolveExp( guard, containingFQN, containingDecl )
-                    resolveCommand( body, containingFQN, containingDecl )  
-                    
-                case ForCmdNd( decl, repetitions, body ) =>
+                    resolveCommand( body, containingFQN, containingDecl )
+                    resolveLoopInvariantList(lil, containingFQN, containingDecl)
+                }  
+                case ForCmdNd( decl, repetitions,lil, body ) => {
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )
                     resolveExp(repetitions, containingFQN, containingDecl )
                     resolveCommand( body, forsFQN, Some( decl ) )
-                    
-                case CoForCmdNd( decl, repetitions, body ) =>
+                    resolveLoopInvariantList(lil, containingFQN, containingDecl)
+                }   
+                case CoForCmdNd( decl, repetitions,cl, body ) => {
                     val forsFQN = decl.fqn
                     resolveDecl( decl, containingFQN, containingDecl )
                     resolveExp(repetitions, containingFQN, containingDecl )
-                    resolveCommand( body, forsFQN, Some(decl)  )
+                    resolveCommand( body, forsFQN, Some(decl))
+                    for (cn <- cl) {
+                    for(len <- cn.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                    for(lsn <- cn.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                    }
+                }
                     
-                case CoCmdNd( fstCmd, sndCmd ) =>
+                case CoCmdNd( cl, fstCmd, sndCmd ) => {
                     resolveCommand( fstCmd, containingFQN, containingDecl )
                     resolveCommand( sndCmd, containingFQN, containingDecl )
-                    
+                    for (cn <- cl) {
+                    for(len <- cn.pmn.locExp) { resolvePermValue(len,containingFQN,containingDecl)}
+                    for(lsn <- cn.pmn.locSet) { resolveLocSetNd(lsn,containingFQN, containingDecl)}
+                    }
+                }   
                 case AcceptCmdNd( methodImplementationList ) =>
                     for ( methImpl <- methodImplementationList ) 
                         resolveDecl( methImpl, containingFQN, containingDecl )
                  
-                case WithCmdNd( lock, guard, command ) =>
+                case WithCmdNd( lock, tpl, guard, command, gpl ) => {
+                    resolveExp(guard,containingFQN,containingDecl)
                     resolveCommand( command, containingFQN, containingDecl )
-                    
-                // --- case for AssertCmdNd
+                    for (pn <- tpl )
+                      resolvePermissionNd(pn, containingFQN, containingDecl)
+                    for (pn <- gpl )
+                      resolvePermissionNd(pn, containingFQN, containingDecl)
+                }  
                 case AssertCmdNd (assertion) =>
                     resolveExp(assertion,containingFQN, containingDecl)
                 
-                // --- case for AssumeCmdNd
                 case AssumeCmdNd (assumption) =>
                     resolveExp(assumption,containingFQN, containingDecl)
             }
@@ -240,11 +277,14 @@ extends Contracts {
 
             exp match {
                 case NoExpNd() => {}
+                case BooleanLiteralExpNd(b) => {}
                 case IntLiteralExpNd(i) => {}
                 case FloatLiteralExpNd(x) => {}
                 case NameExpNd( name ) => 
                     name.decl = symTab.lookUp( containingFQN, name )
-                    println("It's checking for name")
+                case CanReadOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case CanWriteOp(locSet) => resolveLocSetNd(locSet, containingFQN, containingDecl)
+                case PermissionOp(exp) => resolveExp(exp, containingFQN, containingDecl)
                 case BinaryOpExpNd( op, x, y ) =>
                     resolveExp( x, containingFQN, containingDecl )
                     resolveExp( y, containingFQN, containingDecl )
@@ -262,6 +302,37 @@ extends Contracts {
             }
         }
         
+        def resolveLock(lock: ExpNd, containingFQN : FQN, containingDecl : Option[DeclNd] ) {
+          lock match {
+            case NameExpNd(x) => {
+              if (x == "this") {
+                resolveExp (lock, containingDecl.get.fqn, containingDecl.get.parent)
+              }
+              else resolveExp(lock, containingFQN, containingDecl)
+            }
+            case _ => resolveExp(lock, containingFQN, containingDecl)
+            
+          }
+        }
+        def resolveClassInvariantList(classInvList : List[ClassInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
+          for(classInv <- classInvList)
+            resolveExp(classInv.exp, containingFQN, containingDecl)
+        }        
+        
+        
+        def resolveLoopInvariantList(loopInvList : List[LoopInvNd], containingFQN: FQN, containingDecl: Option[DeclNd]){
+          for(loopInv <- loopInvList)
+            resolveExp(loopInv.exp, containingFQN, containingDecl)
+        }
+
+        def resolveObjId( exp : ExpNd, containingFQN: FQN, containingDecl : Option[DeclNd] ) {
+            exp match {
+                case NameExpNd( name ) => name.decl = symTab.lookUp( containingFQN, name )
+                case _ => {}
+                    unreachable("FetchExpNd in resolver)")
+            }
+        }
+
         resolveDeclList( decls, new FQN(), None )
     }
 

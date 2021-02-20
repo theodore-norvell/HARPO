@@ -5,8 +5,9 @@ import frontEnd.FQN
 import frontEnd.ErrorRecorder
 import CheckerTypes._
 import contracts.Contracts._
-import frontEnd.AST.PreCndNd;
-import frontEnd.AST.PostCndNd;
+import frontEnd.AST.PreCndNd
+import frontEnd.AST.PostCndNd
+import frontEnd.AST.ExpNd
 class TypeCreator( errorRecorder : ErrorRecorder ) {
     
     private def makeMethodTipe(params : List[ParamDeclNd]) : Option[MethodType]= {
@@ -69,6 +70,7 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                 result
             case ArrayTypeNd( baseType, bound ) =>
                 val base = extractTypeFromTypeNode(baseType) 
+                ArrayType(base,bound)
                 if( isIntegralConstant( bound ) ) {
                     ArrayType( base, bound) }
                 else {
@@ -81,8 +83,19 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
         
     }
     
-    private def isIntegralConstant( x : ExpNd ) = { assert( false, "TBD") ; false }
-
+    private def isIntegralConstant( x : ExpNd ) :  Boolean = {
+    x.tipe match {
+      case Some(LocationType(base)) =>
+        base.name.toString() match {
+          case "Int8" => true
+          case "Int16" => true
+          case "Int32" => true
+          case "Int64" => true
+          case _ =>  false
+        }
+      case _ => false
+    }     
+    }
     /** Create types and associate each TypeNd (apart from NoTypeNd) with a type.
      *  
      *  For each TypeNd within a set of declarations, set its tipe field to a Type object.
@@ -123,19 +136,32 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                                case _ => {
                                     createTypeFromTypeNd( ty ) 
                                     promoteToLoc(ty) } }
-                    
-                case ParamDeclNd(ty , _) =>
+                case ClaimNd(lpmn: PermissionMapNd) => {}
+
+                case ClassInvNd(exp: ExpNd) =>  {}
+                case ParamDeclNd(isGhost,ty , _) =>
                     createTypeFromTypeNd( ty ) 
                     promoteToLoc(ty)
                     check( ty.tipe != None)
                     
-                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd])  =>  
+                case declNd@MethodDeclNd( _, params, preCndList: List[PreCndNd], postCndList: List[PostCndNd], givesPerList: List[GivesPerNd], takesPerList: List[TakesPerNd], borrowsPerList: List[BorrowsPerNd])  => { 
+                  
                   for( p <- params ) createTypesFromDecl( p ) 
                   declNd.tipe = makeMethodTipe(params)
-                    
+                  
+                  for( pre <- preCndList ) {}
+                  
+                  for( post <- postCndList ) {}
+                  
+                  for( gives <- givesPerList ) {}
+                  
+                  for( takes <- takesPerList ) {}
+                  
+                  for( borrows <- borrowsPerList ) {}
+                  
+                }   
                 case thread : ThreadDeclNd =>
                     createTypesFromCommand( thread.block )
-                    
                 case LocalDeclNd(_, _, ty, init, stmt ) =>
                     createTypesFromCommand( stmt )
                     ty match { case NoTypeNd() => {} // Do it later.
@@ -177,19 +203,19 @@ class TypeCreator( errorRecorder : ErrorRecorder ) {
                 case IfCmdNd( guard, thenCmd, elseCmd ) =>
                     createTypesFromCommand( thenCmd  )
                     createTypesFromCommand( elseCmd  )
-                case WhileCmdNd( guard, body ) =>
+                case WhileCmdNd( guard,lil, body ) => 
                     createTypesFromCommand( body  )
-                case ForCmdNd( forDecl, repetitions, body ) =>
+                case ForCmdNd( forDecl, repetitions,lil, body ) =>
                     createTypesFromCommand( body  )
-                case CoForCmdNd( forDecl, repetitions, body ) =>
+                case CoForCmdNd( forDecl, repetitions,cl, body ) =>
                     createTypesFromCommand( body  )
-                case CoCmdNd( fstCmd, sndCmd ) =>
+                case CoCmdNd( cl, fstCmd, sndCmd ) =>
                     createTypesFromCommand( fstCmd  )
                     createTypesFromCommand( sndCmd  )
                 case AcceptCmdNd( methodImplementationList ) =>
                     for( methImpl <- methodImplementationList )
                         createTypesFromDecl( methImpl )
-                case WithCmdNd( lock, guard, command ) =>
+                case WithCmdNd( lock, tpl,  guard, command, gpl ) =>
                     createTypesFromCommand( command  )
                 case _ => ()
             }

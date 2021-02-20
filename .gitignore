@@ -1,10 +1,20 @@
 *.class
 *.log
+RemoteSystemsTempFiles/*
+/.metadata/
+/.recommenders
 .settings/
 .project
 .classpath
 *.cache
-/.metadata/
 *.cache-main
 /.recommenders/
 bin/
+.DS_Store
+*.tex.Backup-*
+<<<<<<< HEAD
+*.bpl
+=======
+BoogieOutputScript.bpl
+>>>>>>> origin/temp-afv-tsn
+*.rej
